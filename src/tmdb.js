@@ -8,6 +8,12 @@ export function posterUrl(path, size = "w300") {
   return `${IMG_BASE}/${size}${path}`;
 }
 
+// URL d'un logo de plateforme (fournis par TMDB)
+export function logoUrl(path, size = "w92") {
+  if (!path) return null;
+  return `${IMG_BASE}/${size}${path}`;
+}
+
 async function tmdbFetch(path, params = {}) {
   const url = new URL(WORKER_URL + path);
   Object.entries(params).forEach(([key, value]) => {
@@ -55,12 +61,19 @@ export async function findMovieByImdb(imdbId) {
   return results.length > 0 ? results[0] : null;
 }
 
-// Durée moyenne d'un épisode de la série (en minutes)
 export async function getShowRuntime(showId) {
   const details = await getShow(showId);
   const rt = details.episode_run_time;
   if (Array.isArray(rt) && rt.length > 0) return rt[0];
   return null;
+}
+
+// Plateformes de streaming pour la France
+export async function getWatchProviders(type, id) {
+  // type: "tv" ou "movie"
+  const data = await tmdbFetch(`/${type}/${id}/watch/providers`);
+  const fr = (data.results && data.results.FR) || null;
+  return fr; // { flatrate: [...], rent: [...], buy: [...], link } ou null
 }
 
 export async function getAllEpisodes(showId) {

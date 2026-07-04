@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getShow, getSeason, posterUrl } from "./tmdb";
+import { getShow, getSeason, getWatchProviders, posterUrl, logoUrl } from "./tmdb";
 import {
   followShow, unfollowShow, getFollowedShow,
   setEpisodeWatched, setEpisodesWatched, touchShow,
@@ -13,6 +13,7 @@ export default function ShowDetail({ show, onBack }) {
   const [openSeason, setOpenSeason] = useState(null);
   const [seasonData, setSeasonData] = useState({});
   const [error, setError] = useState(null);
+  const [providers, setProviders] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -30,6 +31,10 @@ export default function ShowDetail({ show, onBack }) {
           setFollowed(true);
           setWatched(f.watched || {});
         }
+        // Plateformes (non bloquant)
+        getWatchProviders("tv", show.id)
+          .then((p) => { if (active) setProviders(p); })
+          .catch(() => {});
       } catch (e) {
         if (active && e.name !== "AbortError") setError(e.message);
       } finally {
@@ -135,6 +140,7 @@ export default function ShowDetail({ show, onBack }) {
   if (!details) return null;
 
   const seasons = (details.seasons || []).filter((s) => s.season_number >= 0);
+  const flatrate = providers && providers.flatrate ? providers.flatrate : [];
 
   return (
     <div className="detail">
@@ -168,6 +174,27 @@ export default function ShowDetail({ show, onBack }) {
           {details.overview && <p className="overview">{details.overview}</p>}
         </div>
       </div>
+
+      {/* Où regarder */}
+      {flatrate.length > 0 && (
+        <div className="providers">
+          <h3 className="providers-title">Où regarder</h3>
+          <div className="providers-list">
+            {flatrate.map((p) => (
+              <div key={p.provider_id} className="provider" title={p.provider_name}>
+                {logoUrl(p.logo_path) ? (
+                  <img src={logoUrl(p.logo_path)} alt={p.provider_name} />
+                ) : (
+                  <span>{p.provider_name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="muted small providers-note">
+            Données JustWatch via TMDB · France
+          </p>
+        </div>
+      )}
 
       <div className="seasons">
         {seasons.map((s) => {

@@ -369,3 +369,32 @@ body {
 }
 
 .profile-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Où regarder ---- */
+.providers {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.providers-title { font-size: 1rem; margin: 0 0 10px; }
+.providers-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.provider img {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: block;
+}
+.provider span {
+  font-size: 0.8rem;
+  color: #ddd;
+  background: #2a2a2a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+.providers-note { margin: 10px 0 0; }
