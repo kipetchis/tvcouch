@@ -73,7 +73,21 @@ export async function getWatchProviders(type, id) {
   // type: "tv" ou "movie"
   const data = await tmdbFetch(`/${type}/${id}/watch/providers`);
   const fr = (data.results && data.results.FR) || null;
-  return fr; // { flatrate: [...], rent: [...], buy: [...], link } ou null
+  if (fr && fr.flatrate) {
+    // On retire les variantes "with ads" / "avec pub" qui font doublon
+    const seen = new Set();
+    fr.flatrate = fr.flatrate.filter((p) => {
+      const name = p.provider_name.toLowerCase();
+      if (name.includes("with ads") || name.includes("avec pub") || name.includes("standard with ads")) {
+        return false;
+      }
+      const base = name.replace(/\s*(standard|with ads|avec pub).*/, "").trim();
+      if (seen.has(base)) return false;
+      seen.add(base);
+      return true;
+    });
+  }
+  return fr;
 }
 
 export async function getAllEpisodes(showId) {
