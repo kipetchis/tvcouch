@@ -4,6 +4,7 @@ import { auth, googleProvider } from "./firebase";
 import { searchShows, posterUrl } from "./tmdb";
 import ShowDetail from "./ShowDetail";
 import ShowsPage from "./ShowsPage";
+import UpcomingPage from "./UpcomingPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import MovieImport from "./MovieImport";
@@ -16,10 +17,11 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
 
   const [tab, setTab] = useState("shows");
+  const [showsSubTab, setShowsSubTab] = useState("towatch"); // towatch | upcoming
   const [selectedShow, setSelectedShow] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showMovieImport, setShowMovieImport] = useState(false);
-  const [favPicker, setFavPicker] = useState(null); // null | "show" | "movie"
+  const [favPicker, setFavPicker] = useState(null);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -173,7 +175,27 @@ function App() {
               </div>
             </>
           ) : (
-            <ShowsPage onOpenShow={setSelectedShow} />
+            <>
+              <div className="movie-tabs">
+                <button
+                  className={showsSubTab === "towatch" ? "movie-tab active" : "movie-tab"}
+                  onClick={() => setShowsSubTab("towatch")}
+                >
+                  À voir
+                </button>
+                <button
+                  className={showsSubTab === "upcoming" ? "movie-tab active" : "movie-tab"}
+                  onClick={() => setShowsSubTab("upcoming")}
+                >
+                  À venir
+                </button>
+              </div>
+              {showsSubTab === "towatch" ? (
+                <ShowsPage onOpenShow={setSelectedShow} />
+              ) : (
+                <UpcomingPage onOpenShow={setSelectedShow} />
+              )}
+            </>
           )}
         </>
       )}

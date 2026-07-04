@@ -398,3 +398,11 @@ body {
   display: inline-block;
 }
 .providers-note { margin: 10px 0 0; }
+
+/* ---- À venir ---- */
+.upcoming-date {
+  color: #f5c518;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  font-weight: 600;
+}
