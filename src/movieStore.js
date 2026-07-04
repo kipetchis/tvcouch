@@ -1,7 +1,7 @@
 // Fonctions Firestore pour les films
 import { db, auth } from "./firebase";
 import {
-  doc, setDoc, deleteDoc, getDocs, collection, writeBatch,
+  doc, setDoc, updateDoc, deleteDoc, deleteField, getDocs, collection, writeBatch,
 } from "firebase/firestore";
 
 function movieRef(movieId) {
@@ -9,7 +9,7 @@ function movieRef(movieId) {
   return doc(db, "users", uid, "movies", String(movieId));
 }
 
-// Ajoute/mre à jour un film. status: "watched" | "watchlist"
+// Ajoute/met à jour un film. status: "watched" | "watchlist"
 export async function saveMovie(movie, status, watchedDate = null) {
   await setDoc(
     movieRef(movie.id),
@@ -37,7 +37,6 @@ export async function getAllMovies() {
   return snap.docs.map((d) => d.data());
 }
 
-// Import par lots
 export async function importMoviesBatch(moviesData) {
   const uid = auth.currentUser.uid;
   const batch = writeBatch(db);
@@ -46,4 +45,23 @@ export async function importMoviesBatch(moviesData) {
     batch.set(ref, m, { merge: true });
   });
   await batch.commit();
+}
+
+// Note (1-5) + commentaire pour un film. Marque le film comme vu.
+export async function setMovieRating(movieId, note, comment) {
+  const today = new Date().toISOString().slice(0, 10);
+  await updateDoc(movieRef(movieId), {
+    note: note || null,
+    comment: comment || "",
+    status: "watched",       // noter = vu
+    watchedDate: today,
+    ratedAt: Date.now(),
+  });
+}
+
+export async function removeMovieRating(movieId) {
+  await updateDoc(movieRef(movieId), {
+    note: deleteField(),
+    comment: deleteField(),
+  });
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllMovies, saveMovie, removeMovie } from "./movieStore";
 import { searchMovies, getMovie, posterUrl } from "./tmdb";
+import MovieDetail from "./MovieDetail";
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState([]);
@@ -9,6 +10,7 @@ export default function MoviesPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [openMovie, setOpenMovie] = useState(null);
 
   const reload = async () => {
     setLoading(true);
@@ -46,7 +48,6 @@ export default function MoviesPage() {
   };
 
   const addAsWatched = async (movie) => {
-    // On récupère le runtime complet
     let runtime = null;
     try {
       const full = await getMovie(movie.id);
@@ -75,13 +76,34 @@ export default function MoviesPage() {
         runtime = full.runtime || null;
       } catch {}
     }
-    await saveMovie(movie, "watched", new Date().toISOString().slice(0, 10));
+    await saveMovie({ ...movie, runtime }, "watched", new Date().toISOString().slice(0, 10));
     reload();
   };
 
   const handleRemove = async (movieId) => {
     await removeMovie(movieId);
     reload();
+  };
+
+  const handleRated = (movieId, rating) => {
+    setMovies((prev) =>
+      prev.map((m) =>
+        m.id === movieId
+          ? {
+              ...m,
+              note: rating ? rating.note : null,
+              comment: rating ? rating.comment : "",
+              status: rating ? "watched" : m.status,
+            }
+          : m
+      )
+    );
+    // met à jour le film ouvert aussi
+    setOpenMovie((prev) =>
+      prev && prev.id === movieId
+        ? { ...prev, note: rating ? rating.note : null, comment: rating ? rating.comment : "" }
+        : prev
+    );
   };
 
   const watched = movies.filter((m) => m.status === "watched");
@@ -165,14 +187,21 @@ export default function MoviesPage() {
                 .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
                 .map((movie) => (
                   <div key={movie.id} className="card">
-                    {posterUrl(movie.poster_path) ? (
-                      <img src={posterUrl(movie.poster_path)} alt={movie.title} />
-                    ) : (
-                      <div className="no-poster">Pas d'affiche</div>
-                    )}
-                    <div className="card-title">{movie.title}</div>
-                    <div className="card-year">
-                      {movie.release_date ? movie.release_date.slice(0, 4) : "—"}
+                    <div onClick={() => setOpenMovie(movie)}>
+                      {posterUrl(movie.poster_path) ? (
+                        <img src={posterUrl(movie.poster_path)} alt={movie.title} />
+                      ) : (
+                        <div className="no-poster">Pas d'affiche</div>
+                      )}
+                      <div className="card-title">
+                        {movie.title}
+                        {movie.note > 0 && (
+                          <span className="ep-rating-badge"> ★ {movie.note}</span>
+                        )}
+                      </div>
+                      <div className="card-year">
+                        {movie.release_date ? movie.release_date.slice(0, 4) : "—"}
+                      </div>
                     </div>
                     <div className="movie-actions">
                       {view === "watchlist" && (
@@ -195,6 +224,14 @@ export default function MoviesPage() {
             </div>
           )}
         </>
+      )}
+
+      {openMovie && (
+        <MovieDetail
+          movie={openMovie}
+          onClose={() => setOpenMovie(null)}
+          onRated={handleRated}
+        />
       )}
     </div>
   );

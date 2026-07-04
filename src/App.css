@@ -500,3 +500,15 @@ body {
   margin-top: 14px;
   flex-wrap: wrap;
 }
+
+/* ---- Détail film ---- */
+.movie-detail-head {
+  display: flex;
+  gap: 14px;
+  padding: 16px 16px 0;
+}
+.movie-detail-head img {
+  width: 90px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
