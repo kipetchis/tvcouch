@@ -77,6 +77,33 @@ export async function importShowsBatch(showsData) {
   await batch.commit();
 }
 
+// ---- Notes / commentaires d'épisodes ----
+// Enregistre une note (1-5) et/ou un commentaire pour un épisode.
+// Marque aussi l'épisode comme vu (on ne note que ce qu'on a vu).
+export async function setEpisodeRating(showId, seasonNumber, episodeNumber, note, comment) {
+  const epKey = `${seasonNumber}_${episodeNumber}`;
+  const ratingKey = `ratings.${epKey}`;
+  const watchedKey = `watched.${epKey}`;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const data = {
+    [ratingKey]: {
+      note: note || null,
+      comment: comment || "",
+      updatedAt: Date.now(),
+    },
+    [watchedKey]: today, // noter = marquer vu
+    lastWatchedAt: Date.now(),
+  };
+  await updateDoc(showRef(showId), data);
+}
+
+// Supprime la note/commentaire d'un épisode (ne touche pas au statut "vu")
+export async function removeEpisodeRating(showId, seasonNumber, episodeNumber) {
+  const ratingKey = `ratings.${seasonNumber}_${episodeNumber}`;
+  await updateDoc(showRef(showId), { [ratingKey]: deleteField() });
+}
+
 // ---- Favoris (séries et films préférés) ----
 export async function getFavorites() {
   const snap = await getDoc(favRef());

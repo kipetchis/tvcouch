@@ -4,16 +4,19 @@ import {
   followShow, unfollowShow, getFollowedShow,
   setEpisodeWatched, setEpisodesWatched, touchShow,
 } from "./store";
+import EpisodeDetail from "./EpisodeDetail";
 
 export default function ShowDetail({ show, onBack }) {
   const [details, setDetails] = useState(null);
   const [watched, setWatched] = useState({});
+  const [ratings, setRatings] = useState({});
   const [followed, setFollowed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openSeason, setOpenSeason] = useState(null);
   const [seasonData, setSeasonData] = useState({});
   const [error, setError] = useState(null);
   const [providers, setProviders] = useState(null);
+  const [openEpisode, setOpenEpisode] = useState(null); // { seasonNumber, episode }
 
   useEffect(() => {
     let active = true;
@@ -30,8 +33,8 @@ export default function ShowDetail({ show, onBack }) {
         if (f) {
           setFollowed(true);
           setWatched(f.watched || {});
+          setRatings(f.ratings || {});
         }
-        // Plateformes (non bloquant)
         getWatchProviders("tv", show.id)
           .then((p) => { if (active) setProviders(p); })
           .catch(() => {});
@@ -61,6 +64,7 @@ export default function ShowDetail({ show, onBack }) {
     await unfollowShow(show.id);
     setFollowed(false);
     setWatched({});
+    setRatings({});
   };
 
   const ensureFollowed = async () => {
@@ -125,6 +129,26 @@ export default function ShowDetail({ show, onBack }) {
     }
   };
 
+  const openEpisodeDetail = async (seasonNumber, episode) => {
+    await ensureFollowed();
+    setOpenEpisode({ seasonNumber, episode });
+  };
+
+  // Callback quand une note est enregistrée depuis le détail
+  const handleRated = (seasonNumber, episodeNumber, rating) => {
+    const key = `${seasonNumber}_${episodeNumber}`;
+    setRatings((prev) => {
+      const next = { ...prev };
+      if (rating) next[key] = rating;
+      else delete next[key];
+      return next;
+    });
+    // Noter marque comme vu
+    if (rating) {
+      setWatched((prev) => ({ ...prev, [key]: new Date().toISOString().slice(0, 10) }));
+    }
+  };
+
   const countWatchedInSeason = (seasonNumber, episodes) =>
     episodes.filter((ep) => watched[`${seasonNumber}_${ep.episode_number}`]).length;
 
@@ -175,7 +199,6 @@ export default function ShowDetail({ show, onBack }) {
         </div>
       </div>
 
-      {/* Où regarder */}
       {flatrate.length > 0 && (
         <div className="providers">
           <h3 className="providers-title">Où regarder</h3>
@@ -238,20 +261,26 @@ export default function ShowDetail({ show, onBack }) {
                   {episodes.map((ep) => {
                     const key = `${s.season_number}_${ep.episode_number}`;
                     const isWatched = !!watched[key];
+                    const rating = ratings[key];
                     return (
-                      <div
-                        key={ep.id}
-                        className="episode"
-                        onClick={() => toggleEpisode(s.season_number, ep.episode_number)}
-                      >
-                        <div className="ep-text">
+                      <div key={ep.id} className="episode">
+                        <div
+                          className="ep-text"
+                          onClick={() => openEpisodeDetail(s.season_number, ep)}
+                        >
                           <span className="ep-num">E{ep.episode_number}</span>
                           <span className="ep-name">{ep.name}</span>
                           {ep.air_date && (
                             <span className="muted small"> · {ep.air_date}</span>
                           )}
+                          {rating && rating.note > 0 && (
+                            <span className="ep-rating-badge">★ {rating.note}</span>
+                          )}
                         </div>
-                        <div className={`check ${isWatched ? "checked" : ""}`}>
+                        <div
+                          className={`check ${isWatched ? "checked" : ""}`}
+                          onClick={() => toggleEpisode(s.season_number, ep.episode_number)}
+                        >
                           {isWatched ? "✓" : ""}
                         </div>
                       </div>
@@ -266,6 +295,17 @@ export default function ShowDetail({ show, onBack }) {
           );
         })}
       </div>
+
+      {openEpisode && (
+        <EpisodeDetail
+          showId={show.id}
+          seasonNumber={openEpisode.seasonNumber}
+          episode={openEpisode.episode}
+          initialRating={ratings[`${openEpisode.seasonNumber}_${openEpisode.episode.episode_number}`]}
+          onClose={() => setOpenEpisode(null)}
+          onRated={handleRated}
+        />
+      )}
     </div>
   );
 }
