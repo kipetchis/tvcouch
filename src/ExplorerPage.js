@@ -43,9 +43,11 @@ function ShowCard({ show, mine, busy, onOpen, onFollow }) {
 }
 
 function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
+  // On ouvre la fiche avec les données de collection si dispo (note/commentaire),
+  // sinon avec les données brutes du catalogue (synopsis/plateformes seront chargés).
   return (
     <div className="card" style={{ flex: "0 0 110px", width: 110 }}>
-      <div onClick={mine ? () => onOpen(mine) : undefined}>
+      <div onClick={() => onOpen(mine || movie)}>
         {posterUrl(movie.poster_path) ? (
           <img src={posterUrl(movie.poster_path)} alt={movie.title} />
         ) : (
@@ -70,14 +72,20 @@ function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
           <button
             className="btn-small"
             disabled={busy}
-            onClick={() => onWatched(movie)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onWatched(movie);
+            }}
           >
             ✓ Vu
           </button>
           <button
             className="btn-small"
             disabled={busy}
-            onClick={() => onWatchlist(movie)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onWatchlist(movie);
+            }}
           >
             + Liste
           </button>
@@ -214,7 +222,20 @@ export default function ExplorerPage({ onOpenShow }) {
   const handleRated = (movieId, rating) => {
     setMyMovies((prev) => {
       const m = prev[movieId];
-      if (!m) return prev;
+      // Film noté depuis le catalogue (pas encore en collection) : on l'ajoute
+      if (!m) {
+        const fromOpen = openMovie && openMovie.id === movieId ? openMovie : {};
+        return {
+          ...prev,
+          [movieId]: {
+            ...fromOpen,
+            id: movieId,
+            note: rating ? rating.note : null,
+            comment: rating ? rating.comment : "",
+            status: "watched",
+          },
+        };
+      }
       return {
         ...prev,
         [movieId]: {

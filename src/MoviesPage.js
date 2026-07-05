@@ -86,18 +86,25 @@ export default function MoviesPage() {
   };
 
   const handleRated = (movieId, rating) => {
-    setMovies((prev) =>
-      prev.map((m) =>
-        m.id === movieId
-          ? {
-              ...m,
-              note: rating ? rating.note : null,
-              comment: rating ? rating.comment : "",
-              status: rating ? "watched" : m.status,
-            }
-          : m
-      )
-    );
+    // Si le film noté n'est pas encore dans la liste (venu de la recherche),
+    // on recharge pour le faire apparaître dans "Vus".
+    const known = movies.some((m) => m.id === movieId);
+    if (!known) {
+      reload();
+    } else {
+      setMovies((prev) =>
+        prev.map((m) =>
+          m.id === movieId
+            ? {
+                ...m,
+                note: rating ? rating.note : null,
+                comment: rating ? rating.comment : "",
+                status: rating ? "watched" : m.status,
+              }
+            : m
+        )
+      );
+    }
     // met à jour le film ouvert aussi
     setOpenMovie((prev) =>
       prev && prev.id === movieId
@@ -135,14 +142,16 @@ export default function MoviesPage() {
           <div className="grid">
             {results.map((movie) => (
               <div key={movie.id} className="card movie-result">
-                {posterUrl(movie.poster_path) ? (
-                  <img src={posterUrl(movie.poster_path)} alt={movie.title} />
-                ) : (
-                  <div className="no-poster">Pas d'affiche</div>
-                )}
-                <div className="card-title">{movie.title}</div>
-                <div className="card-year">
-                  {movie.release_date ? movie.release_date.slice(0, 4) : "—"}
+                <div onClick={() => setOpenMovie(movie)}>
+                  {posterUrl(movie.poster_path) ? (
+                    <img src={posterUrl(movie.poster_path)} alt={movie.title} />
+                  ) : (
+                    <div className="no-poster">Pas d'affiche</div>
+                  )}
+                  <div className="card-title">{movie.title}</div>
+                  <div className="card-year">
+                    {movie.release_date ? movie.release_date.slice(0, 4) : "—"}
+                  </div>
                 </div>
                 <div className="movie-actions">
                   <button className="btn-small" onClick={() => addAsWatched(movie)}>

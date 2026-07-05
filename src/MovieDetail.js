@@ -1,12 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { setMovieRating, removeMovieRating } from "./movieStore";
-import { posterUrl } from "./tmdb";
+import { getMovie, getWatchProviders, posterUrl, logoUrl } from "./tmdb";
+
+// Formate une durée en minutes -> "2 h 08" ou "47 min"
+function formatRuntime(min) {
+  if (!min) return null;
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h} h ${String(m).padStart(2, "0")}` : `${h} h`;
+}
 
 export default function MovieDetail({ movie, onClose, onRated }) {
   const [note, setNote] = useState(movie.note || 0);
   const [comment, setComment] = useState(movie.comment || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const [details, setDetails] = useState(null);
+  const [providers, setProviders] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    getMovie(movie.id)
+      .then((d) => { if (active) setDetails(d); })
+      .catch(() => {});
+    getWatchProviders("movie", movie.id)
+      .then((p) => { if (active) setProviders(p); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [movie.id]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -36,6 +59,15 @@ export default function MovieDetail({ movie, onClose, onRated }) {
     }
   };
 
+  const year =
+    (details && details.release_date) || movie.release_date
+      ? ((details && details.release_date) || movie.release_date).slice(0, 4)
+      : null;
+  const runtime = formatRuntime(details && details.runtime);
+  const genres = details && details.genres ? details.genres.map((g) => g.name) : [];
+  const overview = (details && details.overview) || "";
+  const flatrate = providers && providers.flatrate ? providers.flatrate : [];
+
   return (
     <div className="ep-detail-overlay" onClick={onClose}>
       <div className="ep-detail" onClick={(e) => e.stopPropagation()}>
@@ -47,14 +79,40 @@ export default function MovieDetail({ movie, onClose, onRated }) {
           )}
           <div>
             <h2 className="ep-detail-title">{movie.title}</h2>
-            {movie.release_date && (
-              <p className="muted small">{movie.release_date.slice(0, 4)}</p>
+            <p className="muted small">
+              {year || "—"}
+              {runtime && <> · {runtime}</>}
+            </p>
+            {genres.length > 0 && (
+              <p className="muted small">{genres.join(" · ")}</p>
             )}
           </div>
         </div>
 
         <div className="ep-detail-body">
-          <div className="rating-section" style={{ borderTop: "none", paddingTop: 0 }}>
+          {overview && <p className="overview">{overview}</p>}
+
+          {flatrate.length > 0 && (
+            <div className="providers">
+              <h3 className="providers-title">Où regarder</h3>
+              <div className="providers-list">
+                {flatrate.map((p) => (
+                  <div key={p.provider_id} className="provider" title={p.provider_name}>
+                    {logoUrl(p.logo_path) ? (
+                      <img src={logoUrl(p.logo_path)} alt={p.provider_name} />
+                    ) : (
+                      <span>{p.provider_name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="muted small providers-note">
+                Données JustWatch via TMDB · France
+              </p>
+            </div>
+          )}
+
+          <div className="rating-section">
             <div className="rating-label">Ma note</div>
             <div className="stars">
               {[1, 2, 3, 4, 5].map((n) => (
