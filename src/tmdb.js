@@ -14,6 +14,12 @@ export function logoUrl(path, size = "w92") {
   return `${IMG_BASE}/${size}${path}`;
 }
 
+// URL d'une photo de personne (casting)
+export function profileUrl(path, size = "w185") {
+  if (!path) return null;
+  return `${IMG_BASE}/${size}${path}`;
+}
+
 async function tmdbFetch(path, params = {}) {
   const url = new URL(WORKER_URL + path);
   Object.entries(params).forEach(([key, value]) => {
@@ -66,6 +72,17 @@ export async function getShowRuntime(showId) {
   const rt = details.episode_run_time;
   if (Array.isArray(rt) && rt.length > 0) return rt[0];
   return null;
+}
+
+// Casting d'un film
+export function getMovieCredits(id) {
+  return tmdbFetch(`/movie/${id}/credits`);
+}
+
+// Vidéos d'un film (bandes-annonces, teasers…). Langue optionnelle
+// pour récupérer une bande-annonce anglaise si aucune en français.
+export function getMovieVideos(id, language) {
+  return tmdbFetch(`/movie/${id}/videos`, language ? { language } : {});
 }
 
 // Plateformes de streaming pour la France

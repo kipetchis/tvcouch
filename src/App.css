@@ -512,3 +512,144 @@ body {
   border-radius: 10px;
   flex-shrink: 0;
 }
+/* ---- Barre de tri / filtre (listes Séries & Films) ---- */
+.list-controls {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 14px;
+  flex-wrap: wrap;
+}
+
+.filter-input,
+.sort-select {
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.filter-input { flex: 1 1 160px; }
+
+.filter-input::placeholder { color: #777; }
+
+.sort-select {
+  cursor: pointer;
+  /* petite flèche jaune personnalisée */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23f5c518' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+}
+
+.sort-select option { background: #1e1e1e; color: #fff; }
+
+.filter-input:focus,
+.sort-select:focus {
+  border-color: #f5c518;
+  box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.25);
+}
+
+/* ---- Focus jaune sur la barre de recherche ---- */
+.search input {
+  border: 1px solid transparent;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.search input:focus {
+  border-color: #f5c518;
+  box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.25);
+}
+
+/* ---- Casting (fiche film) ---- */
+.cast-section { margin-bottom: 20px; }
+.cast-title { font-size: 1rem; margin: 0 0 10px; }
+.cast-list {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.cast-member { flex: 0 0 72px; width: 72px; text-align: center; }
+.cast-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.cast-photo-fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  color: #777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.cast-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 6px;
+  line-height: 1.2;
+}
+.cast-char { font-size: 0.7rem; color: #999; line-height: 1.2; margin-top: 2px; }
+
+/* ---- Bande-annonce (fiche film) ---- */
+.trailer-section { margin-bottom: 20px; }
+.trailer-title { font-size: 1rem; margin: 0 0 10px; }
+.trailer-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+.trailer-media iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.trailer-thumb { cursor: pointer; }
+.trailer-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.trailer-thumb:hover img { opacity: 1; }
+.trailer-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.trailer-play span {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(245, 197, 24, 0.92);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  padding-left: 4px;
+}

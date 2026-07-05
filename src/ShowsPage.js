@@ -32,14 +32,6 @@ function sortItems(list, sort) {
   return arr;
 }
 
-const controlStyle = {
-  background: "#1a1a1a",
-  color: "inherit",
-  border: "1px solid #333",
-  borderRadius: 8,
-  padding: "8px 10px",
-};
-
 export default function ShowsPage({ onOpenShow }) {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
@@ -128,25 +120,18 @@ export default function ShowsPage({ onOpenShow }) {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          margin: "0 0 14px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="list-controls">
         <input
           type="text"
+          className="filter-input"
           placeholder="Filtrer par titre…"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ ...controlStyle, flex: "1 1 160px" }}
         />
         <select
+          className="sort-select"
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          style={controlStyle}
         >
           <option value="recent">Activité récente</option>
           <option value="title">Titre A→Z</option>

@@ -22,14 +22,6 @@ function sortMovies(list, sort) {
   return arr;
 }
 
-const selectStyle = {
-  background: "#1a1a1a",
-  color: "inherit",
-  border: "1px solid #333",
-  borderRadius: 8,
-  padding: "8px 10px",
-};
-
 export default function MoviesPage() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,25 +209,18 @@ export default function MoviesPage() {
           </div>
 
           {base.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                margin: "0 0 14px",
-                flexWrap: "wrap",
-              }}
-            >
+            <div className="list-controls">
               <input
                 type="text"
+                className="filter-input"
                 placeholder="Filtrer par titre…"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                style={{ ...selectStyle, flex: "1 1 160px" }}
               />
               <select
+                className="sort-select"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                style={selectStyle}
               >
                 <option value="recent">Ajout récent</option>
                 <option value="title">Titre A→Z</option>
