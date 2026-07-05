@@ -10,7 +10,26 @@ import MoviesPage from "./MoviesPage";
 import MovieImport from "./MovieImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
+import ExplorerPage from "./ExplorerPage";
 import "./App.css";
+
+// Logo de l'app (même image que l'icône PWA)
+function Logo({ size = 30 }) {
+  return (
+    <img
+      src={process.env.PUBLIC_URL + "/logo192.png"}
+      alt="🛋️"
+      style={{
+        height: size,
+        width: size,
+        verticalAlign: "middle",
+        marginRight: 8,
+        borderRadius: 6,
+        objectFit: "cover",
+      }}
+    />
+  );
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -71,7 +90,10 @@ function App() {
   if (!user) {
     return (
       <div className="center">
-        <h1>🛋️ Tv Couch</h1>
+        <h1>
+          <Logo size={40} />
+          Tv Couch
+        </h1>
         <p>Suivez vos séries et films.</p>
         <button className="btn" onClick={handleLogin}>
           Se connecter avec Google
@@ -122,7 +144,10 @@ function App() {
   return (
     <div className="app with-tabs">
       <header className="header">
-        <h1>🛋️ Tv Couch</h1>
+        <h1>
+          <Logo />
+          Tv Couch
+        </h1>
         <div className="user">
           <span>{user.displayName}</span>
           <button className="btn-small" onClick={handleLogout}>
@@ -201,7 +226,7 @@ function App() {
       )}
 
       {tab === "movies" && <MoviesPage />}
-      {tab === "explore" && <ComingSoon label="Explorer" />}
+      {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
       {tab === "profile" && (
         <ProfilePage
           user={user}
@@ -241,15 +266,6 @@ function App() {
           Profil
         </button>
       </nav>
-    </div>
-  );
-}
-
-function ComingSoon({ label }) {
-  return (
-    <div className="center" style={{ minHeight: "50vh" }}>
-      <h2>{label}</h2>
-      <p className="muted">Bientôt disponible 🚧</p>
     </div>
   );
 }

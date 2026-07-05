@@ -10,6 +10,11 @@ function showRef(showId) {
   return doc(db, "users", uid, "shows", String(showId));
 }
 
+function movieRef(movieId) {
+  const uid = auth.currentUser.uid;
+  return doc(db, "users", uid, "movies", String(movieId));
+}
+
 function favRef() {
   const uid = auth.currentUser.uid;
   return doc(db, "users", uid, "meta", "favorites");
@@ -75,6 +80,17 @@ export async function importShowsBatch(showsData) {
     batch.set(ref, s, { merge: true });
   });
   await batch.commit();
+}
+
+// ---- Runtimes (durée d'un épisode / d'un film, en minutes) ----
+// Stockés en base pour que le Profil calcule les stats sans appeler TMDB.
+
+export async function setShowRuntime(showId, runtime) {
+  await updateDoc(showRef(showId), { runtime });
+}
+
+export async function setMovieRuntime(movieId, runtime) {
+  await updateDoc(movieRef(movieId), { runtime });
 }
 
 // ---- Notes / commentaires d'épisodes ----

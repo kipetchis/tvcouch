@@ -126,3 +126,23 @@ export async function getAllEpisodes(showId) {
 
   return { details, episodes };
 }
+
+// ─────────────────────────────────────────────
+// Explorer : tendances, populaires, mieux notés
+// ─────────────────────────────────────────────
+
+// Tendances de la semaine, séries + films mélangés
+// Chaque résultat contient media_type: "tv" | "movie" (parfois "person", à filtrer)
+export function getTrending(page = 1) {
+  return tmdbFetch("/trending/all/week", { page });
+}
+
+// type: "tv" ou "movie"
+export function getPopular(type, page = 1) {
+  return tmdbFetch(`/${type}/popular`, { page });
+}
+
+// type: "tv" ou "movie"
+export function getTopRated(type, page = 1) {
+  return tmdbFetch(`/${type}/top_rated`, { page });
+}

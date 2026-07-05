@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import { getAllShows, getFavorites, removeFavoriteShow, removeFavoriteMovie } from "./store";
+import {
+  getAllShows, getFavorites, removeFavoriteShow, removeFavoriteMovie,
+  setShowRuntime, setMovieRuntime,
+} from "./store";
 import { getAllMovies } from "./movieStore";
 import { getShowRuntime, getMovie, posterUrl } from "./tmdb";
 
@@ -17,17 +20,17 @@ function formatTime(totalMinutes) {
 
 export default function ProfilePage({ user, onImportShows, onImportMovies, onOpenFavorites }) {
   const [episodesWatched, setEpisodesWatched] = useState(0);
-  const [seriesTime, setSeriesTime] = useState(null); // minutes
+  const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesWatched, setMoviesWatched] = useState(0);
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
-  const [computing, setComputing] = useState(true);
+  // Complétion en arrière-plan des runtimes manquants (one-shot :
+  // une fois écrits en base, les prochaines ouvertures sont instantanées)
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
     let active = true;
     async function compute() {
-      setComputing(true);
       try {
         const [shows, movies, favs] = await Promise.all([
           getAllShows(),
@@ -44,58 +47,83 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         });
         setEpisodesWatched(epCount);
 
-        // --- Films ---
+        // --- Films : temps depuis les runtimes stockés ---
         const watchedMovies = movies.filter((m) => m.status === "watched");
         setMoviesWatched(watchedMovies.length);
         let mTime = 0;
-        for (let i = 0; i < watchedMovies.length; i++) {
-          const m = watchedMovies[i];
-          if (m.runtime) {
-            mTime += m.runtime;
-          } else {
-            try {
-              const full = await getMovie(m.id);
-              mTime += full.runtime || 0;
-            } catch {
-              // ignore
-            }
-            await sleep(40);
-          }
-          if (!active) return;
-        }
+        const moviesMissing = [];
+        watchedMovies.forEach((m) => {
+          if (m.runtime) mTime += m.runtime;
+          else moviesMissing.push(m);
+        });
         setMoviesTime(mTime);
 
-        // --- Temps séries (à la volée, par lots avec pauses) ---
-        setProgress({ current: 0, total: shows.length });
-        let totalMinutes = 0;
-        for (let i = 0; i < shows.length; i++) {
-          const s = shows[i];
+        // --- Séries : temps depuis les runtimes stockés ---
+        let sTime = 0;
+        const showsMissing = [];
+        shows.forEach((s) => {
           const epInShow = Object.keys(s.watched || {}).length;
-          if (epInShow > 0) {
-            try {
-              const runtime = await getShowRuntime(s.id);
-              totalMinutes += (runtime || 25) * epInShow; // 25 min par défaut
-            } catch {
-              totalMinutes += 25 * epInShow;
-            }
-          }
+          if (epInShow === 0) return;
+          if (s.runtime) sTime += s.runtime * epInShow;
+          else showsMissing.push({ show: s, epInShow });
+        });
+        setSeriesTime(sTime);
+
+        // --- Complétion en arrière-plan des runtimes manquants ---
+        // (récupérés une seule fois via TMDB, puis sauvegardés en base)
+        const totalMissing = moviesMissing.length + showsMissing.length;
+        if (totalMissing === 0) return;
+        setProgress({ current: 0, total: totalMissing });
+        let done = 0;
+
+        for (const m of moviesMissing) {
           if (!active) return;
-          setProgress({ current: i + 1, total: shows.length });
+          let rt = 0;
+          try {
+            const full = await getMovie(m.id);
+            rt = full.runtime || 0;
+          } catch {
+            // ignore
+          }
+          if (rt) {
+            mTime += rt;
+            setMoviesTime(mTime);
+            setMovieRuntime(m.id, rt).catch(() => {});
+          }
+          done += 1;
+          setProgress({ current: done, total: totalMissing });
           await sleep(40);
         }
-        setSeriesTime(totalMinutes);
+
+        for (const { show, epInShow } of showsMissing) {
+          if (!active) return;
+          let rt = null;
+          try {
+            rt = await getShowRuntime(show.id);
+          } catch {
+            // ignore
+          }
+          const effective = rt || 25; // 25 min par défaut si TMDB ne sait pas
+          sTime += effective * epInShow;
+          setSeriesTime(sTime);
+          setShowRuntime(show.id, effective).catch(() => {});
+          done += 1;
+          setProgress({ current: done, total: totalMissing });
+          await sleep(40);
+        }
+
+        if (active) setProgress({ current: 0, total: 0 });
       } catch {
         // ignore
-      } finally {
-        if (active) setComputing(false);
       }
     }
     compute();
     return () => { active = false; };
   }, []);
 
-  const st = seriesTime !== null ? formatTime(seriesTime) : null;
+  const st = formatTime(seriesTime);
   const mt = formatTime(moviesTime);
+  const completing = progress.total > 0;
 
   const handleRemoveFavShow = async (id) => {
     await removeFavoriteShow(id);
@@ -121,23 +149,15 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
 
         <div className="stat-card">
           <div className="stat-icon">⏱️</div>
-          {st ? (
-            <>
-              <div className="stat-value-time">
-                {st.months > 0 && <span><b>{st.months}</b> mois </span>}
-                <span><b>{st.days}</b> j </span>
-                <span><b>{st.hours}</b> h</span>
-              </div>
-              <div className="stat-label">Temps devant les séries</div>
-            </>
-          ) : (
-            <>
-              <div className="stat-value-small">
-                Calcul… {progress.current}/{progress.total}
-              </div>
-              <div className="stat-label">Temps devant les séries</div>
-            </>
-          )}
+          <div className="stat-value-time">
+            {st.months > 0 && <span><b>{st.months}</b> mois </span>}
+            <span><b>{st.days}</b> j </span>
+            <span><b>{st.hours}</b> h</span>
+          </div>
+          <div className="stat-label">
+            Temps devant les séries
+            {completing && ` (mise à jour ${progress.current}/${progress.total}…)`}
+          </div>
         </div>
 
         <div className="stat-card">
