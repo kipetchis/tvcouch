@@ -14,10 +14,39 @@ function findNextEpisode(episodes, watched) {
   return null;
 }
 
+// Tri d'une liste d'items (chaque item = { show, next, lastWatchedAt, ... })
+function sortItems(list, sort) {
+  const arr = [...list];
+  switch (sort) {
+    case "title":
+      arr.sort((a, b) => a.show.name.localeCompare(b.show.name, "fr"));
+      break;
+    case "year":
+      arr.sort((a, b) =>
+        (b.show.first_air_date || "").localeCompare(a.show.first_air_date || "")
+      );
+      break;
+    default: // "recent"
+      arr.sort((a, b) => b.lastWatchedAt - a.lastWatchedAt);
+  }
+  return arr;
+}
+
+const controlStyle = {
+  background: "#1a1a1a",
+  color: "inherit",
+  border: "1px solid #333",
+  borderRadius: 8,
+  padding: "8px 10px",
+};
+
 export default function ShowsPage({ onOpenShow }) {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+
+  const [sort, setSort] = useState("recent");
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -73,11 +102,17 @@ export default function ShowsPage({ onOpenShow }) {
   const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
+  // Filtre par titre
+  const f = filter.trim().toLowerCase();
+  const visible = f
+    ? items.filter((it) => it.show.name.toLowerCase().includes(f))
+    : items;
+
   const toWatch = [];
   const stale = [];
   const upToDate = [];
 
-  items.forEach((it) => {
+  visible.forEach((it) => {
     if (!it.next) {
       upToDate.push(it);
     } else if (now - it.lastWatchedAt < THIRTY_DAYS) {
@@ -87,34 +122,67 @@ export default function ShowsPage({ onOpenShow }) {
     }
   });
 
-  toWatch.sort((a, b) => b.lastWatchedAt - a.lastWatchedAt);
-  stale.sort((a, b) => b.lastWatchedAt - a.lastWatchedAt);
+  const toWatchSorted = sortItems(toWatch, sort);
+  const staleSorted = sortItems(stale, sort);
+  const upToDateSorted = sortItems(upToDate, sort);
 
   return (
     <div>
-      {toWatch.length > 0 && (
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          margin: "0 0 14px",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Filtrer par titre…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ ...controlStyle, flex: "1 1 160px" }}
+        />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          style={controlStyle}
+        >
+          <option value="recent">Activité récente</option>
+          <option value="title">Titre A→Z</option>
+          <option value="year">Année ↓</option>
+        </select>
+      </div>
+
+      {visible.length === 0 && (
+        <p className="muted" style={{ textAlign: "center", marginTop: 30 }}>
+          Aucune série ne correspond à ce filtre.
+        </p>
+      )}
+
+      {toWatchSorted.length > 0 && (
         <>
           <h3 className="section-pill">À VOIR</h3>
-          {toWatch.map((it) => (
+          {toWatchSorted.map((it) => (
             <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
           ))}
         </>
       )}
 
-      {stale.length > 0 && (
+      {staleSorted.length > 0 && (
         <>
           <h3 className="section-pill">PAS REGARDÉ DEPUIS UN MOMENT</h3>
-          {stale.map((it) => (
+          {staleSorted.map((it) => (
             <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
           ))}
         </>
       )}
 
-      {upToDate.length > 0 && (
+      {upToDateSorted.length > 0 && (
         <>
           <h3 className="section-pill">À JOUR</h3>
           <div className="grid">
-            {upToDate.map((it) => (
+            {upToDateSorted.map((it) => (
               <div
                 key={it.show.id}
                 className="card"

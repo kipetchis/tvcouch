@@ -15,7 +15,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
   const [note, setNote] = useState(movie.note || 0);
   const [comment, setComment] = useState(movie.comment || "");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(false); // reste vrai tant qu'on ne modifie rien
 
   const [details, setDetails] = useState(null);
   const [providers, setProviders] = useState(null);
@@ -31,13 +31,22 @@ export default function MovieDetail({ movie, onClose, onRated }) {
     return () => { active = false; };
   }, [movie.id]);
 
+  const changeNote = (n) => {
+    setNote(n);
+    setSaved(false);
+  };
+
+  const changeComment = (c) => {
+    setComment(c);
+    setSaved(false);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       await setMovieRating(movie.id, note, comment);
       setSaved(true);
       if (onRated) onRated(movie.id, { note, comment });
-      setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       // ignore
     } finally {
@@ -51,6 +60,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
       await removeMovieRating(movie.id);
       setNote(0);
       setComment("");
+      setSaved(false);
       if (onRated) onRated(movie.id, null);
     } catch (e) {
       // ignore
@@ -67,6 +77,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
   const genres = details && details.genres ? details.genres.map((g) => g.name) : [];
   const overview = (details && details.overview) || "";
   const flatrate = providers && providers.flatrate ? providers.flatrate : [];
+  const hasRating = note > 0 || comment.trim().length > 0;
 
   return (
     <div className="ep-detail-overlay" onClick={onClose}>
@@ -119,7 +130,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
                 <button
                   key={n}
                   className={`star ${n <= note ? "star-filled" : ""}`}
-                  onClick={() => setNote(n === note ? 0 : n)}
+                  onClick={() => changeNote(n === note ? 0 : n)}
                   aria-label={`${n} étoiles`}
                 >
                   ★
@@ -132,15 +143,15 @@ export default function MovieDetail({ movie, onClose, onRated }) {
               className="comment-box"
               placeholder="Vos impressions sur ce film…"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => changeComment(e.target.value)}
               rows={3}
             />
 
             <div className="rating-actions">
-              <button className="btn" onClick={handleSave} disabled={saving}>
+              <button className="btn" onClick={handleSave} disabled={saving || saved}>
                 {saved ? "✓ Enregistré" : "Enregistrer"}
               </button>
-              {(movie.note || movie.comment) && (
+              {hasRating && (
                 <button className="btn-small" onClick={handleRemove} disabled={saving}>
                   Supprimer la note
                 </button>
