@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider } from "./firebase";
+import {
+  auth, googleProvider,
+  registerWithEmail, loginWithEmail, resetPassword, authErrorMessage,
+} from "./firebase";
 import { searchShows, posterUrl } from "./tmdb";
 import ShowDetail from "./ShowDetail";
 import ShowsPage from "./ShowsPage";
@@ -31,6 +34,122 @@ function Logo({ size = 30 }) {
   );
 }
 
+// Écran de connexion : email/mot de passe + Google
+function LoginScreen({ onGoogle }) {
+  const [mode, setMode] = useState("login"); // login | register
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [info, setInfo] = useState(null);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    if (!email.trim() || !password) {
+      setError("Veuillez remplir tous les champs.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (mode === "register") {
+        await registerWithEmail(email.trim(), password);
+      } else {
+        await loginWithEmail(email.trim(), password);
+      }
+      // La connexion réussie déclenche onAuthStateChanged → l'app s'affiche
+    } catch (err) {
+      setError(authErrorMessage(err.code));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setError(null);
+    setInfo(null);
+    if (!email.trim()) {
+      setError("Saisissez d'abord votre email ci-dessus, puis recliquez.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetPassword(email.trim());
+      setInfo("Email de réinitialisation envoyé ! Vérifiez votre boîte (et les spams).");
+    } catch (err) {
+      setError(authErrorMessage(err.code));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="center">
+      <h1>
+        <Logo size={40} />
+        Tv Couch
+      </h1>
+      <p className="muted">Suivez vos séries et films.</p>
+
+      <form className="login-form" onSubmit={submit}>
+        <input
+          type="email"
+          className="filter-input login-input"
+          placeholder="Adresse email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+        />
+        <input
+          type="password"
+          className="filter-input login-input"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete={mode === "register" ? "new-password" : "current-password"}
+        />
+        <button className="btn login-submit" type="submit" disabled={busy}>
+          {busy
+            ? "…"
+            : mode === "register"
+            ? "Créer mon compte"
+            : "Se connecter"}
+        </button>
+      </form>
+
+      {mode === "login" && (
+        <button className="link-btn" onClick={handleReset}>
+          Mot de passe oublié ?
+        </button>
+      )}
+
+      {error && <p className="error">{error}</p>}
+      {info && <p className="login-info">{info}</p>}
+
+      <p className="muted small login-switch">
+        {mode === "login" ? "Pas encore de compte ?" : "Déjà un compte ?"}{" "}
+        <button
+          className="link-btn"
+          onClick={() => {
+            setMode(mode === "login" ? "register" : "login");
+            setError(null);
+            setInfo(null);
+          }}
+        >
+          {mode === "login" ? "Créer un compte" : "Se connecter"}
+        </button>
+      </p>
+
+      <div className="login-sep"><span>ou</span></div>
+
+      <button className="btn-small login-google" onClick={onGoogle}>
+        Se connecter avec Google
+      </button>
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -51,14 +170,23 @@ function App() {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
+      if (u) setError(null); // connexion réussie : on efface toute erreur résiduelle
     });
     return unsub;
   }, []);
 
   const handleLogin = async () => {
+    setError(null);
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (e) {
+      // L'utilisateur a simplement fermé/annulé la popup : pas une vraie erreur
+      if (
+        e.code === "auth/popup-closed-by-user" ||
+        e.code === "auth/cancelled-popup-request"
+      ) {
+        return;
+      }
       setError("Échec de la connexion : " + e.message);
     }
   };
@@ -88,19 +216,7 @@ function App() {
   if (authLoading) return <div className="center">Chargement…</div>;
 
   if (!user) {
-    return (
-      <div className="center">
-        <h1>
-          <Logo size={40} />
-          Tv Couch
-        </h1>
-        <p>Suivez vos séries et films.</p>
-        <button className="btn" onClick={handleLogin}>
-          Se connecter avec Google
-        </button>
-        {error && <p className="error">{error}</p>}
-      </div>
-    );
+    return <LoginScreen onGoogle={handleLogin} />;
   }
 
   if (favPicker) {

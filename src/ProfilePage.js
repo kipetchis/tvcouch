@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   getAllShows, getFavorites, removeFavoriteShow, removeFavoriteMovie,
   setShowRuntime, setMovieRuntime,
 } from "./store";
 import { getAllMovies } from "./movieStore";
-import { getShowRuntime, getMovie, posterUrl } from "./tmdb";
+import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
+import { TROPHIES, computeTrophyStats, evaluateTrophy } from "./trophies";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -19,17 +20,88 @@ function formatTime(totalMinutes) {
   return { months, days: remDays, hours: remHours };
 }
 
+// ─── Suivi de connexion (pour le trophée "Fidèle") ──
+function recordAndGetStreak() {
+  const KEY = "tvcouch_logins";
+  let arr = [];
+  try {
+    arr = JSON.parse(localStorage.getItem(KEY) || "[]");
+  } catch {
+    arr = [];
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  if (!arr.includes(today)) arr.push(today);
+  arr = arr.sort().slice(-90);
+  try {
+    localStorage.setItem(KEY, JSON.stringify(arr));
+  } catch {
+    // ignore
+  }
+  const set = new Set(arr);
+  let streak = 0;
+  const d = new Date();
+  for (;;) {
+    const ds = d.toISOString().slice(0, 10);
+    if (set.has(ds)) {
+      streak += 1;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  return streak;
+}
+
+// ─── Cache local des méta séries (genres + nb d'épisodes) ──
+const META_PREFIX = "tvcouch_meta_";
+const META_TTL = 7 * 24 * 60 * 60 * 1000; // 7 jours
+
+function readMeta(id) {
+  try {
+    const raw = localStorage.getItem(META_PREFIX + id);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (!p.ts || Date.now() - p.ts > META_TTL) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+function writeMeta(id, genres, total) {
+  try {
+    localStorage.setItem(
+      META_PREFIX + id,
+      JSON.stringify({ ts: Date.now(), genres, total })
+    );
+  } catch {
+    // ignore
+  }
+}
+
 export default function ProfilePage({ user, onImportShows, onImportMovies, onOpenFavorites, onOpenShow }) {
-  const [episodesWatched, setEpisodesWatched] = useState(0);
   const [seriesTime, setSeriesTime] = useState(0); // minutes
-  const [moviesWatched, setMoviesWatched] = useState(0);
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
-  const [openMovie, setOpenMovie] = useState(null); // fiche film favori ouverte
-  // Complétion en arrière-plan des runtimes manquants (one-shot :
-  // une fois écrits en base, les prochaines ouvertures sont instantanées)
+  const [openMovie, setOpenMovie] = useState(null);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
+  // Données brutes pour les trophées
+  const [showsData, setShowsData] = useState([]);
+  const [moviesData, setMoviesData] = useState([]);
+  const [metaMap, setMetaMap] = useState({});
+  const [loginStreak] = useState(() => recordAndGetStreak());
+  const [openTrophy, setOpenTrophy] = useState(null);
+
+  // Épisodes vus (dérivé, instantané)
+  const episodesWatched = useMemo(
+    () => showsData.reduce((n, s) => n + Object.keys(s.watched || {}).length, 0),
+    [showsData]
+  );
+  const moviesWatched = useMemo(
+    () => moviesData.filter((m) => m.status === "watched").length,
+    [moviesData]
+  );
+
+  // Chargement + calcul des temps (runtimes)
   useEffect(() => {
     let active = true;
     async function compute() {
@@ -41,17 +113,11 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         ]);
         if (!active) return;
         setFavorites(favs);
+        setShowsData(shows);
+        setMoviesData(movies);
 
-        // --- Épisodes vus (instantané) ---
-        let epCount = 0;
-        shows.forEach((s) => {
-          epCount += Object.keys(s.watched || {}).length;
-        });
-        setEpisodesWatched(epCount);
-
-        // --- Films : temps depuis les runtimes stockés ---
+        // Temps films
         const watchedMovies = movies.filter((m) => m.status === "watched");
-        setMoviesWatched(watchedMovies.length);
         let mTime = 0;
         const moviesMissing = [];
         watchedMovies.forEach((m) => {
@@ -60,7 +126,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         });
         setMoviesTime(mTime);
 
-        // --- Séries : temps depuis les runtimes stockés ---
+        // Temps séries
         let sTime = 0;
         const showsMissing = [];
         shows.forEach((s) => {
@@ -71,8 +137,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         });
         setSeriesTime(sTime);
 
-        // --- Complétion en arrière-plan des runtimes manquants ---
-        // (récupérés une seule fois via TMDB, puis sauvegardés en base)
+        // Complétion en arrière-plan des runtimes manquants
         const totalMissing = moviesMissing.length + showsMissing.length;
         if (totalMissing === 0) return;
         setProgress({ current: 0, total: totalMissing });
@@ -105,7 +170,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
           } catch {
             // ignore
           }
-          const effective = rt || 25; // 25 min par défaut si TMDB ne sait pas
+          const effective = rt || 25;
           sTime += effective * epInShow;
           setSeriesTime(sTime);
           setShowRuntime(show.id, effective).catch(() => {});
@@ -122,6 +187,61 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
     compute();
     return () => { active = false; };
   }, []);
+
+  // Récupération des méta séries (genres + nb épisodes) pour les trophées
+  useEffect(() => {
+    if (showsData.length === 0) return;
+    let active = true;
+
+    // 1) charge d'abord depuis le cache
+    const initial = {};
+    const toFetch = [];
+    showsData.forEach((s) => {
+      const cached = readMeta(s.id);
+      if (cached) initial[s.id] = { genres: cached.genres, total: cached.total };
+      else toFetch.push(s);
+    });
+    setMetaMap(initial);
+
+    // 2) complète en arrière-plan (en parallèle, doux)
+    toFetch.forEach(async (s) => {
+      try {
+        const d = await getShow(s.id);
+        if (!active) return;
+        const genres = (d.genres || []).map((g) => g.id);
+        const total = d.number_of_episodes || 0;
+        writeMeta(s.id, genres, total);
+        setMetaMap((prev) => ({ ...prev, [s.id]: { genres, total } }));
+      } catch {
+        // ignore
+      }
+    });
+
+    return () => { active = false; };
+  }, [showsData]);
+
+  // Calcul des trophées
+  const trophyResults = useMemo(() => {
+    const stats = computeTrophyStats({
+      shows: showsData,
+      movies: moviesData,
+      favorites,
+      metaMap,
+      seriesMinutes: seriesTime,
+      moviesMinutes: moviesTime,
+      loginStreak,
+    });
+    // 1er passage (tous sauf le méta)
+    const results = TROPHIES.map((def) => ({ def, res: evaluateTrophy(def, stats) }));
+    const unlockedCount = results.filter(
+      (r) => r.def.id !== "casanier" && r.res.unlocked
+    ).length;
+    stats.unlockedCount = unlockedCount;
+    // 2e passage pour le trophée méta "Casanier"
+    return TROPHIES.map((def) => ({ def, res: evaluateTrophy(def, stats) }));
+  }, [showsData, moviesData, favorites, metaMap, seriesTime, moviesTime, loginStreak]);
+
+  const unlockedTotal = trophyResults.filter((t) => t.res.unlocked).length;
 
   const st = formatTime(seriesTime);
   const mt = formatTime(moviesTime);
@@ -177,6 +297,55 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
           </div>
           <div className="stat-label">Temps devant les films</div>
         </div>
+      </div>
+
+      {/* Soutenir l'app */}
+      <h3 className="section-pill">❤️ SOUTENIR TV COUCH</h3>
+      <div className="support-box">
+        <p className="muted small support-text">
+          Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux
+          soutenir son développement — merci beaucoup&nbsp;!
+        </p>
+        <div className="support-actions">
+          <a
+            className="btn support-btn"
+            href="https://fr.tipeee.com/kip3tchis"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            💛 Tipeee
+          </a>
+          <a
+            className="btn-small support-btn"
+            href="https://paypal.me/kip3tchis"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ❤️ PayPal
+          </a>
+        </div>
+      </div>
+
+      {/* Trophées */}
+      <h3 className="section-pill">🏆 TROPHÉES · {unlockedTotal}/{TROPHIES.length}</h3>
+      <div className="trophy-grid">
+        {trophyResults.map(({ def, res }) => (
+          <button
+            key={def.id}
+            className={`trophy ${res.unlocked ? "trophy-unlocked" : "trophy-locked"}`}
+            onClick={() => setOpenTrophy({ def, res })}
+          >
+            <div className="trophy-emoji">{def.emoji}</div>
+            <div className="trophy-name">{def.name}</div>
+            <div className="trophy-state">
+              {res.unlocked ? (
+                res.label
+              ) : (
+                <>🔒 {res.current.toLocaleString("fr-FR")}/{res.target.toLocaleString("fr-FR")}</>
+              )}
+            </div>
+          </button>
+        ))}
       </div>
 
       {/* Séries préférées */}
@@ -240,32 +409,32 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         <button className="btn-small" onClick={onImportMovies}>Importer films TV Time</button>
       </div>
 
-      {/* Soutenir l'app */}
-      <h3 className="section-pill">❤️ SOUTENIR TV COUCH</h3>
-      <div className="support-box">
-        <p className="muted small support-text">
-          Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux
-          soutenir son développement — merci beaucoup&nbsp;!
-        </p>
-        <div className="support-actions">
-          <a
-            className="btn support-btn"
-            href="https://fr.tipeee.com/kip3tchis"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            💛 Tipeee
-          </a>
-          <a
-            className="btn-small support-btn"
-            href="https://paypal.me/kip3tchis"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ❤️ PayPal
-          </a>
+      {/* Popup détail trophée */}
+      {openTrophy && (
+        <div className="ep-detail-overlay" onClick={() => setOpenTrophy(null)}>
+          <div className="trophy-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="btn-small ep-detail-close" onClick={() => setOpenTrophy(null)}>✕</button>
+            <div className={`trophy-modal-emoji ${openTrophy.res.unlocked ? "" : "trophy-modal-locked"}`}>
+              {openTrophy.def.emoji}
+            </div>
+            <h2 className="trophy-modal-name">{openTrophy.def.name}</h2>
+            <p className="trophy-modal-phrase">{openTrophy.def.phrase}</p>
+            <div className="trophy-modal-status">
+              {openTrophy.res.unlocked ? (
+                <span className="trophy-modal-badge">
+                  ✓ {openTrophy.res.label}
+                  {openTrophy.res.nextLabel &&
+                    ` · prochain : ${openTrophy.res.nextLabel} (${openTrophy.res.current.toLocaleString("fr-FR")}/${openTrophy.res.target.toLocaleString("fr-FR")})`}
+                </span>
+              ) : (
+                <span className="muted small">
+                  🔒 Verrouillé — {openTrophy.res.current.toLocaleString("fr-FR")}/{openTrophy.res.target.toLocaleString("fr-FR")}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {openMovie && (
         <MovieDetail
