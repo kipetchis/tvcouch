@@ -1,4 +1,6 @@
 // Appels à l'API TMDB via le proxy Cloudflare Worker
+import { getTmdbLang } from "./i18n";
+
 const WORKER_URL = "https://tvcouch-proxy.kip3tchis.workers.dev";
 
 export const IMG_BASE = "https://image.tmdb.org/t/p";
@@ -22,6 +24,10 @@ export function profileUrl(path, size = "w185") {
 
 async function tmdbFetch(path, params = {}) {
   const url = new URL(WORKER_URL + path);
+  // Langue courante (fr-FR / en-US / es-ES), sauf si déjà précisée
+  if (params.language === undefined) {
+    url.searchParams.set("language", getTmdbLang());
+  }
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       url.searchParams.set(key, value);

@@ -7,6 +7,7 @@ import { getAllMovies } from "./movieStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import { TROPHIES, computeTrophyStats, evaluateTrophy } from "./trophies";
+import { LANGUAGES, getLang, setLang } from "./i18n";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -408,6 +409,20 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         <button className="btn-small" onClick={onImportShows}>Importer séries TV Time</button>
         <button className="btn-small" onClick={onImportMovies}>Importer films TV Time</button>
         <button className="btn-small" onClick={onImportImdb}>Importer depuis IMDb (CSV)</button>
+      </div>
+
+      {/* Langue */}
+      <h3 className="section-pill">🌐 LANGUE</h3>
+      <div className="lang-switch">
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.code}
+            className={`lang-btn ${getLang() === l.code ? "lang-active" : ""}`}
+            onClick={() => setLang(l.code)}
+          >
+            <span className="lang-flag">{l.flag}</span> {l.label}
+          </button>
+        ))}
       </div>
 
       {/* Popup détail trophée */}

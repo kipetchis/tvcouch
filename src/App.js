@@ -15,6 +15,7 @@ import ImdbImport from "./ImdbImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
+import { useLang } from "./i18n";
 import "./App.css";
 
 // Logo de l'app (même image que l'icône PWA)
@@ -152,6 +153,7 @@ function LoginScreen({ onGoogle }) {
 }
 
 function App() {
+  useLang(); // re-render toute l'app quand la langue change
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
