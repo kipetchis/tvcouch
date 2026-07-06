@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tvcouch/static/css/main.9727f182.css",
+    "main.js": "/tvcouch/static/js/main.a471a43c.js",
+    "index.html": "/tvcouch/index.html",
+    "main.9727f182.css.map": "/tvcouch/static/css/main.9727f182.css.map",
+    "main.a471a43c.js.map": "/tvcouch/static/js/main.a471a43c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9727f182.css",
+    "static/js/main.a471a43c.js"
+  ]
+}
