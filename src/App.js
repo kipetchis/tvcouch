@@ -106,7 +106,11 @@ function App() {
   if (favPicker) {
     return (
       <div className="app">
-        <FavoritePicker type={favPicker} onBack={() => setFavPicker(null)} />
+        <FavoritePicker
+          type={favPicker}
+          onBack={() => setFavPicker(null)}
+          onOpenShow={(show) => { setFavPicker(null); setSelectedShow(show); }}
+        />
       </div>
     );
   }
@@ -233,6 +237,7 @@ function App() {
           onImportShows={() => setShowImport(true)}
           onImportMovies={() => setShowMovieImport(true)}
           onOpenFavorites={(type) => setFavPicker(type)}
+          onOpenShow={setSelectedShow}
         />
       )}
 

@@ -653,3 +653,24 @@ body {
   font-size: 1.5rem;
   padding-left: 4px;
 }
+
+/* ---- Soutenir l'app (don) ---- */
+.support-box {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+.support-text { margin: 0 0 12px; line-height: 1.5; }
+.support-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.support-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

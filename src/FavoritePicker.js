@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { searchShows, searchMovies, posterUrl } from "./tmdb";
 import { addFavoriteShow, addFavoriteMovie } from "./store";
+import MovieDetail from "./MovieDetail";
 
-export default function FavoritePicker({ type, onBack }) {
+export default function FavoritePicker({ type, onBack, onOpenShow }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [added, setAdded] = useState([]);
+  const [openMovie, setOpenMovie] = useState(null);
 
   const isShow = type === "show";
 
@@ -32,6 +34,14 @@ export default function FavoritePicker({ type, onBack }) {
     setAdded((prev) => [...prev, item.id]);
   };
 
+  const openDetail = (item) => {
+    if (isShow) {
+      if (onOpenShow) onOpenShow(item);
+    } else {
+      setOpenMovie(item);
+    }
+  };
+
   return (
     <div className="detail">
       <button className="btn-small back" onClick={onBack}>← Retour</button>
@@ -55,12 +65,14 @@ export default function FavoritePicker({ type, onBack }) {
           const isAdded = added.includes(item.id);
           return (
             <div key={item.id} className="card">
-              {posterUrl(item.poster_path) ? (
-                <img src={posterUrl(item.poster_path)} alt={title} />
-              ) : (
-                <div className="no-poster">Pas d'affiche</div>
-              )}
-              <div className="card-title">{title}</div>
+              <div onClick={() => openDetail(item)}>
+                {posterUrl(item.poster_path) ? (
+                  <img src={posterUrl(item.poster_path)} alt={title} />
+                ) : (
+                  <div className="no-poster">Pas d'affiche</div>
+                )}
+                <div className="card-title">{title}</div>
+              </div>
               <div className="movie-actions">
                 <button
                   className="btn-small"
@@ -74,6 +86,13 @@ export default function FavoritePicker({ type, onBack }) {
           );
         })}
       </div>
+
+      {openMovie && (
+        <MovieDetail
+          movie={openMovie}
+          onClose={() => setOpenMovie(null)}
+        />
+      )}
     </div>
   );
 }

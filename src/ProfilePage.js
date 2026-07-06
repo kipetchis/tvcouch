@@ -5,6 +5,7 @@ import {
 } from "./store";
 import { getAllMovies } from "./movieStore";
 import { getShowRuntime, getMovie, posterUrl } from "./tmdb";
+import MovieDetail from "./MovieDetail";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -18,12 +19,13 @@ function formatTime(totalMinutes) {
   return { months, days: remDays, hours: remHours };
 }
 
-export default function ProfilePage({ user, onImportShows, onImportMovies, onOpenFavorites }) {
+export default function ProfilePage({ user, onImportShows, onImportMovies, onOpenFavorites, onOpenShow }) {
   const [episodesWatched, setEpisodesWatched] = useState(0);
   const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesWatched, setMoviesWatched] = useState(0);
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
+  const [openMovie, setOpenMovie] = useState(null); // fiche film favori ouverte
   // Complétion en arrière-plan des runtimes manquants (one-shot :
   // une fois écrits en base, les prochaines ouvertures sont instantanées)
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -186,12 +188,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         <div className="grid">
           {favorites.shows.map((s) => (
             <div key={s.id} className="card">
-              {posterUrl(s.poster_path) ? (
-                <img src={posterUrl(s.poster_path)} alt={s.name} />
-              ) : (
-                <div className="no-poster">Pas d'affiche</div>
-              )}
-              <div className="card-title">{s.name}</div>
+              <div onClick={() => onOpenShow && onOpenShow(s)}>
+                {posterUrl(s.poster_path) ? (
+                  <img src={posterUrl(s.poster_path)} alt={s.name} />
+                ) : (
+                  <div className="no-poster">Pas d'affiche</div>
+                )}
+                <div className="card-title">{s.name}</div>
+              </div>
               <div className="movie-actions">
                 <button className="btn-small" onClick={() => handleRemoveFavShow(s.id)}>🗑</button>
               </div>
@@ -211,12 +215,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         <div className="grid">
           {favorites.movies.map((m) => (
             <div key={m.id} className="card">
-              {posterUrl(m.poster_path) ? (
-                <img src={posterUrl(m.poster_path)} alt={m.title} />
-              ) : (
-                <div className="no-poster">Pas d'affiche</div>
-              )}
-              <div className="card-title">{m.title}</div>
+              <div onClick={() => setOpenMovie(m)}>
+                {posterUrl(m.poster_path) ? (
+                  <img src={posterUrl(m.poster_path)} alt={m.title} />
+                ) : (
+                  <div className="no-poster">Pas d'affiche</div>
+                )}
+                <div className="card-title">{m.title}</div>
+              </div>
               <div className="movie-actions">
                 <button className="btn-small" onClick={() => handleRemoveFavMovie(m.id)}>🗑</button>
               </div>
@@ -233,6 +239,40 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
         <button className="btn-small" onClick={onImportShows}>Importer séries TV Time</button>
         <button className="btn-small" onClick={onImportMovies}>Importer films TV Time</button>
       </div>
+
+      {/* Soutenir l'app */}
+      <h3 className="section-pill">❤️ SOUTENIR TV COUCH</h3>
+      <div className="support-box">
+        <p className="muted small support-text">
+          Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux
+          soutenir son développement — merci beaucoup&nbsp;!
+        </p>
+        <div className="support-actions">
+          <a
+            className="btn support-btn"
+            href="https://fr.tipeee.com/kip3tchis"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            💛 Tipeee
+          </a>
+          <a
+            className="btn-small support-btn"
+            href="https://paypal.me/kip3tchis"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ❤️ PayPal
+          </a>
+        </div>
+      </div>
+
+      {openMovie && (
+        <MovieDetail
+          movie={openMovie}
+          onClose={() => setOpenMovie(null)}
+        />
+      )}
     </div>
   );
 }
