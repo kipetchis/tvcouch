@@ -15,7 +15,7 @@ import ImdbImport from "./ImdbImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
-import { useLang } from "./i18n";
+import { useLang, t } from "./i18n";
 import "./App.css";
 
 // Logo de l'app (même image que l'icône PWA)
@@ -50,7 +50,7 @@ function LoginScreen({ onGoogle }) {
     setError(null);
     setInfo(null);
     if (!email.trim() || !password) {
-      setError("Veuillez remplir tous les champs.");
+      setError(t("login.fillFields"));
       return;
     }
     setBusy(true);
@@ -72,13 +72,13 @@ function LoginScreen({ onGoogle }) {
     setError(null);
     setInfo(null);
     if (!email.trim()) {
-      setError("Saisissez d'abord votre email ci-dessus, puis recliquez.");
+      setError(t("login.resetNeedEmail"));
       return;
     }
     setBusy(true);
     try {
       await resetPassword(email.trim());
-      setInfo("Email de réinitialisation envoyé ! Vérifiez votre boîte (et les spams).");
+      setInfo(t("login.resetSent"));
     } catch (err) {
       setError(authErrorMessage(err.code));
     } finally {
@@ -92,13 +92,13 @@ function LoginScreen({ onGoogle }) {
         <Logo size={40} />
         Tv Couch
       </h1>
-      <p className="muted">Suivez vos séries et films.</p>
+      <p className="muted">{t("login.tagline")}</p>
 
       <form className="login-form" onSubmit={submit}>
         <input
           type="email"
           className="filter-input login-input"
-          placeholder="Adresse email"
+          placeholder={t("login.email")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -106,7 +106,7 @@ function LoginScreen({ onGoogle }) {
         <input
           type="password"
           className="filter-input login-input"
-          placeholder="Mot de passe"
+          placeholder={t("login.password")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete={mode === "register" ? "new-password" : "current-password"}
@@ -115,14 +115,14 @@ function LoginScreen({ onGoogle }) {
           {busy
             ? "…"
             : mode === "register"
-            ? "Créer mon compte"
-            : "Se connecter"}
+            ? t("login.createAccount")
+            : t("login.signIn")}
         </button>
       </form>
 
       {mode === "login" && (
         <button className="link-btn" onClick={handleReset}>
-          Mot de passe oublié ?
+          {t("login.forgot")}
         </button>
       )}
 
@@ -130,7 +130,7 @@ function LoginScreen({ onGoogle }) {
       {info && <p className="login-info">{info}</p>}
 
       <p className="muted small login-switch">
-        {mode === "login" ? "Pas encore de compte ?" : "Déjà un compte ?"}{" "}
+        {mode === "login" ? t("login.noAccount") : t("login.hasAccount")}{" "}
         <button
           className="link-btn"
           onClick={() => {
@@ -139,14 +139,14 @@ function LoginScreen({ onGoogle }) {
             setInfo(null);
           }}
         >
-          {mode === "login" ? "Créer un compte" : "Se connecter"}
+          {mode === "login" ? t("login.createLink") : t("login.signIn")}
         </button>
       </p>
 
-      <div className="login-sep"><span>ou</span></div>
+      <div className="login-sep"><span>{t("login.or")}</span></div>
 
       <button className="btn-small login-google" onClick={onGoogle}>
-        Se connecter avec Google
+        {t("login.google")}
       </button>
     </div>
   );
@@ -286,7 +286,7 @@ function App() {
         <div className="user">
           <span>{user.displayName}</span>
           <button className="btn-small" onClick={handleLogout}>
-            Déconnexion
+            {t("common.logout")}
           </button>
         </div>
       </header>
@@ -296,11 +296,11 @@ function App() {
           <form className="search" onSubmit={handleSearch}>
             <input
               type="text"
-              placeholder="Rechercher une série…"
+              placeholder={t("common.searchShow")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button className="btn" type="submit">Rechercher</button>
+            <button className="btn" type="submit">{t("common.search")}</button>
             {results.length > 0 && (
               <button type="button" className="btn-small" onClick={clearSearch}>
                 ✕
@@ -308,12 +308,12 @@ function App() {
             )}
           </form>
 
-          {searching && <p className="center">Recherche…</p>}
+          {searching && <p className="center">{t("common.loading")}</p>}
           {error && <p className="error">{error}</p>}
 
           {results.length > 0 ? (
             <>
-              <h3 className="section-title">Résultats</h3>
+              <h3 className="section-title">{t("common.results")}</h3>
               <div className="grid">
                 {results.map((show) => (
                   <div
@@ -324,7 +324,7 @@ function App() {
                     {posterUrl(show.poster_path) ? (
                       <img src={posterUrl(show.poster_path)} alt={show.name} />
                     ) : (
-                      <div className="no-poster">Pas d'affiche</div>
+                      <div className="no-poster">{t("common.noPoster")}</div>
                     )}
                     <div className="card-title">{show.name}</div>
                     <div className="card-year">
@@ -341,13 +341,13 @@ function App() {
                   className={showsSubTab === "towatch" ? "movie-tab active" : "movie-tab"}
                   onClick={() => setShowsSubTab("towatch")}
                 >
-                  À voir
+                  {t("common.toWatch")}
                 </button>
                 <button
                   className={showsSubTab === "upcoming" ? "movie-tab active" : "movie-tab"}
                   onClick={() => setShowsSubTab("upcoming")}
                 >
-                  À venir
+                  {t("common.upcoming")}
                 </button>
               </div>
               {showsSubTab === "towatch" ? (
@@ -379,28 +379,28 @@ function App() {
           onClick={() => setTab("shows")}
         >
           <span className="tab-icon">📺</span>
-          Séries
+          {t("nav.shows")}
         </button>
         <button
           className={tab === "movies" ? "tab active" : "tab"}
           onClick={() => setTab("movies")}
         >
           <span className="tab-icon">🎬</span>
-          Films
+          {t("nav.movies")}
         </button>
         <button
           className={tab === "explore" ? "tab active" : "tab"}
           onClick={() => setTab("explore")}
         >
           <span className="tab-icon">🔍</span>
-          Explorer
+          {t("nav.explore")}
         </button>
         <button
           className={tab === "profile" ? "tab active" : "tab"}
           onClick={() => setTab("profile")}
         >
           <span className="tab-icon">👤</span>
-          Profil
+          {t("nav.profile")}
         </button>
       </nav>
     </div>

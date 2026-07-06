@@ -7,7 +7,7 @@ import { getAllMovies } from "./movieStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import { TROPHIES, computeTrophyStats, evaluateTrophy } from "./trophies";
-import { LANGUAGES, getLang, setLang } from "./i18n";
+import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -262,50 +262,49 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       <h2 className="profile-name">{user.displayName}</h2>
 
       {/* Statistiques */}
-      <h3 className="section-pill">STATISTIQUES</h3>
+      <h3 className="section-pill">{t("profile.stats")}</h3>
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">📺</div>
-          <div className="stat-value">{episodesWatched.toLocaleString("fr-FR")}</div>
-          <div className="stat-label">Épisodes vus</div>
+          <div className="stat-value">{episodesWatched.toLocaleString()}</div>
+          <div className="stat-label">{t("profile.episodesWatched")}</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-icon">⏱️</div>
           <div className="stat-value-time">
-            {st.months > 0 && <span><b>{st.months}</b> mois </span>}
-            <span><b>{st.days}</b> j </span>
-            <span><b>{st.hours}</b> h</span>
+            {st.months > 0 && <span><b>{st.months}</b> {t("profile.months")} </span>}
+            <span><b>{st.days}</b> {t("profile.days")} </span>
+            <span><b>{st.hours}</b> {t("profile.hours")}</span>
           </div>
           <div className="stat-label">
-            Temps devant les séries
-            {completing && ` (mise à jour ${progress.current}/${progress.total}…)`}
+            {t("profile.seriesTime")}
+            {completing && ` (${t("profile.updating")} ${progress.current}/${progress.total}…)`}
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-icon">🎬</div>
           <div className="stat-value">{moviesWatched}</div>
-          <div className="stat-label">Films regardés</div>
+          <div className="stat-label">{t("profile.moviesWatched")}</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-icon">🍿</div>
           <div className="stat-value-time">
-            {mt.months > 0 && <span><b>{mt.months}</b> mois </span>}
-            <span><b>{mt.days}</b> j </span>
-            <span><b>{mt.hours}</b> h</span>
+            {mt.months > 0 && <span><b>{mt.months}</b> {t("profile.months")} </span>}
+            <span><b>{mt.days}</b> {t("profile.days")} </span>
+            <span><b>{mt.hours}</b> {t("profile.hours")}</span>
           </div>
-          <div className="stat-label">Temps devant les films</div>
+          <div className="stat-label">{t("profile.moviesTime")}</div>
         </div>
       </div>
 
       {/* Soutenir l'app */}
-      <h3 className="section-pill">❤️ SOUTENIR TV COUCH</h3>
+      <h3 className="section-pill">{t("profile.support")}</h3>
       <div className="support-box">
         <p className="muted small support-text">
-          Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux
-          soutenir son développement — merci beaucoup&nbsp;!
+          {t("profile.supportText")}
         </p>
         <div className="support-actions">
           <a
@@ -328,7 +327,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       </div>
 
       {/* Trophées */}
-      <h3 className="section-pill">🏆 TROPHÉES · {unlockedTotal}/{TROPHIES.length}</h3>
+      <h3 className="section-pill">🏆 {t("profile.trophies")} · {unlockedTotal}/{TROPHIES.length}</h3>
       <div className="trophy-grid">
         {trophyResults.map(({ def, res }) => (
           <button
@@ -342,7 +341,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
               {res.unlocked ? (
                 res.label
               ) : (
-                <>🔒 {res.current.toLocaleString("fr-FR")}/{res.target.toLocaleString("fr-FR")}</>
+                <>🔒 {res.current.toLocaleString()}/{res.target.toLocaleString()}</>
               )}
             </div>
           </button>
@@ -351,8 +350,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
 
       {/* Séries préférées */}
       <div className="fav-header">
-        <h3 className="section-pill">❤️ SÉRIES PRÉFÉRÉES</h3>
-        <button className="btn-small" onClick={() => onOpenFavorites("show")}>+ Ajouter</button>
+        <h3 className="section-pill">{t("profile.favShows")}</h3>
+        <button className="btn-small" onClick={() => onOpenFavorites("show")}>{t("common.add")}</button>
       </div>
       {favorites.shows && favorites.shows.length > 0 ? (
         <div className="grid">
@@ -362,7 +361,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 {posterUrl(s.poster_path) ? (
                   <img src={posterUrl(s.poster_path)} alt={s.name} />
                 ) : (
-                  <div className="no-poster">Pas d'affiche</div>
+                  <div className="no-poster">{t("common.noPoster")}</div>
                 )}
                 <div className="card-title">{s.name}</div>
               </div>
@@ -373,13 +372,13 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           ))}
         </div>
       ) : (
-        <p className="muted small">Aucune série préférée. Ajoutez-en !</p>
+        <p className="muted small">{t("profile.noFavShows")}</p>
       )}
 
       {/* Films préférés */}
       <div className="fav-header">
-        <h3 className="section-pill">❤️ FILMS PRÉFÉRÉS</h3>
-        <button className="btn-small" onClick={() => onOpenFavorites("movie")}>+ Ajouter</button>
+        <h3 className="section-pill">{t("profile.favMovies")}</h3>
+        <button className="btn-small" onClick={() => onOpenFavorites("movie")}>{t("common.add")}</button>
       </div>
       {favorites.movies && favorites.movies.length > 0 ? (
         <div className="grid">
@@ -389,7 +388,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 {posterUrl(m.poster_path) ? (
                   <img src={posterUrl(m.poster_path)} alt={m.title} />
                 ) : (
-                  <div className="no-poster">Pas d'affiche</div>
+                  <div className="no-poster">{t("common.noPoster")}</div>
                 )}
                 <div className="card-title">{m.title}</div>
               </div>
@@ -400,19 +399,19 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           ))}
         </div>
       ) : (
-        <p className="muted small">Aucun film préféré. Ajoutez-en !</p>
+        <p className="muted small">{t("profile.noFavMovies")}</p>
       )}
 
       {/* Outils */}
-      <h3 className="section-pill">OUTILS</h3>
+      <h3 className="section-pill">{t("profile.tools")}</h3>
       <div className="profile-tools">
-        <button className="btn-small" onClick={onImportShows}>Importer séries TV Time</button>
-        <button className="btn-small" onClick={onImportMovies}>Importer films TV Time</button>
-        <button className="btn-small" onClick={onImportImdb}>Importer depuis IMDb (CSV)</button>
+        <button className="btn-small" onClick={onImportShows}>{t("profile.importShows")}</button>
+        <button className="btn-small" onClick={onImportMovies}>{t("profile.importMovies")}</button>
+        <button className="btn-small" onClick={onImportImdb}>{t("profile.importImdb")}</button>
       </div>
 
       {/* Langue */}
-      <h3 className="section-pill">🌐 LANGUE</h3>
+      <h3 className="section-pill">🌐 {t("profile.language")}</h3>
       <div className="lang-switch">
         {LANGUAGES.map((l) => (
           <button
@@ -420,7 +419,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
             className={`lang-btn ${getLang() === l.code ? "lang-active" : ""}`}
             onClick={() => setLang(l.code)}
           >
-            <span className="lang-flag">{l.flag}</span> {l.label}
+            <img className="lang-flag" src={FLAGS[l.code]} alt="" /> {l.label}
           </button>
         ))}
       </div>
@@ -440,11 +439,11 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 <span className="trophy-modal-badge">
                   ✓ {openTrophy.res.label}
                   {openTrophy.res.nextLabel &&
-                    ` · prochain : ${openTrophy.res.nextLabel} (${openTrophy.res.current.toLocaleString("fr-FR")}/${openTrophy.res.target.toLocaleString("fr-FR")})`}
+                    ` · ${t("profile.next")} : ${openTrophy.res.nextLabel} (${openTrophy.res.current.toLocaleString()}/${openTrophy.res.target.toLocaleString()})`}
                 </span>
               ) : (
                 <span className="muted small">
-                  🔒 Verrouillé — {openTrophy.res.current.toLocaleString("fr-FR")}/{openTrophy.res.target.toLocaleString("fr-FR")}
+                  🔒 {t("profile.locked")} — {openTrophy.res.current.toLocaleString()}/{openTrophy.res.target.toLocaleString()}
                 </span>
               )}
             </div>

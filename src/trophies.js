@@ -2,6 +2,7 @@
 // Tout est calculé à partir des données existantes (épisodes, films, notes,
 // séries suivies, favoris) + un petit suivi de connexion en localStorage et
 // un cache des genres/nombre d'épisodes récupérés via TMDB.
+import { t } from "./i18n";
 
 // Genres TMDB (séries TV)
 export const GENRE = { SCIFI: 10765, MYSTERY: 9648, COMEDY: 35, CRIME: 80 };
@@ -188,7 +189,7 @@ export function evaluateTrophy(def, stats) {
   const unlocked = value >= def.goal;
   return {
     unlocked,
-    label: unlocked ? "Débloqué" : null,
+    label: unlocked ? t("profile.unlocked") : null,
     current: value,
     target: def.goal,
     nextLabel: null,

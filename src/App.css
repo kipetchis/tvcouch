@@ -805,4 +805,11 @@ body {
   color: #fff;
   background: #262010;
 }
-.lang-flag { font-size: 1.1rem; }
+.lang-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 2px;
+}

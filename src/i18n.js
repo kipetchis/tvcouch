@@ -51,10 +51,33 @@ export function onLangChange(fn) {
   return () => listeners.delete(fn);
 }
 
+// Petits drapeaux SVG (rendu identique sur toutes les plateformes,
+// contrairement aux emojis qui ne s'affichent pas sous Windows).
+export const FLAGS = {
+  fr: (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3 2'><rect width='3' height='2' fill='#fff'/><rect width='1' height='2' fill='#0055A4'/><rect x='2' width='1' height='2' fill='#EF4135'/></svg>`
+    )
+  ),
+  en: (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'><clipPath id='s'><path d='M0,0 v30 h60 v-30 z'/></clipPath><clipPath id='t'><path d='M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z'/></clipPath><g clip-path='url(#s)'><path d='M0,0 v30 h60 v-30 z' fill='#012169'/><path d='M0,0 L60,30 M60,0 L0,30' stroke='#fff' stroke-width='6'/><path d='M0,0 L60,30 M60,0 L0,30' clip-path='url(#t)' stroke='#C8102E' stroke-width='4'/><path d='M30,0 v30 M0,15 h60' stroke='#fff' stroke-width='10'/><path d='M30,0 v30 M0,15 h60' stroke='#C8102E' stroke-width='6'/></g></svg>`
+    )
+  ),
+  es: (
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3 2'><rect width='3' height='2' fill='#c60b1e'/><rect y='0.5' width='3' height='1' fill='#ffc400'/></svg>`
+    )
+  ),
+};
+
 export const LANGUAGES = [
-  { code: "fr", flag: "🇫🇷", label: "Français" },
-  { code: "en", flag: "🇬🇧", label: "English" },
-  { code: "es", flag: "🇪🇸", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
 ];
 
 // ─── Dictionnaire de traductions ────────────────────
@@ -68,6 +91,9 @@ const DICT = {
 
   // Général / communs
   "common.search": { fr: "Rechercher", en: "Search", es: "Buscar" },
+  "common.searchShow": { fr: "Rechercher une série…", en: "Search a show…", es: "Buscar una serie…" },
+  "common.toWatch": { fr: "À voir", en: "To watch", es: "Por ver" },
+  "common.upcoming": { fr: "À venir", en: "Upcoming", es: "Próximamente" },
   "common.back": { fr: "← Retour", en: "← Back", es: "← Volver" },
   "common.loading": { fr: "Chargement…", en: "Loading…", es: "Cargando…" },
   "common.done": { fr: "Terminé", en: "Done", es: "Hecho" },
@@ -94,6 +120,10 @@ const DICT = {
 
   // Profil
   "profile.stats": { fr: "STATISTIQUES", en: "STATISTICS", es: "ESTADÍSTICAS" },
+  "profile.months": { fr: "mois", en: "mo", es: "meses" },
+  "profile.days": { fr: "j", en: "d", es: "d" },
+  "profile.hours": { fr: "h", en: "h", es: "h" },
+  "profile.updating": { fr: "mise à jour", en: "updating", es: "actualizando" },
   "profile.episodesWatched": { fr: "Épisodes vus", en: "Episodes watched", es: "Episodios vistos" },
   "profile.seriesTime": { fr: "Temps devant les séries", en: "Time on shows", es: "Tiempo en series" },
   "profile.moviesWatched": { fr: "Films regardés", en: "Movies watched", es: "Películas vistas" },
@@ -112,6 +142,7 @@ const DICT = {
   "profile.trophies": { fr: "TROPHÉES", en: "TROPHIES", es: "TROFEOS" },
   "profile.unlocked": { fr: "Débloqué", en: "Unlocked", es: "Desbloqueado" },
   "profile.locked": { fr: "Verrouillé", en: "Locked", es: "Bloqueado" },
+  "profile.next": { fr: "prochain", en: "next", es: "siguiente" },
 };
 
 export function t(key) {
@@ -130,3 +161,4 @@ export function useLang() {
   }, []);
   return lang;
 }
+
