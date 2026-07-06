@@ -3,6 +3,7 @@ import { getTrending, getPopular, getTopRated, getMovie, posterUrl } from "./tmd
 import { getAllMovies, saveMovie } from "./movieStore";
 import { getAllShows, followShow } from "./store";
 import MovieDetail from "./MovieDetail";
+import { t } from "./i18n";
 
 // ─── Cartes ──────────────────────────────────────────
 
@@ -13,7 +14,7 @@ function ShowCard({ show, mine, busy, onOpen, onFollow }) {
         {posterUrl(show.poster_path) ? (
           <img src={posterUrl(show.poster_path)} alt={show.name} />
         ) : (
-          <div className="no-poster">Pas d'affiche</div>
+          <div className="no-poster">{t("common.noPoster")}</div>
         )}
         <div className="card-title">{show.name}</div>
         <div className="card-year">
@@ -22,7 +23,7 @@ function ShowCard({ show, mine, busy, onOpen, onFollow }) {
       </div>
       {mine ? (
         <div className="muted small" style={{ marginTop: 4, textAlign: "center" }}>
-          ✓ Suivie
+          {t("common.following")}
         </div>
       ) : (
         <div className="movie-actions">
@@ -34,7 +35,7 @@ function ShowCard({ show, mine, busy, onOpen, onFollow }) {
               onFollow(show);
             }}
           >
-            + Suivre
+            {t("common.follow")}
           </button>
         </div>
       )}
@@ -51,7 +52,7 @@ function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
         {posterUrl(movie.poster_path) ? (
           <img src={posterUrl(movie.poster_path)} alt={movie.title} />
         ) : (
-          <div className="no-poster">Pas d'affiche</div>
+          <div className="no-poster">{t("common.noPoster")}</div>
         )}
         <div className="card-title">
           {movie.title}
@@ -65,7 +66,7 @@ function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
       </div>
       {mine ? (
         <div className="muted small" style={{ marginTop: 4, textAlign: "center" }}>
-          {mine.status === "watched" ? "✓ Vu" : "📌 À voir"}
+          {mine.status === "watched" ? t("common.watched") : t("common.toSee")}
         </div>
       ) : (
         <div className="movie-actions">
@@ -77,7 +78,7 @@ function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
               onWatched(movie);
             }}
           >
-            ✓ Vu
+            {t("common.watched")}
           </button>
           <button
             className="btn-small"
@@ -87,7 +88,7 @@ function MovieCard({ movie, mine, busy, onOpen, onWatched, onWatchlist }) {
               onWatchlist(movie);
             }}
           >
-            + Liste
+            {t("common.watchlist")}
           </button>
         </div>
       )}
@@ -296,24 +297,24 @@ export default function ExplorerPage({ onOpenShow }) {
     />
   );
 
-  if (loading) return <p className="center">Chargement…</p>;
+  if (loading) return <p className="center">{t("common.loading")}</p>;
   if (error) return <p className="error">{error}</p>;
 
   return (
     <div>
-      <Row title="🔥 Tendances de la semaine">
+      <Row title={t("explore.trending")}>
         {trending.map((item) =>
           item.media_type === "tv" ? renderShow(item) : renderMovie(item)
         )}
       </Row>
 
-      <Row title="📺 Séries populaires">{popTv.map(renderShow)}</Row>
+      <Row title={t("explore.popularShows")}>{popTv.map(renderShow)}</Row>
 
-      <Row title="🎬 Films populaires">{popMovies.map(renderMovie)}</Row>
+      <Row title={t("explore.popularMovies")}>{popMovies.map(renderMovie)}</Row>
 
-      <Row title="🏆 Séries les mieux notées">{topTv.map(renderShow)}</Row>
+      <Row title={t("explore.topShows")}>{topTv.map(renderShow)}</Row>
 
-      <Row title="🏆 Films les mieux notés">{topMovies.map(renderMovie)}</Row>
+      <Row title={t("explore.topMovies")}>{topMovies.map(renderMovie)}</Row>
 
       {openMovie && (
         <MovieDetail

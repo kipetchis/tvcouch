@@ -6,7 +6,7 @@ import {
 import { getAllMovies } from "./movieStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
-import { TROPHIES, computeTrophyStats, evaluateTrophy } from "./trophies";
+import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -336,7 +336,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
             onClick={() => setOpenTrophy({ def, res })}
           >
             <div className="trophy-emoji">{def.emoji}</div>
-            <div className="trophy-name">{def.name}</div>
+            <div className="trophy-name">{trophyName(def)}</div>
             <div className="trophy-state">
               {res.unlocked ? (
                 res.label
@@ -432,8 +432,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
             <div className={`trophy-modal-emoji ${openTrophy.res.unlocked ? "" : "trophy-modal-locked"}`}>
               {openTrophy.def.emoji}
             </div>
-            <h2 className="trophy-modal-name">{openTrophy.def.name}</h2>
-            <p className="trophy-modal-phrase">{openTrophy.def.phrase}</p>
+            <h2 className="trophy-modal-name">{trophyName(openTrophy.def)}</h2>
+            <p className="trophy-modal-phrase">{trophyPhrase(openTrophy.def)}</p>
             <div className="trophy-modal-status">
               {openTrophy.res.unlocked ? (
                 <span className="trophy-modal-badge">

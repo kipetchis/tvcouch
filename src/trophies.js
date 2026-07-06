@@ -119,46 +119,54 @@ export function computeTrophyStats({
 // goal: seuil unique (trophée simple / booléen)
 export const TROPHIES = [
   // Épisodes
-  { id: "debutant", emoji: "👶", name: "Débutant", phrase: "Le premier pas vers l'abîme.", metric: "episodes", goal: 1 },
-  { id: "serievore", emoji: "🍿", name: "Sérievore", phrase: "Tu ne regardes pas des séries, tu les dévores.", metric: "episodes", tiers: [["Bronze", 100], ["Argent", 500], ["Or", 1000]] },
-  { id: "nolife", emoji: "🌙", name: "No Life", phrase: "Dehors ? Il paraît qu'il y a du soleil.", metric: "episodes", tiers: [["Bronze", 2000], ["Argent", 5000], ["Or", 10000]] },
+  { id: "debutant", emoji: "👶", metric: "episodes", goal: 1 },
+  { id: "serievore", emoji: "🍿", metric: "episodes", tiers: [["Bronze", 100], ["Argent", 500], ["Or", 1000]] },
+  { id: "nolife", emoji: "🌙", metric: "episodes", tiers: [["Bronze", 2000], ["Argent", 5000], ["Or", 10000]] },
   // Films
-  { id: "cinephile", emoji: "🎬", name: "Cinéphile", phrase: "Le pop-corn n'a plus de secret pour toi.", metric: "movies", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
-  { id: "ceremonie", emoji: "🏆", name: "Cérémonie", phrase: "À ce stade, tu devrais présenter les César.", metric: "movies", goal: 250 },
+  { id: "cinephile", emoji: "🎬", metric: "movies", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "ceremonie", emoji: "🏆", metric: "movies", goal: 250 },
   // Temps (en minutes)
-  { id: "chronophage", emoji: "⌛", name: "Chronophage", phrase: "Le temps file quand on binge.", metric: "totalMinutes", tiers: [["Bronze", 1440], ["Argent", 10080], ["Or", 43200]] },
-  { id: "zombie", emoji: "🧟", name: "Zombie", phrase: "Ton canapé a pris la forme de ton corps.", metric: "totalMinutes", goal: 129600 },
+  { id: "chronophage", emoji: "⌛", metric: "totalMinutes", tiers: [["Bronze", 1440], ["Argent", 10080], ["Or", 43200]] },
+  { id: "zombie", emoji: "🧟", metric: "totalMinutes", goal: 129600 },
   // Binge (épisodes dans la même journée)
-  { id: "glandeur", emoji: "🦥", name: "Glandeur", phrase: "Faut pas s'étonner de ce qu'on dit.", metric: "maxPerDay", goal: 4 },
-  { id: "marathonien", emoji: "🏃", name: "Marathonien", phrase: "Un marathon, mais assis.", metric: "maxPerDay", goal: 10 },
-  { id: "insomniaque", emoji: "💀", name: "Insomniaque", phrase: "Le sommeil, c'est pour les faibles.", metric: "maxPerDay", goal: 15 },
+  { id: "glandeur", emoji: "🦥", metric: "maxPerDay", goal: 4 },
+  { id: "marathonien", emoji: "🏃", metric: "maxPerDay", goal: 10 },
+  { id: "insomniaque", emoji: "💀", metric: "maxPerDay", goal: 15 },
   // Séries suivies
-  { id: "collectionneur", emoji: "🗂️", name: "Collectionneur", phrase: "Ta watchlist a besoin d'une watchlist.", metric: "showsFollowed", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
-  { id: "serievoremonde", emoji: "🌍", name: "Sérievore du monde", phrase: "Plus de séries que de pays visités.", metric: "showsFollowed", goal: 200 },
+  { id: "collectionneur", emoji: "🗂️", metric: "showsFollowed", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "serievoremonde", emoji: "🌍", metric: "showsFollowed", goal: 200 },
   // Séries terminées
-  { id: "finisseur", emoji: "🏁", name: "Finisseur", phrase: "Toi au moins, tu finis ce que tu commences.", metric: "showsCompleted", tiers: [["Bronze", 1], ["Argent", 10], ["Or", 25]] },
-  { id: "completionniste", emoji: "👑", name: "Complétionniste", phrase: "Le générique de fin, ton meilleur ami.", metric: "showsCompleted", goal: 50 },
+  { id: "finisseur", emoji: "🏁", metric: "showsCompleted", tiers: [["Bronze", 1], ["Argent", 10], ["Or", 25]] },
+  { id: "completionniste", emoji: "👑", metric: "showsCompleted", goal: 50 },
   // Notes & commentaires
-  { id: "critique", emoji: "✍️", name: "Critique", phrase: "Un avis sur tout, comme sur les réseaux.", metric: "ratings", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
-  { id: "bavard", emoji: "💬", name: "Bavard", phrase: "Tu ne notes pas, tu disserte.", metric: "comments", goal: 25 },
-  { id: "genereux", emoji: "💯", name: "Généreux", phrase: "Pour toi, tout mérite un chef-d'œuvre.", metric: "five", goal: 10 },
-  { id: "severe", emoji: "🌶️", name: "Sévère", phrase: "Impossible à satisfaire.", metric: "one", goal: 10 },
+  { id: "critique", emoji: "✍️", metric: "ratings", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "bavard", emoji: "💬", metric: "comments", goal: 25 },
+  { id: "genereux", emoji: "💯", metric: "five", goal: 10 },
+  { id: "severe", emoji: "🌶️", metric: "one", goal: 10 },
   // Genres
-  { id: "nerd", emoji: "🦸", name: "Nerd", phrase: "Que la force soit avec toi.", metric: "genreScifi", goal: 5 },
-  { id: "frissons", emoji: "😱", name: "Frissons", phrase: "Tu regardes à travers tes doigts.", metric: "genreMystery", goal: 5 },
-  { id: "boutentrain", emoji: "😂", name: "Boute-en-train", phrase: "Le rire, c'est la santé.", metric: "genreComedy", goal: 10 },
-  { id: "enqueteur", emoji: "🔪", name: "Enquêteur", phrase: "Tu as résolu l'affaire avant l'inspecteur.", metric: "genreCrime", goal: 10 },
+  { id: "nerd", emoji: "🦸", metric: "genreScifi", goal: 5 },
+  { id: "frissons", emoji: "😱", metric: "genreMystery", goal: 5 },
+  { id: "boutentrain", emoji: "😂", metric: "genreComedy", goal: 10 },
+  { id: "enqueteur", emoji: "🔪", metric: "genreCrime", goal: 10 },
   // Dates
-  { id: "noel", emoji: "🎄", name: "Joyeux Noël", phrase: "Même le Père Noël prend une pause série.", metric: "christmas", goal: 1 },
-  { id: "nouvelan", emoji: "🎆", name: "Nouvelle année", phrase: "Bonne résolution : finir sa watchlist.", metric: "newyear", goal: 1 },
-  { id: "halloween", emoji: "🎃", name: "Halloween", phrase: "Des frissons de saison.", metric: "halloween", goal: 1 },
-  { id: "valentin", emoji: "💘", name: "Saint-Valentin", phrase: "Un date avec ta série.", metric: "valentine", goal: 1 },
+  { id: "noel", emoji: "🎄", metric: "christmas", goal: 1 },
+  { id: "nouvelan", emoji: "🎆", metric: "newyear", goal: 1 },
+  { id: "halloween", emoji: "🎃", metric: "halloween", goal: 1 },
+  { id: "valentin", emoji: "💘", metric: "valentine", goal: 1 },
   // Divers / fun
-  { id: "fidele", emoji: "📅", name: "Fidèle", phrase: "Tv Couch fait partie de ta routine.", metric: "loginStreak", goal: 7 },
-  { id: "eclectique", emoji: "🍿", name: "Éclectique", phrase: "Tu ne choisis pas ton camp.", metric: "eclectic", goal: 1 },
-  { id: "fan", emoji: "❤️", name: "Fan", phrase: "Tu as des chouchous, avoue.", metric: "favoritesCount", goal: 5 },
-  { id: "casanier", emoji: "🛋️", name: "Casanier", phrase: "Le canapé, c'est la vie.", metric: "unlockedCount", goal: 20 },
+  { id: "fidele", emoji: "📅", metric: "loginStreak", goal: 7 },
+  { id: "eclectique", emoji: "🍿", metric: "eclectic", goal: 1 },
+  { id: "fan", emoji: "❤️", metric: "favoritesCount", goal: 5 },
+  { id: "casanier", emoji: "🛋️", metric: "unlockedCount", goal: 20 },
 ];
+
+// Nom et phrase traduits d'un trophée (via i18n)
+export function trophyName(def) {
+  return t(`trophy.${def.id}.name`);
+}
+export function trophyPhrase(def) {
+  return t(`trophy.${def.id}.phrase`);
+}
 
 // ─── Évaluation d'un trophée ────────────────────────
 export function evaluateTrophy(def, stats) {
@@ -167,9 +175,9 @@ export function evaluateTrophy(def, stats) {
   if (def.tiers) {
     let tierLabel = null;
     let reached = -1;
-    def.tiers.forEach((t, i) => {
-      if (value >= t[1]) {
-        tierLabel = t[0];
+    def.tiers.forEach((tier, i) => {
+      if (value >= tier[1]) {
+        tierLabel = tier[0];
         reached = i;
       }
     });
@@ -178,10 +186,10 @@ export function evaluateTrophy(def, stats) {
     const maxed = reached === def.tiers.length - 1;
     return {
       unlocked,
-      label: unlocked ? tierLabel : null,
+      label: unlocked ? t(`tier.${tierLabel}`) : null,
       current: value,
       target: next ? next[1] : def.tiers[def.tiers.length - 1][1],
-      nextLabel: next ? next[0] : null,
+      nextLabel: next ? t(`tier.${next[0]}`) : null,
       maxed,
     };
   }

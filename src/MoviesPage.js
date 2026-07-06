@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getAllMovies, saveMovie, removeMovie } from "./movieStore";
 import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
+import { t } from "./i18n";
 
 // Tri de la collection de films
 function sortMovies(list, sort) {
@@ -148,11 +149,11 @@ export default function MoviesPage() {
       <form className="search" onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Rechercher un film…"
+          placeholder={t("movies.searchMovie")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button className="btn" type="submit">Rechercher</button>
+        <button className="btn" type="submit">{t("common.search")}</button>
         {results.length > 0 && (
           <button type="button" className="btn-small" onClick={clearSearch}>
             ✕
@@ -164,7 +165,7 @@ export default function MoviesPage() {
 
       {results.length > 0 ? (
         <>
-          <h3 className="section-title">Résultats</h3>
+          <h3 className="section-title">{t("common.results")}</h3>
           <div className="grid">
             {results.map((movie) => (
               <div key={movie.id} className="card movie-result">
@@ -172,7 +173,7 @@ export default function MoviesPage() {
                   {posterUrl(movie.poster_path) ? (
                     <img src={posterUrl(movie.poster_path)} alt={movie.title} />
                   ) : (
-                    <div className="no-poster">Pas d'affiche</div>
+                    <div className="no-poster">{t("common.noPoster")}</div>
                   )}
                   <div className="card-title">{movie.title}</div>
                   <div className="card-year">
@@ -181,10 +182,10 @@ export default function MoviesPage() {
                 </div>
                 <div className="movie-actions">
                   <button className="btn-small" onClick={() => addAsWatched(movie)}>
-                    ✓ Vu
+                    {t("common.watched")}
                   </button>
                   <button className="btn-small" onClick={() => addToWatchlist(movie)}>
-                    + Liste
+                    {t("common.watchlist")}
                   </button>
                 </div>
               </div>
@@ -198,13 +199,13 @@ export default function MoviesPage() {
               className={view === "watched" ? "movie-tab active" : "movie-tab"}
               onClick={() => setView("watched")}
             >
-              Vus ({watched.length})
+              {t("movies.watched")} ({watched.length})
             </button>
             <button
               className={view === "watchlist" ? "movie-tab active" : "movie-tab"}
               onClick={() => setView("watchlist")}
             >
-              À voir ({watchlist.length})
+              {t("movies.watchlist")} ({watchlist.length})
             </button>
           </div>
 
@@ -213,7 +214,7 @@ export default function MoviesPage() {
               <input
                 type="text"
                 className="filter-input"
-                placeholder="Filtrer par titre…"
+                placeholder={t("movies.filterTitle")}
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               />
@@ -222,23 +223,23 @@ export default function MoviesPage() {
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
-                <option value="recent">Ajout récent</option>
-                <option value="title">Titre A→Z</option>
-                <option value="note">Note ↓</option>
-                <option value="year">Année ↓</option>
+                <option value="recent">{t("sort.recent")}</option>
+                <option value="title">{t("sort.title")}</option>
+                <option value="note">{t("sort.note")}</option>
+                <option value="year">{t("sort.year")}</option>
               </select>
             </div>
           )}
 
           {loading ? (
-            <p className="center">Chargement…</p>
+            <p className="center">{t("common.loading")}</p>
           ) : shown.length === 0 ? (
             <p className="muted" style={{ textAlign: "center", marginTop: 30 }}>
               {base.length === 0
                 ? view === "watched"
-                  ? "Aucun film vu. Cherchez-en un !"
-                  : "Aucun film dans votre liste à voir."
-                : "Aucun film ne correspond à ce filtre."}
+                  ? t("movies.noneWatched")
+                  : t("movies.noneWatchlist")
+                : t("movies.noneFilter")}
             </p>
           ) : (
             <div className="grid">
@@ -248,7 +249,7 @@ export default function MoviesPage() {
                     {posterUrl(movie.poster_path) ? (
                       <img src={posterUrl(movie.poster_path)} alt={movie.title} />
                     ) : (
-                      <div className="no-poster">Pas d'affiche</div>
+                      <div className="no-poster">{t("common.noPoster")}</div>
                     )}
                     <div className="card-title">
                       {movie.title}
@@ -266,7 +267,7 @@ export default function MoviesPage() {
                         className="btn-small"
                         onClick={() => markWatched(movie)}
                       >
-                        ✓ Vu
+                        {t("common.watched")}
                       </button>
                     )}
                     <button
