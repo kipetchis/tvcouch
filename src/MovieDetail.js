@@ -4,6 +4,7 @@ import {
   getMovie, getMovieCredits, getMovieVideos, getWatchProviders,
   posterUrl, logoUrl, profileUrl,
 } from "./tmdb";
+import { t } from "./i18n";
 
 // Formate une durée en minutes -> "2 h 08" ou "47 min"
 function formatRuntime(min) {
@@ -143,12 +144,12 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
           {trailer && (
             <div className="trailer-section">
-              <h3 className="trailer-title">Bande-annonce</h3>
+              <h3 className="trailer-title">{t("detail.trailer")}</h3>
               <div className="trailer-media">
                 {playing ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`}
-                    title="Bande-annonce"
+                    title={t("detail.trailer")}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
@@ -160,7 +161,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
                   >
                     <img
                       src={`https://img.youtube.com/vi/${trailer.key}/hqdefault.jpg`}
-                      alt="Bande-annonce"
+                      alt={t("detail.trailer")}
                     />
                     <div className="trailer-play"><span>▶</span></div>
                   </div>
@@ -171,7 +172,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
           {cast.length > 0 && (
             <div className="cast-section">
-              <h3 className="cast-title">Casting</h3>
+              <h3 className="cast-title">{t("detail.cast")}</h3>
               <div className="cast-list">
                 {cast.map((person) => (
                   <div key={person.id} className="cast-member">
@@ -198,7 +199,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
           {flatrate.length > 0 && (
             <div className="providers">
-              <h3 className="providers-title">Où regarder</h3>
+              <h3 className="providers-title">{t("detail.whereToWatch")}</h3>
               <div className="providers-list">
                 {flatrate.map((p) => (
                   <div key={p.provider_id} className="provider" title={p.provider_name}>
@@ -211,13 +212,13 @@ export default function MovieDetail({ movie, onClose, onRated }) {
                 ))}
               </div>
               <p className="muted small providers-note">
-                Données JustWatch via TMDB · France
+                {t("detail.providersNote")}
               </p>
             </div>
           )}
 
           <div className="rating-section">
-            <div className="rating-label">Ma note</div>
+            <div className="rating-label">{t("detail.myRating")}</div>
             <div className="stars">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -231,10 +232,10 @@ export default function MovieDetail({ movie, onClose, onRated }) {
               ))}
             </div>
 
-            <div className="rating-label">Mon commentaire</div>
+            <div className="rating-label">{t("detail.myComment")}</div>
             <textarea
               className="comment-box"
-              placeholder="Vos impressions sur ce film…"
+              placeholder={t("detail.commentPlaceholder")}
               value={comment}
               onChange={(e) => changeComment(e.target.value)}
               rows={3}
@@ -242,16 +243,16 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
             <div className="rating-actions">
               <button className="btn" onClick={handleSave} disabled={saving || saved}>
-                {saved ? "✓ Enregistré" : "Enregistrer"}
+                {saved ? t("detail.saved") : t("detail.save")}
               </button>
               {hasRating && (
                 <button className="btn-small" onClick={handleRemove} disabled={saving}>
-                  Supprimer la note
+                  {t("detail.deleteRating")}
                 </button>
               )}
             </div>
             <p className="muted small" style={{ marginTop: 8 }}>
-              Noter ce film le marque comme vu.
+              {t("detail.rateMarksWatched")}
             </p>
           </div>
         </div>

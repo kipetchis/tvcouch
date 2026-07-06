@@ -34,6 +34,15 @@ export function getTmdbLang() {
   }
 }
 
+// Locale pour le formatage des dates/nombres (toLocaleDateString, etc.)
+export function getLocale() {
+  switch (currentLang) {
+    case "en": return "en-US";
+    case "es": return "es-ES";
+    default: return "fr-FR";
+  }
+}
+
 export function setLang(lang) {
   if (!SUPPORTED.includes(lang) || lang === currentLang) return;
   currentLang = lang;
@@ -127,6 +136,48 @@ const DICT = {
   "explore.popularMovies": { fr: "🎬 Films populaires", en: "🎬 Popular movies", es: "🎬 Películas populares" },
   "explore.topShows": { fr: "🏆 Séries les mieux notées", en: "🏆 Top rated shows", es: "🏆 Series mejor valoradas" },
   "explore.topMovies": { fr: "🏆 Films les mieux notés", en: "🏆 Top rated movies", es: "🏆 Películas mejor valoradas" },
+
+  // Séries (ShowsPage)
+  "shows.loading": { fr: "Chargement de vos séries…", en: "Loading your shows…", es: "Cargando tus series…" },
+  "shows.none": { fr: "Aucune série suivie. Cherchez-en une pour commencer !", en: "No shows followed. Search for one to start!", es: "No sigues ninguna serie. ¡Busca una para empezar!" },
+  "shows.noneFilter": { fr: "Aucune série ne correspond à ce filtre.", en: "No show matches this filter.", es: "Ninguna serie coincide con el filtro." },
+  "shows.updating": { fr: "Mise à jour de", en: "Updating", es: "Actualizando" },
+  "shows.updatingShows": { fr: "série(s)…", en: "show(s)…", es: "serie(s)…" },
+  "shows.sectionToWatch": { fr: "À VOIR", en: "TO WATCH", es: "POR VER" },
+  "shows.sectionStale": { fr: "PAS REGARDÉ DEPUIS UN MOMENT", en: "NOT WATCHED IN A WHILE", es: "SIN VER HACE TIEMPO" },
+  "shows.sectionUpToDate": { fr: "À JOUR", en: "UP TO DATE", es: "AL DÍA" },
+  "shows.filterTitle": { fr: "Filtrer par titre…", en: "Filter by title…", es: "Filtrar por título…" },
+  "shows.watchedCount": { fr: "vus", en: "watched", es: "vistos" },
+
+  // À venir (UpcomingPage)
+  "upcoming.loading": { fr: "Recherche des prochains épisodes…", en: "Searching for upcoming episodes…", es: "Buscando los próximos episodios…" },
+  "upcoming.none": { fr: "Aucun épisode à venir pour vos séries suivies.", en: "No upcoming episodes for your followed shows.", es: "No hay episodios próximos para tus series." },
+
+  // Fiche série (ShowDetail)
+  "detail.episodes": { fr: "épisodes", en: "episodes", es: "episodios" },
+  "detail.watchedOf": { fr: "vus", en: "watched", es: "vistos" },
+  "detail.follow": { fr: "+ Suivre cette série", en: "+ Follow this show", es: "+ Seguir esta serie" },
+  "detail.unfollow": { fr: "Ne plus suivre", en: "Unfollow", es: "Dejar de seguir" },
+  "detail.unfollowConfirm": { fr: "Ne plus suivre cette série ? Vos épisodes cochés seront perdus.", en: "Unfollow this show? Your checked episodes will be lost.", es: "¿Dejar de seguir esta serie? Se perderán los episodios marcados." },
+  "detail.whereToWatch": { fr: "Où regarder", en: "Where to watch", es: "Dónde ver" },
+  "detail.providersNote": { fr: "Données JustWatch via TMDB · France", en: "JustWatch data via TMDB · France", es: "Datos de JustWatch vía TMDB · Francia" },
+  "detail.specials": { fr: "Spéciaux", en: "Specials", es: "Especiales" },
+  "detail.season": { fr: "Saison", en: "Season", es: "Temporada" },
+  "detail.epShort": { fr: "ép.", en: "ep.", es: "ep." },
+  "detail.checkAll": { fr: "Tout cocher", en: "Check all", es: "Marcar todo" },
+  "detail.uncheckAll": { fr: "Tout décocher", en: "Uncheck all", es: "Desmarcar todo" },
+  "detail.loadingEpisodes": { fr: "Chargement des épisodes…", en: "Loading episodes…", es: "Cargando episodios…" },
+
+  // Fiche film (MovieDetail) + note
+  "detail.myRating": { fr: "Ma note", en: "My rating", es: "Mi nota" },
+  "detail.myComment": { fr: "Mon commentaire", en: "My comment", es: "Mi comentario" },
+  "detail.commentPlaceholder": { fr: "Vos impressions sur ce film…", en: "Your thoughts on this movie…", es: "Tus impresiones sobre esta película…" },
+  "detail.save": { fr: "Enregistrer", en: "Save", es: "Guardar" },
+  "detail.saved": { fr: "✓ Enregistré", en: "✓ Saved", es: "✓ Guardado" },
+  "detail.deleteRating": { fr: "Supprimer la note", en: "Delete rating", es: "Eliminar nota" },
+  "detail.rateMarksWatched": { fr: "Noter ce film le marque comme vu.", en: "Rating this movie marks it as watched.", es: "Calificar esta película la marca como vista." },
+  "detail.trailer": { fr: "Bande-annonce", en: "Trailer", es: "Tráiler" },
+  "detail.cast": { fr: "Casting", en: "Cast", es: "Reparto" },
 
   // Écran de connexion
   "login.tagline": { fr: "Suivez vos séries et films.", en: "Track your shows and movies.", es: "Sigue tus series y películas." },

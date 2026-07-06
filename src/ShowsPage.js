@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllShows } from "./store";
 import { getAllEpisodes, posterUrl } from "./tmdb";
+import { t } from "./i18n";
 
 // ─── Cache local des listes d'épisodes ───────────────
 // On ne met en cache que les métadonnées d'épisodes (saison, numéro, nom,
@@ -161,13 +162,13 @@ export default function ShowsPage({ onOpenShow }) {
     return () => { active = false; };
   }, []);
 
-  if (loading) return <p className="center">Chargement de vos séries…</p>;
+  if (loading) return <p className="center">{t("shows.loading")}</p>;
   if (error) return <p className="error">{error}</p>;
 
   if (items.length === 0 && pending === 0) {
     return (
       <p className="muted" style={{ textAlign: "center", marginTop: 40 }}>
-        Aucune série suivie. Cherchez-en une pour commencer !
+        {t("shows.none")}
       </p>
     );
   }
@@ -205,7 +206,7 @@ export default function ShowsPage({ onOpenShow }) {
         <input
           type="text"
           className="filter-input"
-          placeholder="Filtrer par titre…"
+          placeholder={t("shows.filterTitle")}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
@@ -214,27 +215,27 @@ export default function ShowsPage({ onOpenShow }) {
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
-          <option value="recent">Activité récente</option>
-          <option value="title">Titre A→Z</option>
-          <option value="year">Année ↓</option>
+          <option value="recent">{t("sort.activity")}</option>
+          <option value="title">{t("sort.title")}</option>
+          <option value="year">{t("sort.year")}</option>
         </select>
       </div>
 
       {pending > 0 && (
         <p className="muted small" style={{ margin: "0 0 12px" }}>
-          Mise à jour de {pending} série{pending > 1 ? "s" : ""}…
+          {t("shows.updating")} {pending} {t("shows.updatingShows")}
         </p>
       )}
 
       {visible.length === 0 && pending === 0 && (
         <p className="muted" style={{ textAlign: "center", marginTop: 30 }}>
-          Aucune série ne correspond à ce filtre.
+          {t("shows.noneFilter")}
         </p>
       )}
 
       {toWatchSorted.length > 0 && (
         <>
-          <h3 className="section-pill">À VOIR</h3>
+          <h3 className="section-pill">{t("shows.sectionToWatch")}</h3>
           {toWatchSorted.map((it) => (
             <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
           ))}
@@ -243,7 +244,7 @@ export default function ShowsPage({ onOpenShow }) {
 
       {staleSorted.length > 0 && (
         <>
-          <h3 className="section-pill">PAS REGARDÉ DEPUIS UN MOMENT</h3>
+          <h3 className="section-pill">{t("shows.sectionStale")}</h3>
           {staleSorted.map((it) => (
             <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
           ))}
@@ -252,7 +253,7 @@ export default function ShowsPage({ onOpenShow }) {
 
       {upToDateSorted.length > 0 && (
         <>
-          <h3 className="section-pill">À JOUR</h3>
+          <h3 className="section-pill">{t("shows.sectionUpToDate")}</h3>
           <div className="grid">
             {upToDateSorted.map((it) => (
               <div
@@ -263,7 +264,7 @@ export default function ShowsPage({ onOpenShow }) {
                 {posterUrl(it.show.poster_path) ? (
                   <img src={posterUrl(it.show.poster_path)} alt={it.show.name} />
                 ) : (
-                  <div className="no-poster">Pas d'affiche</div>
+                  <div className="no-poster">{t("common.noPoster")}</div>
                 )}
                 <div className="card-title">{it.show.name}</div>
               </div>
@@ -294,7 +295,7 @@ function NextEpRow({ item, onOpen }) {
         </div>
         <div className="ep-row-name">{next.name}</div>
         <div className="ep-row-progress muted small">
-          {watchedCount} / {total} vus
+          {watchedCount} / {total} {t("shows.watchedCount")}
         </div>
       </div>
     </div>

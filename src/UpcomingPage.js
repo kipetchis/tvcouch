@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { getAllShows } from "./store";
 import { getAllEpisodes, posterUrl } from "./tmdb";
+import { t, getLocale } from "./i18n";
 
-// Formate une date "2026-08-15" en "15 août 2026"
+// Formate une date "2026-08-15" selon la langue courante
 function formatDate(dateStr) {
   try {
     const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString("fr-FR", {
+    return d.toLocaleDateString(getLocale(), {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -60,13 +61,13 @@ export default function UpcomingPage({ onOpenShow }) {
     return () => { active = false; };
   }, []);
 
-  if (loading) return <p className="center">Recherche des prochains épisodes…</p>;
+  if (loading) return <p className="center">{t("upcoming.loading")}</p>;
   if (error) return <p className="error">{error}</p>;
 
   if (upcoming.length === 0) {
     return (
       <div className="center" style={{ minHeight: "40vh" }}>
-        <p className="muted">Aucun épisode à venir pour vos séries suivies.</p>
+        <p className="muted">{t("upcoming.none")}</p>
       </div>
     );
   }
