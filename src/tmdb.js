@@ -67,6 +67,12 @@ export async function findMovieByImdb(imdbId) {
   return results.length > 0 ? results[0] : null;
 }
 
+export async function findShowByImdb(imdbId) {
+  const data = await tmdbFetch(`/find/${imdbId}`, { external_source: "imdb_id" });
+  const results = data.tv_results || [];
+  return results.length > 0 ? results[0] : null;
+}
+
 export async function getShowRuntime(showId) {
   const details = await getShow(showId);
   const rt = details.episode_run_time;

@@ -11,6 +11,7 @@ import UpcomingPage from "./UpcomingPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import MovieImport from "./MovieImport";
+import ImdbImport from "./ImdbImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
@@ -159,6 +160,7 @@ function App() {
   const [selectedShow, setSelectedShow] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showMovieImport, setShowMovieImport] = useState(false);
+  const [showImdbImport, setShowImdbImport] = useState(false);
   const [favPicker, setFavPicker] = useState(null);
 
   const [query, setQuery] = useState("");
@@ -249,6 +251,17 @@ function App() {
           ← Retour
         </button>
         <MovieImport onDone={() => { setShowMovieImport(false); setTab("movies"); }} />
+      </div>
+    );
+  }
+
+  if (showImdbImport) {
+    return (
+      <div className="app">
+        <button className="btn-small back" onClick={() => setShowImdbImport(false)}>
+          ← Retour
+        </button>
+        <ImdbImport onDone={() => { setShowImdbImport(false); setTab("movies"); }} />
       </div>
     );
   }
@@ -352,6 +365,7 @@ function App() {
           user={user}
           onImportShows={() => setShowImport(true)}
           onImportMovies={() => setShowMovieImport(true)}
+          onImportImdb={() => setShowImdbImport(true)}
           onOpenFavorites={(type) => setFavPicker(type)}
           onOpenShow={setSelectedShow}
         />

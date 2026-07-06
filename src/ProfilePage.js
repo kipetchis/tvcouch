@@ -77,7 +77,7 @@ function writeMeta(id, genres, total) {
   }
 }
 
-export default function ProfilePage({ user, onImportShows, onImportMovies, onOpenFavorites, onOpenShow }) {
+export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onOpenFavorites, onOpenShow }) {
   const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
@@ -407,6 +407,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onOpe
       <div className="profile-tools">
         <button className="btn-small" onClick={onImportShows}>Importer séries TV Time</button>
         <button className="btn-small" onClick={onImportMovies}>Importer films TV Time</button>
+        <button className="btn-small" onClick={onImportImdb}>Importer depuis IMDb (CSV)</button>
       </div>
 
       {/* Popup détail trophée */}
