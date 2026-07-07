@@ -37,8 +37,8 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": ".",
-  "scope": ".",
+  "start_url": "/tvcouch/",
+  "scope": "/tvcouch/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#0d0d0d",
