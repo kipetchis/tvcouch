@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react";
-import { getShow, getSeason, getWatchProviders, posterUrl, logoUrl } from "./tmdb";
+import {
+  getShow, getSeason, getWatchProviders, getShowCredits, getShowVideos,
+  posterUrl, logoUrl, profileUrl,
+} from "./tmdb";
 import {
   followShow, unfollowShow, getFollowedShow,
   setEpisodeWatched, setEpisodesWatched, touchShow,
 } from "./store";
 import EpisodeDetail from "./EpisodeDetail";
 import { t } from "./i18n";
+
+// Choisit la meilleure vidéo YouTube (bande-annonce officielle en priorité)
+function pickTrailer(videos) {
+  if (!videos || videos.length === 0) return null;
+  const yt = videos.filter((v) => v.site === "YouTube");
+  return (
+    yt.find((v) => v.type === "Trailer" && v.official) ||
+    yt.find((v) => v.type === "Trailer") ||
+    yt.find((v) => v.type === "Teaser") ||
+    yt[0] ||
+    null
+  );
+}
 
 export default function ShowDetail({ show, onBack }) {
   const [details, setDetails] = useState(null);
@@ -17,6 +33,9 @@ export default function ShowDetail({ show, onBack }) {
   const [seasonData, setSeasonData] = useState({});
   const [error, setError] = useState(null);
   const [providers, setProviders] = useState(null);
+  const [cast, setCast] = useState([]);
+  const [trailer, setTrailer] = useState(null);
+  const [playing, setPlaying] = useState(false);
   const [openEpisode, setOpenEpisode] = useState(null); // { seasonNumber, episode }
 
   useEffect(() => {
@@ -39,6 +58,23 @@ export default function ShowDetail({ show, onBack }) {
         getWatchProviders("tv", show.id)
           .then((p) => { if (active) setProviders(p); })
           .catch(() => {});
+        getShowCredits(show.id)
+          .then((c) => { if (active) setCast((c.cast || []).slice(0, 12)); })
+          .catch(() => {});
+        // Bande-annonce : français d'abord, repli anglais
+        (async () => {
+          try {
+            const fr = await getShowVideos(show.id);
+            let tr = pickTrailer(fr.results || []);
+            if (!tr) {
+              const en = await getShowVideos(show.id, "en-US");
+              tr = pickTrailer(en.results || []);
+            }
+            if (active) setTrailer(tr);
+          } catch {
+            // ignore
+          }
+        })();
       } catch (e) {
         if (active && e.name !== "AbortError") setError(e.message);
       } finally {
@@ -199,6 +235,61 @@ export default function ShowDetail({ show, onBack }) {
           {details.overview && <p className="overview">{details.overview}</p>}
         </div>
       </div>
+
+      {trailer && (
+        <div className="trailer-section">
+          <h3 className="trailer-title">{t("detail.trailer")}</h3>
+          <div className="trailer-media">
+            {playing ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0`}
+                title={t("detail.trailer")}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <div
+                className="trailer-thumb"
+                onClick={() => setPlaying(true)}
+                style={{ width: "100%", height: "100%" }}
+              >
+                <img
+                  src={`https://img.youtube.com/vi/${trailer.key}/hqdefault.jpg`}
+                  alt={t("detail.trailer")}
+                />
+                <div className="trailer-play"><span>▶</span></div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {cast.length > 0 && (
+        <div className="cast-section">
+          <h3 className="cast-title">{t("detail.cast")}</h3>
+          <div className="cast-list">
+            {cast.map((person) => (
+              <div key={person.id} className="cast-member">
+                {profileUrl(person.profile_path) ? (
+                  <img
+                    className="cast-photo"
+                    src={profileUrl(person.profile_path)}
+                    alt={person.name}
+                  />
+                ) : (
+                  <div className="cast-photo-fallback">
+                    {person.name ? person.name.charAt(0) : "?"}
+                  </div>
+                )}
+                <div className="cast-name">{person.name}</div>
+                {person.character && (
+                  <div className="cast-char">{person.character}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {flatrate.length > 0 && (
         <div className="providers">

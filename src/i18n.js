@@ -52,6 +52,13 @@ export function setLang(lang) {
     // ignore
   }
   listeners.forEach((fn) => fn(lang));
+  // On recharge la page : garantit que l'interface ET les données TMDB
+  // (synopsis, titres d'épisodes, casting…) sont toutes dans la nouvelle langue.
+  try {
+    window.location.reload();
+  } catch {
+    // ignore (environnement sans window)
+  }
 }
 
 // S'abonner aux changements de langue (retourne une fonction de désinscription)
@@ -144,7 +151,7 @@ const DICT = {
   "shows.updating": { fr: "Mise à jour de", en: "Updating", es: "Actualizando" },
   "shows.updatingShows": { fr: "série(s)…", en: "show(s)…", es: "serie(s)…" },
   "shows.sectionToWatch": { fr: "À VOIR", en: "TO WATCH", es: "POR VER" },
-  "shows.sectionStale": { fr: "PAS REGARDÉ DEPUIS UN MOMENT", en: "NOT WATCHED IN A WHILE", es: "SIN VER HACE TIEMPO" },
+  "shows.sectionStale": { fr: "PAS ENCORE COMMENCÉES", en: "NOT STARTED YET", es: "AÚN NO EMPEZADAS" },
   "shows.sectionUpToDate": { fr: "À JOUR", en: "UP TO DATE", es: "AL DÍA" },
   "shows.filterTitle": { fr: "Filtrer par titre…", en: "Filter by title…", es: "Filtrar por título…" },
   "shows.watchedCount": { fr: "vus", en: "watched", es: "vistos" },

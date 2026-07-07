@@ -97,6 +97,16 @@ export function getMovieVideos(id, language) {
   return tmdbFetch(`/movie/${id}/videos`, language ? { language } : {});
 }
 
+// Casting principal d'une série
+export function getShowCredits(id) {
+  return tmdbFetch(`/tv/${id}/credits`);
+}
+
+// Vidéos d'une série (bandes-annonces…). Langue optionnelle pour repli EN.
+export function getShowVideos(id, language) {
+  return tmdbFetch(`/tv/${id}/videos`, language ? { language } : {});
+}
+
 // Plateformes de streaming pour la France
 export async function getWatchProviders(type, id) {
   // type: "tv" ou "movie"

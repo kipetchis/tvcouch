@@ -6,6 +6,7 @@ import {
 import { getAllMovies } from "./movieStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
+import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
 
@@ -363,7 +364,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 ) : (
                   <div className="no-poster">{t("common.noPoster")}</div>
                 )}
-                <div className="card-title">{s.name}</div>
+                <div className="card-title"><TranslatedTitle type="tv" id={s.id} fallback={s.name} /></div>
               </div>
               <div className="movie-actions">
                 <button className="btn-small" onClick={() => handleRemoveFavShow(s.id)}>🗑</button>
@@ -390,7 +391,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 ) : (
                   <div className="no-poster">{t("common.noPoster")}</div>
                 )}
-                <div className="card-title">{m.title}</div>
+                <div className="card-title"><TranslatedTitle type="movie" id={m.id} fallback={m.title} /></div>
               </div>
               <div className="movie-actions">
                 <button className="btn-small" onClick={() => handleRemoveFavMovie(m.id)}>🗑</button>

@@ -115,6 +115,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
   const runtime = formatRuntime(details && details.runtime);
   const genres = details && details.genres ? details.genres.map((g) => g.name) : [];
   const overview = (details && details.overview) || "";
+  const displayTitle = (details && details.title) || movie.title;
   const flatrate = providers && providers.flatrate ? providers.flatrate : [];
   const hasRating = note > 0 || comment.trim().length > 0;
 
@@ -125,10 +126,10 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
         <div className="movie-detail-head">
           {posterUrl(movie.poster_path) && (
-            <img src={posterUrl(movie.poster_path)} alt={movie.title} />
+            <img src={posterUrl(movie.poster_path)} alt={displayTitle} />
           )}
           <div>
-            <h2 className="ep-detail-title">{movie.title}</h2>
+            <h2 className="ep-detail-title">{displayTitle}</h2>
             <p className="muted small">
               {year || "—"}
               {runtime && <> · {runtime}</>}

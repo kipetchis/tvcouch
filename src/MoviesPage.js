@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getAllMovies, saveMovie, removeMovie } from "./movieStore";
 import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
+import TranslatedTitle from "./TranslatedTitle";
 import { t } from "./i18n";
 
 // Tri de la collection de films
@@ -252,7 +253,7 @@ export default function MoviesPage() {
                       <div className="no-poster">{t("common.noPoster")}</div>
                     )}
                     <div className="card-title">
-                      {movie.title}
+                      <TranslatedTitle type="movie" id={movie.id} fallback={movie.title} />
                       {movie.note > 0 && (
                         <span className="ep-rating-badge"> ★ {movie.note}</span>
                       )}

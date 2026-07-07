@@ -1,64 +1,33 @@
 import { useState, useEffect } from "react";
 import { getAllShows } from "./store";
 import { getAllEpisodes, posterUrl } from "./tmdb";
+import { readEpisodeCache, writeEpisodeCache, readShowTitle } from "./episodeCache";
 import { t } from "./i18n";
-
-// ─── Cache local des listes d'épisodes ───────────────
-// On ne met en cache que les métadonnées d'épisodes (saison, numéro, nom,
-// date de diffusion), qui changent très rarement. Le statut "vu" reste
-// toujours lu en direct depuis Firestore.
-const CACHE_PREFIX = "tvcouch_eps_";
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 h
-
-function readCache(showId) {
-  try {
-    const raw = localStorage.getItem(CACHE_PREFIX + showId);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.ts || Date.now() - parsed.ts > CACHE_TTL) return null;
-    return parsed.episodes || null;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(showId, episodes) {
-  try {
-    // On garde uniquement les champs utiles pour limiter la taille
-    const slim = episodes.map((e) => ({
-      season: e.season,
-      episode: e.episode,
-      name: e.name,
-      air_date: e.air_date || null,
-    }));
-    localStorage.setItem(
-      CACHE_PREFIX + showId,
-      JSON.stringify({ ts: Date.now(), episodes: slim })
-    );
-  } catch {
-    // quota dépassé ou indisponible : on ignore, ce n'est qu'un cache
-  }
-}
 
 function findNextEpisode(episodes, watched) {
   const today = new Date().toISOString().slice(0, 10);
+  let firstUnwatched = null;
   for (const ep of episodes) {
     const key = `${ep.season}_${ep.episode}`;
+    if (watched[key]) continue;
+    // On mémorise le tout premier épisode non vu (même pas encore diffusé)
+    if (firstUnwatched === null) firstUnwatched = ep;
+    // On privilégie le prochain épisode DÉJÀ diffusé (regardable maintenant)
     const isAired = ep.air_date && ep.air_date <= today;
-    if (!watched[key] && isAired) {
-      return ep;
-    }
+    if (isAired) return ep;
   }
-  return null;
+  // Aucun épisode diffusé à voir : on renvoie le prochain à venir (série en cours)
+  return firstUnwatched;
 }
 
 // Construit un item d'affichage à partir d'une série et de ses épisodes
-function buildItem(show, episodes) {
+function buildItem(show, episodes, title) {
   const watched = show.watched || {};
   const next = findNextEpisode(episodes, watched);
   const watchedCount = Object.keys(watched).length;
   return {
     show,
+    title: title || show.name,
     next,
     watchedCount,
     total: episodes.length,
@@ -71,7 +40,7 @@ function sortItems(list, sort) {
   const arr = [...list];
   switch (sort) {
     case "title":
-      arr.sort((a, b) => a.show.name.localeCompare(b.show.name, "fr"));
+      arr.sort((a, b) => a.title.localeCompare(b.title, "fr"));
       break;
     case "year":
       arr.sort((a, b) =>
@@ -113,8 +82,8 @@ export default function ShowsPage({ onOpenShow }) {
         const initial = [];
         const toFetch = [];
         shows.forEach((show) => {
-          const cached = readCache(show.id);
-          if (cached) initial.push(buildItem(show, cached));
+          const cached = readEpisodeCache(show.id);
+          if (cached) initial.push(buildItem(show, cached, readShowTitle(show.id)));
           else toFetch.push(show);
         });
 
@@ -132,10 +101,11 @@ export default function ShowsPage({ onOpenShow }) {
 
         toFetch.forEach(async (show) => {
           try {
-            const { episodes } = await getAllEpisodes(show.id);
+            const { details, episodes } = await getAllEpisodes(show.id);
             if (!active) return;
-            writeCache(show.id, episodes);
-            const item = buildItem(show, episodes);
+            const title = (details && details.name) || show.name;
+            writeEpisodeCache(show.id, episodes, title);
+            const item = buildItem(show, episodes, title);
             setItems((prev) => {
               const others = prev.filter((it) => it.show.id !== show.id);
               return [...others, item];
@@ -173,13 +143,10 @@ export default function ShowsPage({ onOpenShow }) {
     );
   }
 
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
   // Filtre par titre
   const f = filter.trim().toLowerCase();
   const visible = f
-    ? items.filter((it) => it.show.name.toLowerCase().includes(f))
+    ? items.filter((it) => it.title.toLowerCase().includes(f))
     : items;
 
   const toWatch = [];
@@ -188,10 +155,13 @@ export default function ShowsPage({ onOpenShow }) {
 
   visible.forEach((it) => {
     if (!it.next) {
+      // Plus d'épisode à voir → à jour
       upToDate.push(it);
-    } else if (now - it.lastWatchedAt < THIRTY_DAYS) {
+    } else if (it.watchedCount > 0) {
+      // En cours (au moins un épisode vu) → À voir, en haut
       toWatch.push(it);
     } else {
+      // Suivie mais jamais commencée
       stale.push(it);
     }
   });
@@ -262,11 +232,11 @@ export default function ShowsPage({ onOpenShow }) {
                 onClick={() => onOpenShow(it.show)}
               >
                 {posterUrl(it.show.poster_path) ? (
-                  <img src={posterUrl(it.show.poster_path)} alt={it.show.name} />
+                  <img src={posterUrl(it.show.poster_path)} alt={it.title} />
                 ) : (
                   <div className="no-poster">{t("common.noPoster")}</div>
                 )}
-                <div className="card-title">{it.show.name}</div>
+                <div className="card-title">{it.title}</div>
               </div>
             ))}
           </div>
@@ -277,18 +247,18 @@ export default function ShowsPage({ onOpenShow }) {
 }
 
 function NextEpRow({ item, onOpen }) {
-  const { show, next, watchedCount, total } = item;
+  const { show, title, next, watchedCount, total } = item;
   return (
     <div className="ep-row" onClick={() => onOpen(show)}>
       <div className="ep-row-poster">
         {posterUrl(show.poster_path, "w200") ? (
-          <img src={posterUrl(show.poster_path, "w200")} alt={show.name} />
+          <img src={posterUrl(show.poster_path, "w200")} alt={title} />
         ) : (
           <div className="no-poster small-poster">—</div>
         )}
       </div>
       <div className="ep-row-info">
-        <div className="ep-row-title">{show.name}</div>
+        <div className="ep-row-title">{title}</div>
         <div className="ep-row-ep">
           S{String(next.season).padStart(2, "0")} | E
           {String(next.episode).padStart(2, "0")}
