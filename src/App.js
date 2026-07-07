@@ -15,6 +15,7 @@ import ImdbImport from "./ImdbImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
+import ScrollTopButton from "./ScrollTopButton";
 import { useLang, t } from "./i18n";
 import "./App.css";
 
@@ -372,6 +373,8 @@ function App() {
           onOpenShow={setSelectedShow}
         />
       )}
+
+      <ScrollTopButton />
 
       <nav className="tabbar">
         <button

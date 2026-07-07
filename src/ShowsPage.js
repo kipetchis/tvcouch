@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllShows } from "./store";
 import { getAllEpisodes, posterUrl } from "./tmdb";
-import { readEpisodeCache, writeEpisodeCache, readShowTitle } from "./episodeCache";
+import { readEpisodeCache, writeEpisodeCache, readShowTitle, readShowOngoing } from "./episodeCache";
 import { t } from "./i18n";
 
 function findNextEpisode(episodes, watched) {
@@ -21,13 +21,14 @@ function findNextEpisode(episodes, watched) {
 }
 
 // Construit un item d'affichage à partir d'une série et de ses épisodes
-function buildItem(show, episodes, title) {
+function buildItem(show, episodes, title, ongoing) {
   const watched = show.watched || {};
   const next = findNextEpisode(episodes, watched);
   const watchedCount = Object.keys(watched).length;
   return {
     show,
     title: title || show.name,
+    ongoing: ongoing === true,
     next,
     watchedCount,
     total: episodes.length,
@@ -61,6 +62,7 @@ export default function ShowsPage({ onOpenShow }) {
 
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");
+  const [section, setSection] = useState("all"); // all | inProgress | stale | upToDate | notStarted
 
   useEffect(() => {
     let active = true;
@@ -83,7 +85,7 @@ export default function ShowsPage({ onOpenShow }) {
         const toFetch = [];
         shows.forEach((show) => {
           const cached = readEpisodeCache(show.id);
-          if (cached) initial.push(buildItem(show, cached, readShowTitle(show.id)));
+          if (cached) initial.push(buildItem(show, cached, readShowTitle(show.id), readShowOngoing(show.id)));
           else toFetch.push(show);
         });
 
@@ -104,8 +106,12 @@ export default function ShowsPage({ onOpenShow }) {
             const { details, episodes } = await getAllEpisodes(show.id);
             if (!active) return;
             const title = (details && details.name) || show.name;
-            writeEpisodeCache(show.id, episodes, title);
-            const item = buildItem(show, episodes, title);
+            // « Nouvel épisode réellement annoncé » : fiable, contrairement au
+            // statut TMDB souvent optimiste. Si tout est vu et qu'il n'y a pas
+            // de prochain épisode daté → la série passera en « À jour ».
+            const ongoing = !!(details && details.next_episode_to_air);
+            writeEpisodeCache(show.id, episodes, title, ongoing);
+            const item = buildItem(show, episodes, title, ongoing);
             setItems((prev) => {
               const others = prev.filter((it) => it.show.id !== show.id);
               return [...others, item];
@@ -149,26 +155,35 @@ export default function ShowsPage({ onOpenShow }) {
     ? items.filter((it) => it.title.toLowerCase().includes(f))
     : items;
 
-  const toWatch = [];
-  const stale = [];
-  const upToDate = [];
+  const RECENT = 30 * 24 * 60 * 60 * 1000; // 30 jours
+  const now = Date.now();
+
+  const inProgress = [];   // À voir (en cours)
+  const stale = [];        // Pas regardé depuis un moment
+  const upToDate = [];     // À jour
+  const notStarted = [];   // Pas encore commencées
 
   visible.forEach((it) => {
-    if (!it.next) {
-      // Plus d'épisode à voir → à jour
-      upToDate.push(it);
-    } else if (it.watchedCount > 0) {
-      // En cours (au moins un épisode vu) → À voir, en haut
-      toWatch.push(it);
+    if (it.watchedCount === 0) {
+      // Suivie mais aucun épisode vu
+      notStarted.push(it);
+    } else if (it.next) {
+      // Il reste un épisode à voir : récent → en cours, sinon → pas regardé
+      if (now - it.lastWatchedAt < RECENT) inProgress.push(it);
+      else stale.push(it);
+    } else if (it.ongoing) {
+      // À jour mais série encore en cours de diffusion → on garde en haut
+      inProgress.push(it);
     } else {
-      // Suivie mais jamais commencée
-      stale.push(it);
+      // Tout vu et série terminée → à jour
+      upToDate.push(it);
     }
   });
 
-  const toWatchSorted = sortItems(toWatch, sort);
+  const inProgressSorted = sortItems(inProgress, sort);
   const staleSorted = sortItems(stale, sort);
   const upToDateSorted = sortItems(upToDate, sort);
+  const notStartedSorted = sortItems(notStarted, sort);
 
   return (
     <div>
@@ -191,6 +206,24 @@ export default function ShowsPage({ onOpenShow }) {
         </select>
       </div>
 
+      <div className="section-tabs">
+        {[
+          ["all", t("shows.filterAll")],
+          ["inProgress", t("shows.filterInProgress")],
+          ["stale", t("shows.filterStale")],
+          ["upToDate", t("shows.filterUpToDate")],
+          ["notStarted", t("shows.filterNotStarted")],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            className={section === key ? "section-tab active" : "section-tab"}
+            onClick={() => setSection(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {pending > 0 && (
         <p className="muted small" style={{ margin: "0 0 12px" }}>
           {t("shows.updating")} {pending} {t("shows.updatingShows")}
@@ -203,16 +236,16 @@ export default function ShowsPage({ onOpenShow }) {
         </p>
       )}
 
-      {toWatchSorted.length > 0 && (
+      {(section === "all" || section === "inProgress") && inProgressSorted.length > 0 && (
         <>
           <h3 className="section-pill">{t("shows.sectionToWatch")}</h3>
-          {toWatchSorted.map((it) => (
+          {inProgressSorted.map((it) => (
             <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
           ))}
         </>
       )}
 
-      {staleSorted.length > 0 && (
+      {(section === "all" || section === "stale") && staleSorted.length > 0 && (
         <>
           <h3 className="section-pill">{t("shows.sectionStale")}</h3>
           {staleSorted.map((it) => (
@@ -221,11 +254,33 @@ export default function ShowsPage({ onOpenShow }) {
         </>
       )}
 
-      {upToDateSorted.length > 0 && (
+      {(section === "all" || section === "upToDate") && upToDateSorted.length > 0 && (
         <>
           <h3 className="section-pill">{t("shows.sectionUpToDate")}</h3>
           <div className="grid">
             {upToDateSorted.map((it) => (
+              <div
+                key={it.show.id}
+                className="card"
+                onClick={() => onOpenShow(it.show)}
+              >
+                {posterUrl(it.show.poster_path) ? (
+                  <img src={posterUrl(it.show.poster_path)} alt={it.title} />
+                ) : (
+                  <div className="no-poster">{t("common.noPoster")}</div>
+                )}
+                <div className="card-title">{it.title}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {(section === "all" || section === "notStarted") && notStartedSorted.length > 0 && (
+        <>
+          <h3 className="section-pill">{t("shows.sectionNotStarted")}</h3>
+          <div className="grid">
+            {notStartedSorted.map((it) => (
               <div
                 key={it.show.id}
                 className="card"
@@ -259,11 +314,17 @@ function NextEpRow({ item, onOpen }) {
       </div>
       <div className="ep-row-info">
         <div className="ep-row-title">{title}</div>
-        <div className="ep-row-ep">
-          S{String(next.season).padStart(2, "0")} | E
-          {String(next.episode).padStart(2, "0")}
-        </div>
-        <div className="ep-row-name">{next.name}</div>
+        {next ? (
+          <>
+            <div className="ep-row-ep">
+              S{String(next.season).padStart(2, "0")} | E
+              {String(next.episode).padStart(2, "0")}
+            </div>
+            <div className="ep-row-name">{next.name}</div>
+          </>
+        ) : (
+          <div className="ep-row-name">{t("shows.caughtUp")}</div>
+        )}
         <div className="ep-row-progress muted small">
           {watchedCount} / {total} {t("shows.watchedCount")}
         </div>

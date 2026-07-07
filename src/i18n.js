@@ -151,10 +151,17 @@ const DICT = {
   "shows.updating": { fr: "Mise à jour de", en: "Updating", es: "Actualizando" },
   "shows.updatingShows": { fr: "série(s)…", en: "show(s)…", es: "serie(s)…" },
   "shows.sectionToWatch": { fr: "À VOIR", en: "TO WATCH", es: "POR VER" },
-  "shows.sectionStale": { fr: "PAS ENCORE COMMENCÉES", en: "NOT STARTED YET", es: "AÚN NO EMPEZADAS" },
+  "shows.sectionStale": { fr: "PAS REGARDÉ DEPUIS UN MOMENT", en: "NOT WATCHED IN A WHILE", es: "SIN VER HACE TIEMPO" },
+  "shows.sectionNotStarted": { fr: "PAS ENCORE COMMENCÉES", en: "NOT STARTED YET", es: "AÚN NO EMPEZADAS" },
+  "shows.filterAll": { fr: "Toutes les rubriques", en: "All sections", es: "Todas las secciones" },
+  "shows.filterInProgress": { fr: "À voir", en: "To watch", es: "Por ver" },
+  "shows.filterStale": { fr: "Pas regardé depuis un moment", en: "Not watched in a while", es: "Sin ver hace tiempo" },
+  "shows.filterUpToDate": { fr: "À jour", en: "Up to date", es: "Al día" },
+  "shows.filterNotStarted": { fr: "Pas encore commencées", en: "Not started yet", es: "Aún no empezadas" },
   "shows.sectionUpToDate": { fr: "À JOUR", en: "UP TO DATE", es: "AL DÍA" },
   "shows.filterTitle": { fr: "Filtrer par titre…", en: "Filter by title…", es: "Filtrar por título…" },
   "shows.watchedCount": { fr: "vus", en: "watched", es: "vistos" },
+  "shows.caughtUp": { fr: "À jour · nouveaux épisodes à venir", en: "Caught up · new episodes coming", es: "Al día · nuevos episodios en camino" },
 
   // À venir (UpcomingPage)
   "upcoming.loading": { fr: "Recherche des prochains épisodes…", en: "Searching for upcoming episodes…", es: "Buscando los próximos episodios…" },

@@ -13,8 +13,9 @@ function cacheKey(showId) {
   return `${CACHE_PREFIX}${getLang()}_${showId}`;
 }
 
-// Nettoyage unique des anciens caches sans langue (format "tvcouch_eps_<id>")
-// pour éviter d'afficher des titres dans la mauvaise langue après mise à jour.
+// Nettoyage unique des anciens caches : sans langue (ancien format) OU
+// sans l'info "ongoing" (antérieurs à la classification par statut de série).
+// Ça force un re-fetch propre pour que les séries en cours soient bien classées.
 (function purgeLegacyCache() {
   try {
     const toRemove = [];
@@ -22,10 +23,19 @@ function cacheKey(showId) {
       const k = localStorage.key(i);
       if (!k || !k.startsWith(CACHE_PREFIX)) continue;
       const rest = k.slice(CACHE_PREFIX.length);
-      // Nouveau format : "fr_123", "en_123", "es_123" → on garde
-      if (/^(fr|en|es)_/.test(rest)) continue;
       // Ancien format sans langue → à supprimer
-      toRemove.push(k);
+      if (!/^(fr|en|es)_/.test(rest)) {
+        toRemove.push(k);
+        continue;
+      }
+      // Format récent mais sans champ "ongoing" OU marqué avec l'ancienne
+      // définition (basée sur le statut) → à re-fetcher.
+      try {
+        const parsed = JSON.parse(localStorage.getItem(k) || "{}");
+        if (!("ongoing" in parsed) || parsed.v !== 2) toRemove.push(k);
+      } catch {
+        toRemove.push(k);
+      }
     }
     toRemove.forEach((k) => localStorage.removeItem(k));
   } catch {
@@ -58,8 +68,29 @@ export function readShowTitle(showId) {
   }
 }
 
-export function writeEpisodeCache(showId, episodes, title) {
+// La série est-elle encore en cours de diffusion ? (ou null si inconnu)
+export function readShowOngoing(showId) {
   try {
+    const raw = localStorage.getItem(cacheKey(showId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.ts || Date.now() - parsed.ts > CACHE_TTL) return null;
+    return typeof parsed.ongoing === "boolean" ? parsed.ongoing : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeEpisodeCache(showId, episodes, title, ongoing) {
+  try {
+    // On préserve les champs existants si non fournis (ex. appel depuis À venir)
+    let prev = {};
+    try {
+      const raw = localStorage.getItem(cacheKey(showId));
+      if (raw) prev = JSON.parse(raw) || {};
+    } catch {
+      prev = {};
+    }
     const slim = episodes.map((e) => ({
       season: e.season,
       episode: e.episode,
@@ -68,7 +99,13 @@ export function writeEpisodeCache(showId, episodes, title) {
     }));
     localStorage.setItem(
       cacheKey(showId),
-      JSON.stringify({ ts: Date.now(), title: title || null, episodes: slim })
+      JSON.stringify({
+        ts: Date.now(),
+        v: 2,
+        title: title != null ? title : (prev.title || null),
+        ongoing: typeof ongoing === "boolean" ? ongoing : (typeof prev.ongoing === "boolean" ? prev.ongoing : null),
+        episodes: slim,
+      })
     );
   } catch {
     // quota dépassé ou indisponible : on ignore, ce n'est qu'un cache

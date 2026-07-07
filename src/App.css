@@ -813,3 +813,55 @@ body {
   vertical-align: middle;
   margin-right: 2px;
 }
+
+/* ---- Onglets de rubrique (page Séries) ---- */
+.section-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+.section-tab {
+  flex: 0 0 auto;
+  background: #1a1a1a;
+  color: #ccc;
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.section-tab:hover { border-color: #555; }
+.section-tab.active {
+  background: #f5c518;
+  color: #000;
+  border-color: #f5c518;
+  font-weight: 600;
+}
+
+/* ---- Bouton remonter en haut ---- */
+.scroll-top {
+  position: fixed;
+  right: 16px;
+  bottom: 80px; /* au-dessus de la barre d'onglets */
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: #f5c518;
+  color: #000;
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+.scroll-top:active { transform: scale(0.92); }
