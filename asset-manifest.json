@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/tvcouch/static/css/main.9727f182.css",
-    "main.js": "/tvcouch/static/js/main.bc9a3e05.js",
+    "main.js": "/tvcouch/static/js/main.a9f6566c.js",
     "index.html": "/tvcouch/index.html",
     "main.9727f182.css.map": "/tvcouch/static/css/main.9727f182.css.map",
-    "main.bc9a3e05.js.map": "/tvcouch/static/js/main.bc9a3e05.js.map"
+    "main.a9f6566c.js.map": "/tvcouch/static/js/main.a9f6566c.js.map"
   },
   "entrypoints": [
     "static/css/main.9727f182.css",
-    "static/js/main.bc9a3e05.js"
+    "static/js/main.a9f6566c.js"
   ]
 }
