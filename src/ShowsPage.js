@@ -63,6 +63,25 @@ export default function ShowsPage({ onOpenShow }) {
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");
   const [section, setSection] = useState("all"); // all | inProgress | stale | upToDate | notStarted
+  const [layout, setLayout] = useState(() => {
+    try {
+      return localStorage.getItem("tvcouch_shows_layout") === "grid" ? "grid" : "list";
+    } catch {
+      return "list";
+    }
+  });
+
+  const toggleLayout = () => {
+    setLayout((prev) => {
+      const next = prev === "list" ? "grid" : "list";
+      try {
+        localStorage.setItem("tvcouch_shows_layout", next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     let active = true;
@@ -206,22 +225,32 @@ export default function ShowsPage({ onOpenShow }) {
         </select>
       </div>
 
-      <div className="section-tabs">
-        {[
-          ["all", t("shows.filterAll")],
-          ["inProgress", t("shows.filterInProgress")],
-          ["stale", t("shows.filterStale")],
-          ["upToDate", t("shows.filterUpToDate")],
-          ["notStarted", t("shows.filterNotStarted")],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            className={section === key ? "section-tab active" : "section-tab"}
-            onClick={() => setSection(key)}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="section-tabs-row">
+        <div className="section-tabs">
+          {[
+            ["all", t("shows.filterAll")],
+            ["inProgress", t("shows.filterInProgress")],
+            ["stale", t("shows.filterStale")],
+            ["upToDate", t("shows.filterUpToDate")],
+            ["notStarted", t("shows.filterNotStarted")],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              className={section === key ? "section-tab active" : "section-tab"}
+              onClick={() => setSection(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <button
+          className="layout-toggle"
+          onClick={toggleLayout}
+          aria-label={layout === "list" ? t("shows.gridView") : t("shows.listView")}
+          title={layout === "list" ? t("shows.gridView") : t("shows.listView")}
+        >
+          {layout === "list" ? "▦" : "☰"}
+        </button>
       </div>
 
       {pending > 0 && (
@@ -239,18 +268,34 @@ export default function ShowsPage({ onOpenShow }) {
       {(section === "all" || section === "inProgress") && inProgressSorted.length > 0 && (
         <>
           <h3 className="section-pill">{t("shows.sectionToWatch")}</h3>
-          {inProgressSorted.map((it) => (
-            <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
-          ))}
+          {layout === "grid" ? (
+            <div className="shows-grid">
+              {inProgressSorted.map((it) => (
+                <ShowGridCard key={it.show.id} item={it} onOpen={onOpenShow} />
+              ))}
+            </div>
+          ) : (
+            inProgressSorted.map((it) => (
+              <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
+            ))
+          )}
         </>
       )}
 
       {(section === "all" || section === "stale") && staleSorted.length > 0 && (
         <>
           <h3 className="section-pill">{t("shows.sectionStale")}</h3>
-          {staleSorted.map((it) => (
-            <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
-          ))}
+          {layout === "grid" ? (
+            <div className="shows-grid">
+              {staleSorted.map((it) => (
+                <ShowGridCard key={it.show.id} item={it} onOpen={onOpenShow} />
+              ))}
+            </div>
+          ) : (
+            staleSorted.map((it) => (
+              <NextEpRow key={it.show.id} item={it} onOpen={onOpenShow} />
+            ))
+          )}
         </>
       )}
 
@@ -328,6 +373,24 @@ function NextEpRow({ item, onOpen }) {
         <div className="ep-row-progress muted small">
           {watchedCount} / {total} {t("shows.watchedCount")}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Carte compacte pour la vue grille : affiche + fine barre de progression
+function ShowGridCard({ item, onOpen }) {
+  const { show, title, watchedCount, total } = item;
+  const pct = total > 0 ? Math.min(100, Math.round((watchedCount / total) * 100)) : 0;
+  return (
+    <div className="show-grid-card" onClick={() => onOpen(show)}>
+      {posterUrl(show.poster_path) ? (
+        <img src={posterUrl(show.poster_path)} alt={title} />
+      ) : (
+        <div className="no-poster">{title}</div>
+      )}
+      <div className="show-grid-bar">
+        <div className="show-grid-bar-fill" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

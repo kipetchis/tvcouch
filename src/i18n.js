@@ -158,6 +158,8 @@ const DICT = {
   "shows.filterStale": { fr: "Pas regardé depuis un moment", en: "Not watched in a while", es: "Sin ver hace tiempo" },
   "shows.filterUpToDate": { fr: "À jour", en: "Up to date", es: "Al día" },
   "shows.filterNotStarted": { fr: "Pas encore commencées", en: "Not started yet", es: "Aún no empezadas" },
+  "shows.gridView": { fr: "Vue grille", en: "Grid view", es: "Vista cuadrícula" },
+  "shows.listView": { fr: "Vue liste", en: "List view", es: "Vista lista" },
   "shows.sectionUpToDate": { fr: "À JOUR", en: "UP TO DATE", es: "AL DÍA" },
   "shows.filterTitle": { fr: "Filtrer par titre…", en: "Filter by title…", es: "Filtrar por título…" },
   "shows.watchedCount": { fr: "vus", en: "watched", es: "vistos" },
