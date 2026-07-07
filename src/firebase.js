@@ -6,6 +6,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  deleteUser,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -56,5 +60,34 @@ export function authErrorMessage(code) {
       return "Veuillez saisir un mot de passe.";
     default:
       return "Une erreur est survenue. Réessayez.";
+  }
+}
+
+// ─── Suppression de compte ──────────────────────────
+// Supprime le compte Firebase Auth. Peut nécessiter une reconnexion récente.
+export async function deleteAccount() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("no-user");
+  await deleteUser(user);
+}
+
+// Détermine si l'utilisateur s'est connecté par Google ou par email
+export function getAuthProvider() {
+  const user = auth.currentUser;
+  if (!user || !user.providerData || user.providerData.length === 0) return null;
+  return user.providerData[0].providerId; // "google.com" ou "password"
+}
+
+// Ré-authentifie l'utilisateur (nécessaire avant suppression si connexion ancienne)
+export async function reauthenticate(password) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("no-user");
+  const providerId = getAuthProvider();
+  if (providerId === "google.com") {
+    await reauthenticateWithPopup(user, googleProvider);
+  } else {
+    // Email/mot de passe : on a besoin du mot de passe
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
   }
 }

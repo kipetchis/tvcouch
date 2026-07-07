@@ -934,3 +934,65 @@ body {
   justify-content: center;
 }
 .layout-toggle:hover { border-color: #555; }
+
+/* ---- Suppression de compte ---- */
+.danger-zone {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #2a2a2a;
+  text-align: center;
+}
+.delete-account-btn {
+  background: none;
+  border: 1px solid #5a2020;
+  color: #e57373;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.delete-account-btn:hover {
+  background: #2a1414;
+  border-color: #7a2a2a;
+}
+
+.delete-modal {
+  background: #1a1a1a;
+  border-radius: 16px;
+  max-width: 380px;
+  width: 100%;
+  padding: 24px 20px;
+  border: 1px solid #4a2020;
+}
+.delete-modal-title {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  color: #e57373;
+}
+.delete-modal-warning {
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.delete-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.delete-confirm-btn {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.delete-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

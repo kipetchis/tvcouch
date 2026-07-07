@@ -161,3 +161,34 @@ export async function removeFavoriteMovie(movieId) {
   const movies = (fav.movies || []).filter((m) => m.id !== movieId);
   await setDoc(favRef(), { ...fav, movies }, { merge: true });
 }
+
+// Supprime toutes les données Firestore de l'utilisateur (séries, films, favoris).
+// Utilisé lors de la suppression de compte.
+export async function deleteAllUserData() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+
+  // Supprime les sous-collections "shows" et "movies" par lots
+  for (const sub of ["shows", "movies"]) {
+    const snap = await getDocs(collection(db, "users", uid, sub));
+    let batch = writeBatch(db);
+    let count = 0;
+    for (const d of snap.docs) {
+      batch.delete(d.ref);
+      count += 1;
+      // Firestore limite à 500 opérations par lot
+      if (count % 450 === 0) {
+        await batch.commit();
+        batch = writeBatch(db);
+      }
+    }
+    await batch.commit();
+  }
+
+  // Supprime le document meta/favorites
+  try {
+    await deleteDoc(doc(db, "users", uid, "meta", "favorites"));
+  } catch {
+    // ignore
+  }
+}

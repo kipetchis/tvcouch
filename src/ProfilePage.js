@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   getAllShows, getFavorites, removeFavoriteShow, removeFavoriteMovie,
-  setShowRuntime, setMovieRuntime,
+  setShowRuntime, setMovieRuntime, deleteAllUserData,
 } from "./store";
 import { getAllMovies } from "./movieStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
@@ -9,6 +9,7 @@ import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
+import { deleteAccount, reauthenticate, getAuthProvider, authErrorMessage } from "./firebase";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -92,6 +93,60 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [metaMap, setMetaMap] = useState({});
   const [loginStreak] = useState(() => recordAndGetStreak());
   const [openTrophy, setOpenTrophy] = useState(null);
+
+  // Suppression de compte
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [needPassword, setNeedPassword] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState(null);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      // 1) Supprime d'abord les données Firestore
+      await deleteAllUserData();
+      // 2) Puis le compte Auth (peut exiger une reconnexion récente)
+      await deleteAccount();
+      // onAuthStateChanged basculera vers l'écran de connexion
+    } catch (err) {
+      if (err.code === "auth/requires-recent-login") {
+        // Reconnexion nécessaire
+        const provider = getAuthProvider();
+        if (provider === "google.com") {
+          try {
+            await reauthenticate();
+            await deleteAllUserData();
+            await deleteAccount();
+          } catch (e) {
+            setDeleteError(t("account.deleteError"));
+            setDeleting(false);
+          }
+        } else {
+          // Email : on demande le mot de passe
+          setNeedPassword(true);
+          setDeleting(false);
+        }
+      } else {
+        setDeleteError(t("account.deleteError"));
+        setDeleting(false);
+      }
+    }
+  };
+
+  const handleReauthAndDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await reauthenticate(deletePassword);
+      await deleteAllUserData();
+      await deleteAccount();
+    } catch (err) {
+      setDeleteError(authErrorMessage(err.code) || t("account.deleteError"));
+      setDeleting(false);
+    }
+  };
 
   // Épisodes vus (dérivé, instantané)
   const episodesWatched = useMemo(
@@ -424,6 +479,55 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           </button>
         ))}
       </div>
+
+      {/* Suppression de compte */}
+      <div className="danger-zone">
+        <button className="delete-account-btn" onClick={() => setShowDelete(true)}>
+          {t("account.delete")}
+        </button>
+      </div>
+
+      {showDelete && (
+        <div className="ep-detail-overlay" onClick={() => !deleting && setShowDelete(false)}>
+          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="delete-modal-title">{t("account.deleteTitle")}</h2>
+            <p className="delete-modal-warning">{t("account.deleteWarning")}</p>
+
+            {needPassword && (
+              <>
+                <p className="muted small">{t("account.passwordPrompt")}</p>
+                <input
+                  type="password"
+                  className="filter-input"
+                  style={{ width: "100%", marginBottom: 10 }}
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+              </>
+            )}
+
+            {deleteError && <p className="error">{deleteError}</p>}
+
+            <div className="delete-modal-actions">
+              <button
+                className="btn-small"
+                onClick={() => { setShowDelete(false); setNeedPassword(false); setDeletePassword(""); setDeleteError(null); }}
+                disabled={deleting}
+              >
+                {t("account.cancel")}
+              </button>
+              <button
+                className="delete-confirm-btn"
+                onClick={needPassword ? handleReauthAndDelete : handleDeleteAccount}
+                disabled={deleting || (needPassword && !deletePassword)}
+              >
+                {deleting ? t("account.deleting") : t("account.deleteConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Popup détail trophée */}
       {openTrophy && (
