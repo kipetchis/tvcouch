@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { setEpisodeRating, removeEpisodeRating } from "./store";
+import { t } from "./i18n";
 
 const IMG_BASE = "https://image.tmdb.org/t/p";
 
@@ -57,14 +58,14 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
           </div>
           <h2 className="ep-detail-title">{episode.name}</h2>
           {episode.air_date && (
-            <p className="muted small">Diffusé le {episode.air_date}</p>
+            <p className="muted small">{t("detail.airedOn")} {episode.air_date}</p>
           )}
           {episode.overview && (
             <p className="ep-detail-overview">{episode.overview}</p>
           )}
 
           <div className="rating-section">
-            <div className="rating-label">Ma note</div>
+            <div className="rating-label">{t("detail.myRating")}</div>
             <div className="stars">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -78,10 +79,10 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
               ))}
             </div>
 
-            <div className="rating-label">Mon commentaire</div>
+            <div className="rating-label">{t("detail.myComment")}</div>
             <textarea
               className="comment-box"
-              placeholder="Vos impressions sur cet épisode…"
+              placeholder={t("detail.commentEpisodePlaceholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}
@@ -89,16 +90,16 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
 
             <div className="rating-actions">
               <button className="btn" onClick={handleSave} disabled={saving}>
-                {saved ? "✓ Enregistré" : "Enregistrer"}
+                {saved ? t("detail.saved") : t("detail.save")}
               </button>
               {(initialRating?.note || initialRating?.comment) && (
                 <button className="btn-small" onClick={handleRemove} disabled={saving}>
-                  Supprimer la note
+                  {t("detail.deleteRating")}
                 </button>
               )}
             </div>
             <p className="muted small" style={{ marginTop: 8 }}>
-              Noter cet épisode le marque comme vu.
+              {t("detail.rateEpisodeMarksWatched")}
             </p>
           </div>
         </div>

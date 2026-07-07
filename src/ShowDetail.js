@@ -5,6 +5,7 @@ import {
   setEpisodeWatched, setEpisodesWatched, touchShow,
 } from "./store";
 import EpisodeDetail from "./EpisodeDetail";
+import { t } from "./i18n";
 
 export default function ShowDetail({ show, onBack }) {
   const [details, setDetails] = useState(null);
@@ -60,7 +61,7 @@ export default function ShowDetail({ show, onBack }) {
   };
 
   const handleUnfollow = async () => {
-    if (!window.confirm("Ne plus suivre cette série ? Vos épisodes cochés seront perdus.")) return;
+    if (!window.confirm(t("detail.unfollowConfirm"))) return;
     await unfollowShow(show.id);
     setFollowed(false);
     setWatched({});
@@ -154,10 +155,10 @@ export default function ShowDetail({ show, onBack }) {
 
   const totalWatched = Object.keys(watched).length;
 
-  if (loading) return <div className="center">Chargement…</div>;
+  if (loading) return <div className="center">{t("common.loading")}</div>;
   if (error) return (
     <div className="detail">
-      <button className="btn-small" onClick={onBack}>← Retour</button>
+      <button className="btn-small" onClick={onBack}>{t("common.back")}</button>
       <p className="error">{error}</p>
     </div>
   );
@@ -168,7 +169,7 @@ export default function ShowDetail({ show, onBack }) {
 
   return (
     <div className="detail">
-      <button className="btn-small back" onClick={onBack}>← Retour</button>
+      <button className="btn-small back" onClick={onBack}>{t("common.back")}</button>
 
       <div className="detail-head">
         {posterUrl(details.poster_path) && (
@@ -179,20 +180,20 @@ export default function ShowDetail({ show, onBack }) {
           <p className="muted">
             {details.first_air_date ? details.first_air_date.slice(0, 4) : "—"}
             {" · "}
-            {details.number_of_episodes} épisodes
+            {details.number_of_episodes} {t("detail.episodes")}
           </p>
           {followed ? (
             <>
               <p className="progress-text">
-                {totalWatched} / {details.number_of_episodes} vus
+                {totalWatched} / {details.number_of_episodes} {t("detail.watchedOf")}
               </p>
               <button className="btn-small" onClick={handleUnfollow}>
-                Ne plus suivre
+                {t("detail.unfollow")}
               </button>
             </>
           ) : (
             <button className="btn" onClick={handleFollow}>
-              + Suivre cette série
+              {t("detail.follow")}
             </button>
           )}
           {details.overview && <p className="overview">{details.overview}</p>}
@@ -201,7 +202,7 @@ export default function ShowDetail({ show, onBack }) {
 
       {flatrate.length > 0 && (
         <div className="providers">
-          <h3 className="providers-title">Où regarder</h3>
+          <h3 className="providers-title">{t("detail.whereToWatch")}</h3>
           <div className="providers-list">
             {flatrate.map((p) => (
               <div key={p.provider_id} className="provider" title={p.provider_name}>
@@ -214,7 +215,7 @@ export default function ShowDetail({ show, onBack }) {
             ))}
           </div>
           <p className="muted small providers-note">
-            Données JustWatch via TMDB · France
+            {t("detail.providersNote")}
           </p>
         </div>
       )}
@@ -231,8 +232,8 @@ export default function ShowDetail({ show, onBack }) {
                 onClick={() => toggleSeason(s.season_number)}
               >
                 <span>
-                  {s.season_number === 0 ? "Spéciaux" : `Saison ${s.season_number}`}
-                  <span className="muted"> · {s.episode_count} ép.</span>
+                  {s.season_number === 0 ? t("detail.specials") : `${t("detail.season")} ${s.season_number}`}
+                  <span className="muted"> · {s.episode_count} {t("detail.epShort")}</span>
                 </span>
                 <span className="chevron">{isOpen ? "▾" : "▸"}</span>
               </button>
@@ -245,13 +246,13 @@ export default function ShowDetail({ show, onBack }) {
                         className="btn-small"
                         onClick={() => markSeason(s.season_number, episodes, true)}
                       >
-                        Tout cocher
+                        {t("detail.checkAll")}
                       </button>
                       <button
                         className="btn-small"
                         onClick={() => markSeason(s.season_number, episodes, false)}
                       >
-                        Tout décocher
+                        {t("detail.uncheckAll")}
                       </button>
                       <span className="muted small">
                         {seenCount}/{episodes.length}
@@ -287,7 +288,7 @@ export default function ShowDetail({ show, onBack }) {
                     );
                   })}
                   {episodes.length === 0 && (
-                    <p className="muted small">Chargement des épisodes…</p>
+                    <p className="muted small">{t("detail.loadingEpisodes")}</p>
                   )}
                 </div>
               )}

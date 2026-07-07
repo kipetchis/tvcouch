@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { findShowByTvdb, searchShows } from "./tmdb";
 import { importShow } from "./store";
+import { t } from "./i18n";
 
 // Petite pause pour ne pas marteler l'API
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -126,17 +127,13 @@ export default function ImportPage({ onDone }) {
 
   return (
     <div className="import-page">
-      <h2>Importer depuis TV Time</h2>
+      <h2>{t("import.tvtimeShows")}</h2>
 
       {status === "idle" && (
         <>
-          <p className="muted">
-            Sélectionnez votre fichier <code>tvtime-series-….json</code>.
-            L'import va retrouver chaque série sur TMDB et marquer vos épisodes vus.
-            Cela peut prendre plusieurs minutes pour un gros historique.
-          </p>
+          <p className="muted">{t("import.tvtimeShowsHelp")}</p>
           <label className="btn file-btn">
-            Choisir le fichier séries
+            {t("import.chooseShowsFile")}
             <input
               type="file"
               accept=".json,application/json"
@@ -150,7 +147,7 @@ export default function ImportPage({ onDone }) {
       {status === "running" && (
         <>
           <p className="progress-text">
-            Import en cours… {progress.current} / {progress.total} séries
+            {t("import.running")} {progress.current} / {progress.total} {t("import.shows")}
           </p>
           <div className="progress-bar">
             <div
@@ -163,7 +160,7 @@ export default function ImportPage({ onDone }) {
             />
           </div>
           <p className="muted small">
-            Ne fermez pas cette page pendant l'import.
+            {t("import.dontClose")}
           </p>
           <div className="import-log">
             {log.map((line, i) => (
@@ -175,13 +172,13 @@ export default function ImportPage({ onDone }) {
 
       {status === "done" && result && (
         <>
-          <h3>Import terminé 🎉</h3>
+          <h3>{t("import.doneTitle")}</h3>
           <p className="progress-text">
-            {result.imported} séries importées · {result.episodesTotal} épisodes marqués vus
+            {result.imported} {t("import.showsImported")} · {result.episodesTotal} {t("import.episodesMarked")}
           </p>
           {result.notFound.length > 0 && (
             <details className="notfound">
-              <summary>{result.notFound.length} série(s) non importée(s)</summary>
+              <summary>{result.notFound.length} {t("import.notFoundShows")}</summary>
               <ul>
                 {result.notFound.map((n, i) => (
                   <li key={i}>{n}</li>
@@ -190,7 +187,7 @@ export default function ImportPage({ onDone }) {
             </details>
           )}
           <button className="btn" onClick={onDone}>
-            Voir mes séries
+            {t("import.seeMyShows")}
           </button>
         </>
       )}

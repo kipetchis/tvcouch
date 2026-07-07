@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { findMovieByImdb, findShowByImdb, getMovie } from "./tmdb";
 import { saveMovie, setMovieRating } from "./movieStore";
 import { followShow } from "./store";
+import { t } from "./i18n";
 
 // Convertit une note IMDb (/10) en note /5 (arrondie, min 1)
 function toFiveScale(rating10) {
@@ -137,18 +138,15 @@ export default function ImdbImport({ onDone }) {
 
   return (
     <div className="import-page">
-      <h2>Importer depuis IMDb</h2>
+      <h2>{t("import.imdb")}</h2>
 
       {status === "idle" && (
         <>
           <p className="muted small">
-            Exporte tes notes ou ta watchlist IMDb en CSV (sur IMDb : ta liste →
-            bouton « Export »), puis sélectionne le fichier ci-dessous. Les films
-            seront ajoutés comme vus, les séries comme suivies. Les notes IMDb
-            (/10) sont converties sur 5.
+{t("import.imdbHelp")}
           </p>
           <label className="btn file-btn">
-            Choisir un fichier CSV
+            {t("import.chooseCsv")}
             <input
               type="file"
               accept=".csv,text/csv"
@@ -161,7 +159,7 @@ export default function ImdbImport({ onDone }) {
 
       {status === "running" && (
         <>
-          <p className="center">Import en cours… {progress.current}/{progress.total}</p>
+          <p className="center">{t("import.running")} {progress.current}/{progress.total}</p>
           <div className="progress-bar">
             <div
               className="progress-fill"
@@ -183,28 +181,25 @@ export default function ImdbImport({ onDone }) {
 
       {status === "done" && summary && (
         <>
-          <h3 className="section-title">Import terminé 🎉</h3>
+          <h3 className="section-title">{t("import.doneTitle")}</h3>
           <p className="muted small">
-            {summary.moviesAdded} film{summary.moviesAdded > 1 ? "s" : ""} ajouté
-            {summary.moviesAdded > 1 ? "s" : ""}, {summary.showsAdded} série
-            {summary.showsAdded > 1 ? "s" : ""} suivie
-            {summary.showsAdded > 1 ? "s" : ""}.
-            {summary.failed > 0 && ` ${summary.failed} non trouvé(s).`}
+            {summary.moviesAdded} {t("import.movies")} · {summary.showsAdded} {t("import.shows")} {t("import.imdbResult")}.
+            {summary.failed > 0 && ` ${summary.failed} ${t("import.imdbNotFound")}`}
           </p>
 
           {notFound.length > 0 && (
             <details className="notfound">
-              <summary>Voir les {notFound.length} non trouvés</summary>
+              <summary>{t("import.imdbSeeNotFound")} {notFound.length} {t("import.imdbNotFoundSuffix")}</summary>
               <ul>
-                {notFound.map((t, i) => (
-                  <li key={i}>{t}</li>
+                {notFound.map((line, i) => (
+                  <li key={i}>{line}</li>
                 ))}
               </ul>
             </details>
           )}
 
           <button className="btn" onClick={onDone} style={{ marginTop: 16 }}>
-            Terminé
+            {t("common.done")}
           </button>
         </>
       )}

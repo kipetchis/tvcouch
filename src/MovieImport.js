@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { findMovieByImdb, searchMovies } from "./tmdb";
 import { saveMovie } from "./movieStore";
+import { t } from "./i18n";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -92,15 +93,13 @@ export default function MovieImport({ onDone }) {
 
   return (
     <div className="import-page">
-      <h2>Importer les films TV Time</h2>
+      <h2>{t("import.tvtimeMovies")}</h2>
 
       {status === "idle" && (
         <>
-          <p className="muted">
-            Sélectionnez votre fichier <code>tvtime-movies-….json</code>.
-          </p>
+          <p className="muted">{t("import.tvtimeMoviesHelp")}</p>
           <label className="btn file-btn">
-            Choisir le fichier films
+            {t("import.chooseMoviesFile")}
             <input
               type="file"
               accept=".json"
@@ -114,7 +113,7 @@ export default function MovieImport({ onDone }) {
       {status === "running" && (
         <>
           <p className="progress-text">
-            Import… {progress.current} / {progress.total} films
+            {t("import.running")} {progress.current} / {progress.total} {t("import.movies")}
           </p>
           <div className="progress-bar">
             <div
@@ -136,13 +135,13 @@ export default function MovieImport({ onDone }) {
 
       {status === "done" && result && (
         <>
-          <h3>Import terminé 🎉</h3>
+          <h3>{t("import.doneTitle")}</h3>
           <p className="progress-text">
-            {result.imported} films importés · {result.watchedCount} marqués vus
+            {result.imported} {t("import.moviesImported")} · {result.watchedCount} {t("import.markedWatched")}
           </p>
           {result.notFound.length > 0 && (
             <details className="notfound">
-              <summary>{result.notFound.length} film(s) non importé(s)</summary>
+              <summary>{result.notFound.length} {t("import.notFoundMovies")}</summary>
               <ul>
                 {result.notFound.map((n, i) => (
                   <li key={i}>{n}</li>
@@ -151,7 +150,7 @@ export default function MovieImport({ onDone }) {
             </details>
           )}
           <button className="btn" onClick={onDone}>
-            Voir mes films
+            {t("import.seeMyMovies")}
           </button>
         </>
       )}

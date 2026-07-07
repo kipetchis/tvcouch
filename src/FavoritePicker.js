@@ -2,6 +2,7 @@ import { useState } from "react";
 import { searchShows, searchMovies, posterUrl } from "./tmdb";
 import { addFavoriteShow, addFavoriteMovie } from "./store";
 import MovieDetail from "./MovieDetail";
+import { t } from "./i18n";
 
 export default function FavoritePicker({ type, onBack, onOpenShow }) {
   const [query, setQuery] = useState("");
@@ -44,20 +45,20 @@ export default function FavoritePicker({ type, onBack, onOpenShow }) {
 
   return (
     <div className="detail">
-      <button className="btn-small back" onClick={onBack}>← Retour</button>
-      <h2>{isShow ? "Ajouter une série préférée" : "Ajouter un film préféré"}</h2>
+      <button className="btn-small back" onClick={onBack}>{t("common.back")}</button>
+      <h2>{isShow ? t("fav.addShow") : t("fav.addMovie")}</h2>
 
       <form className="search" onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder={isShow ? "Rechercher une série…" : "Rechercher un film…"}
+          placeholder={isShow ? t("common.searchShow") : t("movies.searchMovie")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button className="btn" type="submit">Rechercher</button>
+        <button className="btn" type="submit">{t("common.search")}</button>
       </form>
 
-      {searching && <p className="center">Recherche…</p>}
+      {searching && <p className="center">{t("common.loading")}</p>}
 
       <div className="grid">
         {results.map((item) => {
@@ -69,7 +70,7 @@ export default function FavoritePicker({ type, onBack, onOpenShow }) {
                 {posterUrl(item.poster_path) ? (
                   <img src={posterUrl(item.poster_path)} alt={title} />
                 ) : (
-                  <div className="no-poster">Pas d'affiche</div>
+                  <div className="no-poster">{t("common.noPoster")}</div>
                 )}
                 <div className="card-title">{title}</div>
               </div>
@@ -79,7 +80,7 @@ export default function FavoritePicker({ type, onBack, onOpenShow }) {
                   onClick={() => handleAdd(item)}
                   disabled={isAdded}
                 >
-                  {isAdded ? "✓ Ajouté" : "❤️ Ajouter"}
+                  {isAdded ? t("fav.added") : t("fav.add")}
                 </button>
               </div>
             </div>
