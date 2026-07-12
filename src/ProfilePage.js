@@ -10,6 +10,7 @@ import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
 import { deleteAccount, reauthenticate, getAuthProvider, authErrorMessage } from "./firebase";
+import { useBackClose } from "./backNav";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -85,6 +86,9 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
   const [openMovie, setOpenMovie] = useState(null);
+
+  // Retour / swipe : ferme la fiche film avant de revenir à la liste
+  useBackClose(!!openMovie, () => setOpenMovie(null));
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   // Données brutes pour les trophées
@@ -93,9 +97,11 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [metaMap, setMetaMap] = useState({});
   const [loginStreak] = useState(() => recordAndGetStreak());
   const [openTrophy, setOpenTrophy] = useState(null);
+  useBackClose(!!openTrophy, () => setOpenTrophy(null));
 
   // Suppression de compte
   const [showDelete, setShowDelete] = useState(false);
+  useBackClose(showDelete, () => { if (!deleting) setShowDelete(false); });
   const [deleting, setDeleting] = useState(false);
   const [needPassword, setNeedPassword] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");

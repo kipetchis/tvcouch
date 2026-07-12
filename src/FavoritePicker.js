@@ -3,6 +3,7 @@ import { searchShows, searchMovies, posterUrl } from "./tmdb";
 import { addFavoriteShow, addFavoriteMovie } from "./store";
 import MovieDetail from "./MovieDetail";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 export default function FavoritePicker({ type, onBack, onOpenShow }) {
   const [query, setQuery] = useState("");
@@ -10,6 +11,9 @@ export default function FavoritePicker({ type, onBack, onOpenShow }) {
   const [searching, setSearching] = useState(false);
   const [added, setAdded] = useState([]);
   const [openMovie, setOpenMovie] = useState(null);
+
+  // Retour / swipe : ferme la fiche film avant de revenir à la liste
+  useBackClose(!!openMovie, () => setOpenMovie(null));
 
   const isShow = type === "show";
 

@@ -16,6 +16,8 @@ import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
 import ScrollTopButton from "./ScrollTopButton";
+import ExitToast from "./ExitToast";
+import { useBackClose } from "./backNav";
 import { useLang, t } from "./i18n";
 import "./App.css";
 
@@ -165,6 +167,13 @@ function App() {
   const [showMovieImport, setShowMovieImport] = useState(false);
   const [showImdbImport, setShowImdbImport] = useState(false);
   const [favPicker, setFavPicker] = useState(null);
+
+  // Retour / swipe Android : ferme l'écran ouvert au lieu de quitter l'app
+  useBackClose(!!selectedShow, () => setSelectedShow(null));
+  useBackClose(showImport, () => setShowImport(false));
+  useBackClose(showMovieImport, () => setShowMovieImport(false));
+  useBackClose(showImdbImport, () => setShowImdbImport(false));
+  useBackClose(!!favPicker, () => setFavPicker(null));
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -375,6 +384,7 @@ function App() {
       )}
 
       <ScrollTopButton />
+      <ExitToast />
 
       <nav className="tabbar">
         <button

@@ -996,3 +996,24 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ---- Toast "Appuyez de nouveau pour quitter" ---- */
+.exit-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 76px; /* au-dessus de la barre d'onglets */
+  transform: translateX(-50%);
+  background: #262626;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 60;
+  white-space: nowrap;
+  animation: exitToastIn 0.15s ease-out;
+}
+@keyframes exitToastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

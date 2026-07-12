@@ -4,6 +4,7 @@ import { getAllMovies, saveMovie } from "./movieStore";
 import { getAllShows, followShow } from "./store";
 import MovieDetail from "./MovieDetail";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 // ─── Cartes ──────────────────────────────────────────
 
@@ -133,6 +134,9 @@ export default function ExplorerPage({ onOpenShow }) {
   const [myMovies, setMyMovies] = useState({});
   const [myShows, setMyShows] = useState({});
   const [openMovie, setOpenMovie] = useState(null);
+
+  // Retour / swipe : ferme la fiche film avant de revenir à la liste
+  useBackClose(!!openMovie, () => setOpenMovie(null));
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {

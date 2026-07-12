@@ -282,6 +282,7 @@ const DICT = {
   "account.reauthNeeded": { fr: "Pour des raisons de sécurité, reconnecte-toi pour confirmer la suppression.", en: "For security reasons, sign in again to confirm deletion.", es: "Por seguridad, vuelve a iniciar sesión para confirmar la eliminación." },
   "account.passwordPrompt": { fr: "Saisis ton mot de passe pour confirmer :", en: "Enter your password to confirm:", es: "Introduce tu contraseña para confirmar:" },
   "account.deleteError": { fr: "Erreur lors de la suppression. Réessaie.", en: "Error during deletion. Please try again.", es: "Error al eliminar. Inténtalo de nuevo." },
+  "app.exitPrompt": { fr: "Appuyez de nouveau pour quitter", en: "Press again to exit", es: "Pulsa de nuevo para salir" },
   "tier.Bronze": { fr: "Bronze", en: "Bronze", es: "Bronce" },
   "tier.Argent": { fr: "Argent", en: "Silver", es: "Plata" },
   "tier.Or": { fr: "Or", en: "Gold", es: "Oro" },

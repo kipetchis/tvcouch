@@ -4,6 +4,7 @@ import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 // Tri de la collection de films
 function sortMovies(list, sort) {
@@ -32,6 +33,9 @@ export default function MoviesPage() {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [openMovie, setOpenMovie] = useState(null);
+
+  // Retour / swipe : ferme la fiche film avant de revenir à la liste
+  useBackClose(!!openMovie, () => setOpenMovie(null));
 
   // Tri + filtre de la collection
   const [sort, setSort] = useState("recent");

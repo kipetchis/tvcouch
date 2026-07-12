@@ -9,6 +9,7 @@ import {
 } from "./store";
 import EpisodeDetail from "./EpisodeDetail";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 // Choisit la meilleure vidéo YouTube (bande-annonce officielle en priorité)
 function pickTrailer(videos) {
@@ -37,6 +38,9 @@ export default function ShowDetail({ show, onBack }) {
   const [trailer, setTrailer] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [openEpisode, setOpenEpisode] = useState(null); // { seasonNumber, episode }
+
+  // Retour / swipe : ferme le détail d'épisode avant de revenir à la série
+  useBackClose(!!openEpisode, () => setOpenEpisode(null));
 
   useEffect(() => {
     let active = true;
