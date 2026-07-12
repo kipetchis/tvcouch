@@ -31,6 +31,24 @@ export async function removeMovie(movieId) {
   await deleteDoc(movieRef(movieId));
 }
 
+// Nombre de fois où le film a été REVU (en plus du premier visionnage).
+// 0 ou absent = vu une seule fois. 1 = revu une fois (affiché "×2"), etc.
+export async function setMovieRewatchCount(movieId, count) {
+  await updateDoc(movieRef(movieId), {
+    rewatchCount: count > 0 ? count : deleteField(),
+  });
+}
+
+// Remet un film "vu" en liste à voir (annule le visionnage et le compteur
+// de revisionnage). La note/le commentaire existants sont conservés.
+export async function unwatchMovie(movieId) {
+  await updateDoc(movieRef(movieId), {
+    status: "watchlist",
+    watchedDate: deleteField(),
+    rewatchCount: deleteField(),
+  });
+}
+
 export async function getAllMovies() {
   const uid = auth.currentUser.uid;
   const snap = await getDocs(collection(db, "users", uid, "movies"));

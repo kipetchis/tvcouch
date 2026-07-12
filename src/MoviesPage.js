@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { getAllMovies, saveMovie, removeMovie } from "./movieStore";
+import { getAllMovies, saveMovie, removeMovie, setMovieRewatchCount, unwatchMovie } from "./movieStore";
 import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
+import RewatchMenu from "./RewatchMenu";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -33,9 +34,11 @@ export default function MoviesPage() {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [openMovie, setOpenMovie] = useState(null);
+  const [rewatchMovie, setRewatchMovie] = useState(null); // film pour lequel la popup est ouverte
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
+  useBackClose(!!rewatchMovie, () => setRewatchMovie(null));
 
   // Tri + filtre de la collection
   const [sort, setSort] = useState("recent");
@@ -112,6 +115,35 @@ export default function MoviesPage() {
   const handleRemove = async (movieId) => {
     await removeMovie(movieId);
     reload();
+  };
+
+  const handleUnwatchMovie = async () => {
+    if (!rewatchMovie) return;
+    const movieId = rewatchMovie.id;
+    setMovies((prev) =>
+      prev.map((m) => (m.id === movieId ? { ...m, status: "watchlist", rewatchCount: 0 } : m))
+    );
+    setRewatchMovie(null);
+    try {
+      await unwatchMovie(movieId);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleRewatchMovie = async () => {
+    if (!rewatchMovie) return;
+    const movieId = rewatchMovie.id;
+    const newCount = (rewatchMovie.rewatchCount || 0) + 1;
+    setMovies((prev) =>
+      prev.map((m) => (m.id === movieId ? { ...m, rewatchCount: newCount } : m))
+    );
+    setRewatchMovie(null);
+    try {
+      await setMovieRewatchCount(movieId, newCount);
+    } catch {
+      // ignore
+    }
   };
 
   const handleRated = (movieId, rating) => {
@@ -250,6 +282,17 @@ export default function MoviesPage() {
             <div className="grid">
               {shown.map((movie) => (
                 <div key={movie.id} className="card">
+                  {view === "watched" && (
+                    <div
+                      className={`movie-watch-badge ${movie.rewatchCount > 0 ? "rewatched" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRewatchMovie(movie);
+                      }}
+                    >
+                      {movie.rewatchCount > 0 ? `×${movie.rewatchCount + 1}` : "✓"}
+                    </div>
+                  )}
                   <div onClick={() => setOpenMovie(movie)}>
                     {posterUrl(movie.poster_path) ? (
                       <img src={posterUrl(movie.poster_path)} alt={movie.title} />
@@ -294,6 +337,15 @@ export default function MoviesPage() {
           movie={openMovie}
           onClose={() => setOpenMovie(null)}
           onRated={handleRated}
+        />
+      )}
+
+      {rewatchMovie && (
+        <RewatchMenu
+          count={rewatchMovie.rewatchCount || 0}
+          onUnwatch={handleUnwatchMovie}
+          onRewatch={handleRewatchMovie}
+          onClose={() => setRewatchMovie(null)}
         />
       )}
     </div>

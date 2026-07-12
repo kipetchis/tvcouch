@@ -51,17 +51,30 @@ export async function getAllShows() {
 
 export async function setEpisodeWatched(showId, seasonNumber, episodeNumber, watchedDate) {
   const key = `watched.${seasonNumber}_${episodeNumber}`;
-  await updateDoc(showRef(showId), {
-    [key]: watchedDate ? watchedDate : deleteField(),
-  });
+  const data = { [key]: watchedDate ? watchedDate : deleteField() };
+  if (!watchedDate) {
+    // On décoche : le compteur de revisionnage n'a plus de sens
+    data[`rewatch.${seasonNumber}_${episodeNumber}`] = deleteField();
+  }
+  await updateDoc(showRef(showId), data);
 }
 
 export async function setEpisodesWatched(showId, updates) {
   const data = {};
   Object.entries(updates).forEach(([k, v]) => {
     data[`watched.${k}`] = v ? v : deleteField();
+    if (!v) data[`rewatch.${k}`] = deleteField();
   });
   await updateDoc(showRef(showId), data);
+}
+
+// Nombre de fois où un épisode a été REVU (en plus du premier visionnage).
+// 0 ou absent = vu une seule fois. 1 = revu une fois (affiché "×2"), etc.
+export async function setEpisodeRewatchCount(showId, seasonNumber, episodeNumber, count) {
+  const key = `rewatch.${seasonNumber}_${episodeNumber}`;
+  await updateDoc(showRef(showId), {
+    [key]: count > 0 ? count : deleteField(),
+  });
 }
 
 export async function touchShow(showId) {

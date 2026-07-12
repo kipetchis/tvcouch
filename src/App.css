@@ -104,6 +104,7 @@ body {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.1s;
+  position: relative;
 }
 .card:active { transform: scale(0.97); }
 
@@ -1016,4 +1017,89 @@ body {
 @keyframes exitToastIn {
   from { opacity: 0; transform: translateX(-50%) translateY(8px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---- Popup revisionnage (Pas vu / +1) ---- */
+.rewatch-menu {
+  background: #1a1a1a;
+  border-radius: 16px;
+  max-width: 320px;
+  width: 100%;
+  padding: 20px;
+}
+.rewatch-menu-title {
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: #f5c518;
+  margin-bottom: 16px;
+}
+.rewatch-btn {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.rewatch-btn-add {
+  background: #f5c518;
+  color: #000;
+}
+.rewatch-btn-unwatch {
+  background: #2a1414;
+  color: #e57373;
+  border: 1px solid #4a2020;
+}
+.rewatch-btn-cancel {
+  background: none;
+  color: #999;
+  margin-bottom: 0;
+}
+
+/* Badge de revisionnage (×2, ×3...) sur le rond de coche */
+.check {
+  position: relative;
+}
+.check-rewatch-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  background: #f5c518;
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 8px;
+  line-height: 1.3;
+}
+
+/* Badge de revisionnage sur les cartes films (coin de l'affiche) */
+.movie-watch-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+  border-radius: 14px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+  z-index: 2;
+}
+.movie-watch-badge.rewatched {
+  width: auto;
+  padding: 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #f5c518;
+  border-color: #f5c518;
 }

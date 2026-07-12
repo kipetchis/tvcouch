@@ -5,9 +5,10 @@ import {
 } from "./tmdb";
 import {
   followShow, unfollowShow, getFollowedShow,
-  setEpisodeWatched, setEpisodesWatched, touchShow,
+  setEpisodeWatched, setEpisodesWatched, setEpisodeRewatchCount, touchShow,
 } from "./store";
 import EpisodeDetail from "./EpisodeDetail";
+import RewatchMenu from "./RewatchMenu";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -27,6 +28,7 @@ function pickTrailer(videos) {
 export default function ShowDetail({ show, onBack }) {
   const [details, setDetails] = useState(null);
   const [watched, setWatched] = useState({});
+  const [rewatch, setRewatch] = useState({}); // { "s_e": count } — revisionnages
   const [ratings, setRatings] = useState({});
   const [followed, setFollowed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,9 +40,11 @@ export default function ShowDetail({ show, onBack }) {
   const [trailer, setTrailer] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [openEpisode, setOpenEpisode] = useState(null); // { seasonNumber, episode }
+  const [rewatchMenu, setRewatchMenu] = useState(null); // { seasonNumber, episodeNumber }
 
   // Retour / swipe : ferme le détail d'épisode avant de revenir à la série
   useBackClose(!!openEpisode, () => setOpenEpisode(null));
+  useBackClose(!!rewatchMenu, () => setRewatchMenu(null));
 
   useEffect(() => {
     let active = true;
@@ -57,6 +61,7 @@ export default function ShowDetail({ show, onBack }) {
         if (f) {
           setFollowed(true);
           setWatched(f.watched || {});
+          setRewatch(f.rewatch || {});
           setRatings(f.ratings || {});
         }
         getWatchProviders("tv", show.id)
@@ -139,6 +144,15 @@ export default function ShowDetail({ show, onBack }) {
       else delete next[key];
       return next;
     });
+    if (!newValue) {
+      // On décoche : le compteur de revisionnage n'a plus de sens
+      setRewatch((prev) => {
+        if (!(key in prev)) return prev;
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
     try {
       await setEpisodeWatched(show.id, seasonNumber, episodeNumber, newValue);
       if (newValue) await touchShow(show.id);
@@ -162,9 +176,42 @@ export default function ShowDetail({ show, onBack }) {
       });
       return next;
     });
+    if (!mark) {
+      setRewatch((prev) => {
+        const next = { ...prev };
+        Object.keys(updates).forEach((k) => delete next[k]);
+        return next;
+      });
+    }
     try {
       await setEpisodesWatched(show.id, updates);
       if (mark) await touchShow(show.id);
+    } catch (e) {
+      if (e.name !== "AbortError") setError(e.message);
+    }
+  };
+
+  // Clic sur un épisode déjà vu : ouvre la popup Pas vu / +1
+  const openRewatchMenu = (seasonNumber, episodeNumber) => {
+    setRewatchMenu({ seasonNumber, episodeNumber });
+  };
+
+  const handleUnwatchFromMenu = async () => {
+    if (!rewatchMenu) return;
+    await toggleEpisode(rewatchMenu.seasonNumber, rewatchMenu.episodeNumber);
+    setRewatchMenu(null);
+  };
+
+  const handleRewatchFromMenu = async () => {
+    if (!rewatchMenu) return;
+    const { seasonNumber, episodeNumber } = rewatchMenu;
+    const key = `${seasonNumber}_${episodeNumber}`;
+    const newCount = (rewatch[key] || 0) + 1;
+    setRewatch((prev) => ({ ...prev, [key]: newCount }));
+    setRewatchMenu(null);
+    try {
+      await setEpisodeRewatchCount(show.id, seasonNumber, episodeNumber, newCount);
+      await touchShow(show.id);
     } catch (e) {
       if (e.name !== "AbortError") setError(e.message);
     }
@@ -357,6 +404,7 @@ export default function ShowDetail({ show, onBack }) {
                   {episodes.map((ep) => {
                     const key = `${s.season_number}_${ep.episode_number}`;
                     const isWatched = !!watched[key];
+                    const rwCount = rewatch[key] || 0;
                     const rating = ratings[key];
                     return (
                       <div key={ep.id} className="episode">
@@ -375,9 +423,16 @@ export default function ShowDetail({ show, onBack }) {
                         </div>
                         <div
                           className={`check ${isWatched ? "checked" : ""}`}
-                          onClick={() => toggleEpisode(s.season_number, ep.episode_number)}
+                          onClick={() =>
+                            isWatched
+                              ? openRewatchMenu(s.season_number, ep.episode_number)
+                              : toggleEpisode(s.season_number, ep.episode_number)
+                          }
                         >
                           {isWatched ? "✓" : ""}
+                          {isWatched && rwCount > 0 && (
+                            <span className="check-rewatch-badge">×{rwCount + 1}</span>
+                          )}
                         </div>
                       </div>
                     );
@@ -400,6 +455,15 @@ export default function ShowDetail({ show, onBack }) {
           initialRating={ratings[`${openEpisode.seasonNumber}_${openEpisode.episode.episode_number}`]}
           onClose={() => setOpenEpisode(null)}
           onRated={handleRated}
+        />
+      )}
+
+      {rewatchMenu && (
+        <RewatchMenu
+          count={rewatch[`${rewatchMenu.seasonNumber}_${rewatchMenu.episodeNumber}`] || 0}
+          onUnwatch={handleUnwatchFromMenu}
+          onRewatch={handleRewatchFromMenu}
+          onClose={() => setRewatchMenu(null)}
         />
       )}
     </div>

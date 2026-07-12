@@ -283,6 +283,13 @@ const DICT = {
   "account.passwordPrompt": { fr: "Saisis ton mot de passe pour confirmer :", en: "Enter your password to confirm:", es: "Introduce tu contraseña para confirmar:" },
   "account.deleteError": { fr: "Erreur lors de la suppression. Réessaie.", en: "Error during deletion. Please try again.", es: "Error al eliminar. Inténtalo de nuevo." },
   "app.exitPrompt": { fr: "Appuyez de nouveau pour quitter", en: "Press again to exit", es: "Pulsa de nuevo para salir" },
+
+  // Menu revisionnage (clic sur un épisode/film déjà vu)
+  "rewatch.watchedOnce": { fr: "Vu", en: "Watched", es: "Visto" },
+  "rewatch.watchedTimes": { fr: "Vu {n} fois", en: "Watched {n} times", es: "Visto {n} veces" },
+  "rewatch.markUnwatched": { fr: "Pas vu", en: "Not watched", es: "No visto" },
+  "rewatch.addRewatch": { fr: "+1 (revu)", en: "+1 (rewatched)", es: "+1 (revisto)" },
+  "rewatch.cancel": { fr: "Annuler", en: "Cancel", es: "Cancelar" },
   "tier.Bronze": { fr: "Bronze", en: "Bronze", es: "Bronce" },
   "tier.Argent": { fr: "Argent", en: "Silver", es: "Plata" },
   "tier.Or": { fr: "Or", en: "Gold", es: "Oro" },
