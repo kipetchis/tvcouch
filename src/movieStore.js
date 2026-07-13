@@ -1,12 +1,19 @@
 // Fonctions Firestore pour les films
 import { db, auth } from "./firebase";
 import {
-  doc, setDoc, updateDoc, deleteDoc, deleteField, getDocs, collection, writeBatch,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, getDocs, collection, writeBatch,
 } from "firebase/firestore";
 
 function movieRef(movieId) {
   const uid = auth.currentUser.uid;
   return doc(db, "users", uid, "movies", String(movieId));
+}
+
+// Lit le document Firestore canonique d'un film (note, commentaire, statut…).
+// Renvoie null si le film n'a jamais été ajouté (jamais vu, jamais noté).
+export async function getMovieDoc(movieId) {
+  const snap = await getDoc(movieRef(movieId));
+  return snap.exists() ? snap.data() : null;
 }
 
 // Ajoute/met à jour un film. status: "watched" | "watchlist"

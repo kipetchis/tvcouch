@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { setMovieRating, removeMovieRating } from "./movieStore";
+import { setMovieRating, removeMovieRating, getMovieDoc } from "./movieStore";
 import {
   getMovie, getMovieCredits, getMovieVideos, getWatchProviders,
   posterUrl, logoUrl, profileUrl,
@@ -68,6 +68,23 @@ export default function MovieDetail({ movie, onClose, onRated }) {
       }
     })();
 
+    return () => { active = false; };
+  }, [movie.id]);
+
+  // La note/le commentaire affichés dépendent de ce que le parent nous passe
+  // en prop, ce qui est parfois incomplet (ex. depuis les favoris, qui ne
+  // stockent que l'affiche et le titre). On relit systématiquement la vraie
+  // note enregistrée dans Firestore, qui est la seule source fiable.
+  useEffect(() => {
+    let active = true;
+    getMovieDoc(movie.id)
+      .then((data) => {
+        if (!active || !data) return;
+        if (data.note) setNote(data.note);
+        if (data.comment) setComment(data.comment);
+        if (data.note || data.comment) setSaved(true);
+      })
+      .catch(() => {});
     return () => { active = false; };
   }, [movie.id]);
 
