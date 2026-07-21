@@ -104,6 +104,7 @@ function Row({ title, children }) {
     <div style={{ marginBottom: 20 }}>
       <h3 className="section-title">{title}</h3>
       <div
+        className="hscroll"
         style={{
           display: "flex",
           gap: 10,

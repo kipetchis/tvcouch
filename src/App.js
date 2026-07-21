@@ -18,6 +18,7 @@ import ExplorerPage from "./ExplorerPage";
 import ScrollTopButton from "./ScrollTopButton";
 import ExitToast from "./ExitToast";
 import { useBackClose } from "./backNav";
+import { useSwipeTabs } from "./useSwipeTabs";
 import { useLang, t } from "./i18n";
 import "./App.css";
 
@@ -175,6 +176,13 @@ function App() {
   useBackClose(showImdbImport, () => setShowImdbImport(false));
   useBackClose(!!favPicker, () => setFavPicker(null));
 
+  const TAB_ORDER = ["shows", "movies", "explore", "profile"];
+  const { onTouchStart: onTabTouchStart, onTouchEnd: onTabTouchEnd } = useSwipeTabs(
+    TAB_ORDER,
+    tab,
+    setTab
+  );
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -287,7 +295,11 @@ function App() {
   }
 
   return (
-    <div className="app with-tabs">
+    <div
+      className="app with-tabs"
+      onTouchStart={onTabTouchStart}
+      onTouchEnd={onTabTouchEnd}
+    >
       <header className="header">
         <h1>
           <Logo />
