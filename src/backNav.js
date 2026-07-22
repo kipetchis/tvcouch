@@ -41,6 +41,35 @@ function ensureGuard() {
   }
 }
 
+// Tentative de sortie de l'app : au premier appel, affiche le toast
+// d'avertissement. Si un second appel arrive dans la fenêtre de temps qui
+// suit, on ferme vraiment l'application. Utilisé à la fois par le bouton
+// retour Android (popstate) et par le geste de swipe personnalisé.
+function attemptExit() {
+  const now = Date.now();
+  if (now - lastExitPromptAt < EXIT_WINDOW_MS) {
+    // Deuxième tentative rapide : on ferme réellement l'app
+    lastExitPromptAt = 0;
+    try {
+      window.close();
+    } catch {
+      // ignore
+    }
+    return;
+  }
+  lastExitPromptAt = now;
+  notifyExitPrompt();
+  // On repousse une garde pour neutraliser une éventuelle navigation en
+  // cours et rester dans l'app (utile pour le chemin popstate).
+  ensureGuard();
+}
+
+// À appeler depuis n'importe où (ex. un geste de swipe personnalisé) pour
+// déclencher la même logique de confirmation de sortie que le bouton retour.
+export function requestExit() {
+  attemptExit();
+}
+
 function handlePopState() {
   const entry = stack.pop();
   if (entry) {
@@ -48,15 +77,7 @@ function handlePopState() {
     return;
   }
   // Pile vide : on est sur l'écran principal, on demande confirmation
-  const now = Date.now();
-  if (now - lastExitPromptAt < EXIT_WINDOW_MS) {
-    // Deuxième retour rapide : on laisse l'app se fermer normalement
-    return;
-  }
-  lastExitPromptAt = now;
-  notifyExitPrompt();
-  // On repousse une garde pour neutraliser cette navigation et rester dans l'app
-  ensureGuard();
+  attemptExit();
 }
 
 let listenerAttached = false;
