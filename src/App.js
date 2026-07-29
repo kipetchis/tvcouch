@@ -197,6 +197,35 @@ function App() {
     return unsub;
   }, []);
 
+  // ── RACCOURCIS ÉCRAN D'ACCUEIL (manifest.json "shortcuts") ──────────────
+  // Lit ?shortcut=towatch|upcoming|add|favorites une fois l'utilisateur
+  // connecté, ouvre l'écran correspondant, puis nettoie l'URL pour ne pas
+  // rejouer le raccourci si l'app est rouverte normalement ensuite.
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    const shortcut = params.get("shortcut");
+    if (!shortcut) return;
+    window.history.replaceState({}, "", window.location.pathname);
+    if (shortcut === "towatch") {
+      setTab("shows");
+      setShowsSubTab("towatch");
+    } else if (shortcut === "upcoming") {
+      setTab("shows");
+      setShowsSubTab("upcoming");
+    } else if (shortcut === "add") {
+      setTab("shows");
+      setShowsSubTab("towatch");
+      setTimeout(() => {
+        const el = document.querySelector('.search input[type="text"]');
+        if (el) el.focus();
+      }, 300);
+    } else if (shortcut === "favorites") {
+      setTab("profile");
+      setFavPicker("show");
+    }
+  }, [user]);
+
   const handleLogin = async () => {
     setError(null);
     try {
