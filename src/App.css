@@ -1103,3 +1103,14 @@ body {
   color: #f5c518;
   border-color: #f5c518;
 }
+
+/* ---- Réalisateur / créateur (avant le casting) ---- */
+.director-line {
+  font-size: 0.88rem;
+  color: #ccc;
+  margin: 4px 0 14px;
+}
+.director-line strong {
+  color: #fff;
+  font-weight: 600;
+}

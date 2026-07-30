@@ -37,6 +37,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
   const [details, setDetails] = useState(null);
   const [providers, setProviders] = useState(null);
   const [cast, setCast] = useState([]);
+  const [director, setDirector] = useState(null);
   const [trailer, setTrailer] = useState(null);
   const [playing, setPlaying] = useState(false);
 
@@ -50,7 +51,12 @@ export default function MovieDetail({ movie, onClose, onRated }) {
       .then((p) => { if (active) setProviders(p); })
       .catch(() => {});
     getMovieCredits(movie.id)
-      .then((c) => { if (active) setCast((c.cast || []).slice(0, 12)); })
+      .then((c) => {
+        if (!active) return;
+        setCast((c.cast || []).slice(0, 12));
+        const directors = (c.crew || []).filter((p) => p.job === "Director");
+        setDirector(directors.length > 0 ? directors : null);
+      })
       .catch(() => {});
 
     // Bande-annonce : on tente en français, sinon en anglais
@@ -186,6 +192,12 @@ export default function MovieDetail({ movie, onClose, onRated }) {
                 )}
               </div>
             </div>
+          )}
+
+          {director && (
+            <p className="director-line">
+              🎬 {t("detail.director")} <strong>{director.map((d) => d.name).join(", ")}</strong>
+            </p>
           )}
 
           {cast.length > 0 && (

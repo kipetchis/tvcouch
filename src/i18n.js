@@ -194,6 +194,8 @@ const DICT = {
   "detail.rateMarksWatched": { fr: "Noter ce film le marque comme vu.", en: "Rating this movie marks it as watched.", es: "Calificar esta película la marca como vista." },
   "detail.trailer": { fr: "Bande-annonce", en: "Trailer", es: "Tráiler" },
   "detail.cast": { fr: "Casting", en: "Cast", es: "Reparto" },
+  "detail.director": { fr: "Réalisé par", en: "Directed by", es: "Dirigida por" },
+  "detail.creator": { fr: "Créée par", en: "Created by", es: "Creada por" },
   "detail.airedOn": { fr: "Diffusé le", en: "Aired on", es: "Emitido el" },
   "detail.commentEpisodePlaceholder": { fr: "Vos impressions sur cet épisode…", en: "Your thoughts on this episode…", es: "Tus impresiones sobre este episodio…" },
   "detail.rateEpisodeMarksWatched": { fr: "Noter cet épisode le marque comme vu.", en: "Rating this episode marks it as watched.", es: "Calificar este episodio lo marca como visto." },

@@ -315,6 +315,12 @@ export default function ShowDetail({ show, onBack }) {
         </div>
       )}
 
+      {details.created_by && details.created_by.length > 0 && (
+        <p className="director-line">
+          🎬 {t("detail.creator")} <strong>{details.created_by.map((c) => c.name).join(", ")}</strong>
+        </p>
+      )}
+
       {cast.length > 0 && (
         <div className="cast-section">
           <h3 className="cast-title">{t("detail.cast")}</h3>
