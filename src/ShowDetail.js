@@ -317,7 +317,20 @@ export default function ShowDetail({ show, onBack }) {
 
       {details.created_by && details.created_by.length > 0 && (
         <p className="director-line">
-          🎬 {t("detail.creator")} <strong>{details.created_by.map((c) => c.name).join(", ")}</strong>
+          🎬 {t("detail.creator")}{" "}
+          {details.created_by.map((c, i) => (
+            <span key={c.id}>
+              {i > 0 && ", "}
+              <a
+                className="person-link"
+                href={`https://www.themoviedb.org/person/${c.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {c.name}
+              </a>
+            </span>
+          ))}
         </p>
       )}
 
@@ -326,7 +339,13 @@ export default function ShowDetail({ show, onBack }) {
           <h3 className="cast-title">{t("detail.cast")}</h3>
           <div className="cast-list">
             {cast.map((person) => (
-              <div key={person.id} className="cast-member">
+              <a
+                key={person.id}
+                className="cast-member"
+                href={`https://www.themoviedb.org/person/${person.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {profileUrl(person.profile_path) ? (
                   <img
                     className="cast-photo"
@@ -342,7 +361,7 @@ export default function ShowDetail({ show, onBack }) {
                 {person.character && (
                   <div className="cast-char">{person.character}</div>
                 )}
-              </div>
+              </a>
             ))}
           </div>
         </div>
