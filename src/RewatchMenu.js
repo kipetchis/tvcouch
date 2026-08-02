@@ -1,12 +1,12 @@
-import { useBackClose } from "./backNav";
 import { t } from "./i18n";
 
 // Popup affichée quand on clique sur un épisode/film déjà marqué comme vu.
 // Propose de le décocher ("Pas vu") ou d'ajouter un revisionnage ("+1").
+// Le retour/swipe Android est géré par l'écran parent (celui qui possède
+// l'état d'ouverture), pas ici — sinon on enregistre deux fois le même
+// écran dans la pile de navigation, ce qui referme aussi la fiche série/
+// film en plus de la popup au moment de la fermer.
 export default function RewatchMenu({ count, onUnwatch, onRewatch, onClose }) {
-  // Se ferme aussi via le bouton retour / swipe Android
-  useBackClose(true, onClose);
-
   const total = (count || 0) + 1;
   const title =
     count > 0 ? t("rewatch.watchedTimes").replace("{n}", total) : t("rewatch.watchedOnce");
