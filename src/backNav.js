@@ -18,6 +18,16 @@ let guardPushed = false;
 let lastExitPromptAt = 0;
 const EXIT_WINDOW_MS = 2200;
 
+// Quand un écran se ferme par une action explicite (bouton, clic en dehors,
+// etc.) plutôt que par retour/swipe, on retire son entrée de la pile ET on
+// appelle window.history.back() pour garder l'historique réel du navigateur
+// synchronisé. Ce history.back() déclenche lui-même un `popstate`, mais ce
+// n'est PAS un vrai retour utilisateur : il ne faut pas le laisser dépiler
+// une deuxième entrée (ce qui refermait aussi l'écran parent). Ce compteur
+// dit à handlePopState combien de popstate à venir sont "de notre fait" et
+// doivent être ignorés silencieusement.
+let ignorePopStates = 0;
+
 const exitListeners = new Set();
 
 function notifyExitPrompt() {
@@ -38,6 +48,20 @@ function ensureGuard() {
     window.history.pushState({ tvcouchGuard: true }, "");
   } catch {
     // ignore (environnement sans window.history, ex. SSR)
+  }
+}
+
+// Simule un retour navigateur "silencieux" : l'entrée d'historique est bien
+// retirée, mais le popstate qui en résulte ne doit dépiler aucun écran (on
+// vient déjà de le faire nous-mêmes, à la main).
+function silentHistoryBack() {
+  ignorePopStates += 1;
+  try {
+    window.history.back();
+  } catch {
+    // L'appel a échoué avant de déclencher un popstate : on annule le
+    // crédit posé, sinon un futur vrai retour serait ignoré à tort.
+    ignorePopStates -= 1;
   }
 }
 
@@ -71,6 +95,12 @@ export function requestExit() {
 }
 
 function handlePopState() {
+  if (ignorePopStates > 0) {
+    // Ce popstate vient de notre propre silentHistoryBack(), pas d'un vrai
+    // geste utilisateur : on l'absorbe sans toucher à la pile.
+    ignorePopStates -= 1;
+    return;
+  }
   const entry = stack.pop();
   if (entry) {
     entry.onBack();
@@ -104,13 +134,10 @@ function pushBackHandler(onBack) {
     if (idx === -1) return;
     stack.splice(idx, 1);
     // Si l'écran se ferme sans passer par le bouton retour (ex. clic sur
-    // une croix), on dépile aussi l'entrée d'historique correspondante.
+    // une croix), on dépile aussi l'entrée d'historique correspondante —
+    // silencieusement, pour ne pas fermer un autre écran par effet de bord.
     if (idx === stack.length) {
-      try {
-        window.history.back();
-      } catch {
-        // ignore
-      }
+      silentHistoryBack();
     }
   };
 }
