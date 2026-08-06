@@ -288,15 +288,17 @@ export default function MovieDetail({ movie, onClose, onRated }) {
 
           <div className="rating-section">
             <div className="rating-label">{t("detail.myRating")}</div>
-            <div className="stars">
-              {[1, 2, 3, 4, 5].map((n) => (
+            <div className="rating-scale">
+              {[1, 2, 3, 4, 5].map((n, i) => (
                 <button
                   key={n}
-                  className={`star ${n <= note ? "star-filled" : ""}`}
+                  className={`rating-choice ${n === note ? "rating-choice-selected" : ""}`}
                   onClick={() => changeNote(n === note ? 0 : n)}
-                  aria-label={`${n} étoiles`}
                 >
-                  ★
+                  <span className="rating-choice-star">★</span>
+                  <span className="rating-choice-label">
+                    {t(["rating.bad", "rating.meh", "rating.good", "rating.great", "rating.wow"][i])}
+                  </span>
                 </button>
               ))}
             </div>

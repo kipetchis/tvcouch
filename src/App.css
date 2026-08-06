@@ -482,6 +482,30 @@ body {
 }
 .star-filled { color: #f5c518; }
 
+.rating-scale { display: flex; gap: 6px; }
+.rating-choice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+  color: #999;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.rating-choice-star { font-size: 1.3rem; line-height: 1; color: #444; }
+.rating-choice-label { font-size: 0.7rem; text-align: center; }
+.rating-choice-selected {
+  border-color: #f5c518;
+  background: rgba(245, 197, 24, 0.12);
+  color: #f5c518;
+}
+.rating-choice-selected .rating-choice-star { color: #f5c518; }
+
 .comment-box {
   width: 100%;
   background: #0d0d0d;

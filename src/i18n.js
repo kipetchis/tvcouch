@@ -186,6 +186,11 @@ const DICT = {
 
   // Fiche film (MovieDetail) + note
   "detail.myRating": { fr: "Ma note", en: "My rating", es: "Mi nota" },
+  "rating.bad": { fr: "Mauvais", en: "Bad", es: "Malo" },
+  "rating.meh": { fr: "Bof", en: "Meh", es: "Regular" },
+  "rating.good": { fr: "Bien", en: "Good", es: "Bien" },
+  "rating.great": { fr: "Super", en: "Great", es: "Genial" },
+  "rating.wow": { fr: "Waouh", en: "Wow", es: "Uau" },
   "detail.myComment": { fr: "Mon commentaire", en: "My comment", es: "Mi comentario" },
   "detail.commentPlaceholder": { fr: "Vos impressions sur ce film…", en: "Your thoughts on this movie…", es: "Tus impresiones sobre esta película…" },
   "detail.save": { fr: "Enregistrer", en: "Save", es: "Guardar" },
