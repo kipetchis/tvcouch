@@ -192,6 +192,7 @@ const DICT = {
   "detail.saved": { fr: "✓ Enregistré", en: "✓ Saved", es: "✓ Guardado" },
   "detail.deleteRating": { fr: "Supprimer la note", en: "Delete rating", es: "Eliminar nota" },
   "detail.rateMarksWatched": { fr: "Noter ce film le marque comme vu.", en: "Rating this movie marks it as watched.", es: "Calificar esta película la marca como vista." },
+  "detail.watchedOn": { fr: "Vu le", en: "Watched on", es: "Vista el" },
   "detail.trailer": { fr: "Bande-annonce", en: "Trailer", es: "Tráiler" },
   "detail.cast": { fr: "Casting", en: "Cast", es: "Reparto" },
   "detail.director": { fr: "Réalisé par", en: "Directed by", es: "Dirigida por" },

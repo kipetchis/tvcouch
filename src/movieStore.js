@@ -75,14 +75,22 @@ export async function importMoviesBatch(moviesData) {
 // Note (1-5) + commentaire pour un film. Marque le film comme vu.
 // `movie` est optionnel : s'il est fourni (titre/affiche/date), on crée
 // proprement le document au cas où le film n'existait pas encore en base.
+//
+// La date de visionnage n'est posée qu'UNE SEULE FOIS, à la première note :
+// si le film a déjà une watchedDate enregistrée (ex. on modifie juste le
+// commentaire plus tard), on la conserve telle quelle plutôt que de la
+// remplacer par la date du jour à chaque sauvegarde.
 export async function setMovieRating(movieId, note, comment, movie = null) {
-  const today = new Date().toISOString().slice(0, 10);
+  const existingSnap = await getDoc(movieRef(movieId));
+  const existing = existingSnap.exists() ? existingSnap.data() : null;
+  const watchedDate = (existing && existing.watchedDate) || new Date().toISOString().slice(0, 10);
+
   const data = {
     id: movie ? movie.id : movieId,
     note: note || null,
     comment: comment || "",
     status: "watched",       // noter = vu
-    watchedDate: today,
+    watchedDate,
     ratedAt: Date.now(),
   };
   if (movie) {

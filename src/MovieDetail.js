@@ -15,6 +15,15 @@ function formatRuntime(min) {
   return m > 0 ? `${h} h ${String(m).padStart(2, "0")}` : `${h} h`;
 }
 
+// Formate une date stockée "YYYY-MM-DD" -> "JJ/MM/AAAA"
+function formatWatchedDate(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.slice(0, 10).split("-");
+  if (parts.length !== 3) return dateStr;
+  const [y, m, d] = parts;
+  return `${d}/${m}/${y}`;
+}
+
 // Choisit la meilleure vidéo YouTube (bande-annonce officielle en priorité)
 function pickTrailer(videos) {
   if (!videos || videos.length === 0) return null;
@@ -33,6 +42,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
   const [comment, setComment] = useState(movie.comment || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false); // reste vrai tant qu'on ne modifie rien
+  const [watchedDate, setWatchedDate] = useState(movie.watchedDate || null);
 
   const [details, setDetails] = useState(null);
   const [providers, setProviders] = useState(null);
@@ -77,10 +87,11 @@ export default function MovieDetail({ movie, onClose, onRated }) {
     return () => { active = false; };
   }, [movie.id]);
 
-  // La note/le commentaire affichés dépendent de ce que le parent nous passe
-  // en prop, ce qui est parfois incomplet (ex. depuis les favoris, qui ne
-  // stockent que l'affiche et le titre). On relit systématiquement la vraie
-  // note enregistrée dans Firestore, qui est la seule source fiable.
+  // La note/le commentaire/la date affichés dépendent de ce que le parent
+  // nous passe en prop, ce qui est parfois incomplet (ex. depuis les
+  // favoris, qui ne stockent que l'affiche et le titre). On relit
+  // systématiquement les vraies valeurs enregistrées dans Firestore, qui
+  // sont la seule source fiable.
   useEffect(() => {
     let active = true;
     getMovieDoc(movie.id)
@@ -88,6 +99,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
         if (!active || !data) return;
         if (data.note) setNote(data.note);
         if (data.comment) setComment(data.comment);
+        if (data.watchedDate) setWatchedDate(data.watchedDate);
         if (data.note || data.comment) setSaved(true);
       })
       .catch(() => {});
@@ -108,6 +120,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
         runtime: movie.runtime,
       });
       setSaved(true);
+      if (!watchedDate) setWatchedDate(new Date().toISOString().slice(0, 10));
       if (onRated) onRated(movie.id, { note, comment });
     } catch (e) {
       // ignore
@@ -123,6 +136,8 @@ export default function MovieDetail({ movie, onClose, onRated }) {
       setNote(0);
       setComment("");
       setSaved(false);
+      // watchedDate n'est PAS effacée : removeMovieRating ne supprime que
+      // la note/le commentaire, le film reste marqué comme vu en base.
       if (onRated) onRated(movie.id, null);
     } catch (e) {
       // ignore
@@ -159,6 +174,11 @@ export default function MovieDetail({ movie, onClose, onRated }) {
             </p>
             {genres.length > 0 && (
               <p className="muted small">{genres.join(" · ")}</p>
+            )}
+            {watchedDate && (
+              <p className="watched-badge">
+                ✓ {t("detail.watchedOn")} {formatWatchedDate(watchedDate)}
+              </p>
             )}
           </div>
         </div>
@@ -300,9 +320,11 @@ export default function MovieDetail({ movie, onClose, onRated }) {
                 </button>
               )}
             </div>
-            <p className="muted small" style={{ marginTop: 8 }}>
-              {t("detail.rateMarksWatched")}
-            </p>
+            {!watchedDate && (
+              <p className="muted small" style={{ marginTop: 8 }}>
+                {t("detail.rateMarksWatched")}
+              </p>
+            )}
           </div>
         </div>
       </div>
