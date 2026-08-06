@@ -4,7 +4,7 @@ import { t } from "./i18n";
 
 const IMG_BASE = "https://image.tmdb.org/t/p";
 
-export default function EpisodeDetail({ showId, seasonNumber, episode, initialRating, onClose, onRated }) {
+export default function EpisodeDetail({ showId, seasonNumber, episode, initialRating, watchedDate, onClose, onRated }) {
   const [note, setNote] = useState(initialRating?.note || 0);
   const [comment, setComment] = useState(initialRating?.comment || "");
   const [saving, setSaving] = useState(false);
@@ -13,6 +13,15 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
   const stillPath = episode.still_path
     ? `${IMG_BASE}/w300${episode.still_path}`
     : null;
+
+  // Formate une date stockée "YYYY-MM-DD" -> "JJ/MM/AAAA"
+  const formatWatchedDate = (dateStr) => {
+    if (!dateStr) return null;
+    const parts = dateStr.slice(0, 10).split("-");
+    if (parts.length !== 3) return dateStr;
+    const [y, m, d] = parts;
+    return `${d}/${m}/${y}`;
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -60,6 +69,11 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
           {episode.air_date && (
             <p className="muted small">{t("detail.airedOn")} {episode.air_date}</p>
           )}
+          {watchedDate && (
+            <p className="watched-badge">
+              ✓ {t("detail.watchedOn")} {formatWatchedDate(watchedDate)}
+            </p>
+          )}
           {episode.overview && (
             <p className="ep-detail-overview">{episode.overview}</p>
           )}
@@ -98,9 +112,11 @@ export default function EpisodeDetail({ showId, seasonNumber, episode, initialRa
                 </button>
               )}
             </div>
-            <p className="muted small" style={{ marginTop: 8 }}>
-              {t("detail.rateEpisodeMarksWatched")}
-            </p>
+            {!watchedDate && (
+              <p className="muted small" style={{ marginTop: 8 }}>
+                {t("detail.rateEpisodeMarksWatched")}
+              </p>
+            )}
           </div>
         </div>
       </div>

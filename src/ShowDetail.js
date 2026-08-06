@@ -231,9 +231,12 @@ export default function ShowDetail({ show, onBack }) {
       else delete next[key];
       return next;
     });
-    // Noter marque comme vu
+    // Noter marque comme vu — mais si l'épisode était déjà vu, on garde sa
+    // date de visionnage d'origine plutôt que de la remplacer par aujourd'hui.
     if (rating) {
-      setWatched((prev) => ({ ...prev, [key]: new Date().toISOString().slice(0, 10) }));
+      setWatched((prev) =>
+        prev[key] ? prev : { ...prev, [key]: new Date().toISOString().slice(0, 10) }
+      );
     }
   };
 
@@ -478,6 +481,7 @@ export default function ShowDetail({ show, onBack }) {
           seasonNumber={openEpisode.seasonNumber}
           episode={openEpisode.episode}
           initialRating={ratings[`${openEpisode.seasonNumber}_${openEpisode.episode.episode_number}`]}
+          watchedDate={watched[`${openEpisode.seasonNumber}_${openEpisode.episode.episode_number}`] || null}
           onClose={() => setOpenEpisode(null)}
           onRated={handleRated}
         />

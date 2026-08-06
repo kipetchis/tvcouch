@@ -109,11 +109,18 @@ export async function setMovieRuntime(movieId, runtime) {
 // ---- Notes / commentaires d'épisodes ----
 // Enregistre une note (1-5) et/ou un commentaire pour un épisode.
 // Marque aussi l'épisode comme vu (on ne note que ce qu'on a vu).
+// La date de visionnage n'est posée qu'UNE SEULE FOIS : si l'épisode a déjà
+// une date enregistrée (ex. on modifie juste le commentaire plus tard), on
+// la conserve plutôt que de la remplacer par la date du jour.
 export async function setEpisodeRating(showId, seasonNumber, episodeNumber, note, comment) {
   const epKey = `${seasonNumber}_${episodeNumber}`;
   const ratingKey = `ratings.${epKey}`;
   const watchedKey = `watched.${epKey}`;
-  const today = new Date().toISOString().slice(0, 10);
+
+  const existingSnap = await getDoc(showRef(showId));
+  const existing = existingSnap.exists() ? existingSnap.data() : null;
+  const alreadyWatchedDate = existing && existing.watched && existing.watched[epKey];
+  const watchedDate = alreadyWatchedDate || new Date().toISOString().slice(0, 10);
 
   const data = {
     [ratingKey]: {
@@ -121,7 +128,7 @@ export async function setEpisodeRating(showId, seasonNumber, episodeNumber, note
       comment: comment || "",
       updatedAt: Date.now(),
     },
-    [watchedKey]: today, // noter = marquer vu
+    [watchedKey]: watchedDate, // noter = marquer vu (date conservée si déjà vu)
     lastWatchedAt: Date.now(),
   };
   await updateDoc(showRef(showId), data);
