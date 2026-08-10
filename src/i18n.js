@@ -168,6 +168,9 @@ const DICT = {
   // À venir (UpcomingPage)
   "upcoming.loading": { fr: "Recherche des prochains épisodes…", en: "Searching for upcoming episodes…", es: "Buscando los próximos episodios…" },
   "upcoming.none": { fr: "Aucun épisode à venir pour vos séries suivies.", en: "No upcoming episodes for your followed shows.", es: "No hay episodios próximos para tus series." },
+  "upcoming.days": { fr: "jours", en: "days", es: "días" },
+  "upcoming.today": { fr: "Aujourd'hui", en: "Today", es: "Hoy" },
+  "upcoming.tomorrow": { fr: "Demain", en: "Tomorrow", es: "Mañana" },
 
   // Fiche série (ShowDetail)
   "detail.episodes": { fr: "épisodes", en: "episodes", es: "episodios" },

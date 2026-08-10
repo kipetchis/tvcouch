@@ -137,6 +137,7 @@ body {
 /* ---- Ligne "prochain épisode" ---- */
 .ep-row {
   display: flex;
+  align-items: center;
   gap: 12px;
   background: #1a1a1a;
   border-radius: 12px;
@@ -146,6 +147,34 @@ body {
   transition: background 0.1s;
 }
 .ep-row:hover { background: #222; }
+
+.ep-row-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 46px;
+  text-align: center;
+}
+.ep-row-countdown-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.ep-row-countdown-word {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f5c518;
+  line-height: 1.1;
+}
+.ep-row-countdown-label {
+  font-size: 0.68rem;
+  color: #999;
+  margin-top: 2px;
+}
+.ep-row-countdown-soon .ep-row-countdown-num { color: #f5c518; }
 
 .ep-row-poster img {
   width: 70px;
