@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAllMovies, saveMovie, removeMovie, setMovieRewatchCount, unwatchMovie } from "./movieStore";
+import { getAllMovies, saveMovie, removeMovie, setMovieRewatchCount, unwatchMovie, setMovieGenres } from "./movieStore";
 import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
@@ -53,10 +53,38 @@ export default function MoviesPage() {
     try {
       const all = await getAllMovies();
       setMovies(all);
+      backfillGenres(all);
     } catch {
       // ignore
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Rattrapage silencieux : renseigne les genres des films ajoutés avant
+  // cette fonctionnalité. Par paquets de 8 en parallèle (pas tous à la fois)
+  // pour ne pas saturer le Worker Cloudflare si la collection est grosse.
+  // Chaque film mis à jour réapparaît aussitôt dans les options de genre.
+  const backfillGenres = async (all) => {
+    const missing = all.filter((m) => !(m.genre_ids && m.genre_ids.length));
+    const CHUNK = 8;
+    for (let i = 0; i < missing.length; i += CHUNK) {
+      const chunk = missing.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map(async (m) => {
+          try {
+            const full = await getMovie(m.id);
+            const genreIds = (full.genres || []).map((g) => g.id);
+            if (genreIds.length === 0) return;
+            await setMovieGenres(m.id, genreIds);
+            setMovies((prev) =>
+              prev.map((mv) => (mv.id === m.id ? { ...mv, genre_ids: genreIds } : mv))
+            );
+          } catch {
+            // ignore, on retentera au prochain chargement de la page
+          }
+        })
+      );
     }
   };
 

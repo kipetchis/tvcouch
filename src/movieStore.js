@@ -116,3 +116,10 @@ export async function removeMovieRating(movieId) {
     comment: deleteField(),
   });
 }
+
+// Renseigne les genres d'un film après coup. Utilisé en rattrapage pour les
+// films ajoutés/notés avant l'ajout de cette fonctionnalité.
+export async function setMovieGenres(movieId, genreIds) {
+  if (!genreIds || genreIds.length === 0) return;
+  await updateDoc(movieRef(movieId), { genre_ids: genreIds });
+}
