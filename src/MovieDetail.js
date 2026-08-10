@@ -118,6 +118,7 @@ export default function MovieDetail({ movie, onClose, onRated }) {
         poster_path: movie.poster_path,
         release_date: movie.release_date,
         runtime: movie.runtime,
+        genres: details ? details.genres : undefined,
       });
       setSaved(true);
       if (!watchedDate) setWatchedDate(new Date().toISOString().slice(0, 10));

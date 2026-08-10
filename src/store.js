@@ -21,17 +21,25 @@ function favRef() {
 }
 
 export async function followShow(show) {
-  await setDoc(
-    showRef(show.id),
-    {
-      id: show.id,
-      name: show.name,
-      poster_path: show.poster_path || null,
-      first_air_date: show.first_air_date || null,
-      addedAt: Date.now(),
-    },
-    { merge: true }
-  );
+  const data = {
+    id: show.id,
+    name: show.name,
+    poster_path: show.poster_path || null,
+    first_air_date: show.first_air_date || null,
+    addedAt: Date.now(),
+  };
+  const genreIds = show.genre_ids || (show.genres ? show.genres.map((g) => g.id) : null);
+  if (genreIds && genreIds.length > 0) data.genre_ids = genreIds;
+  await setDoc(showRef(show.id), data, { merge: true });
+}
+
+// Renseigne les genres d'une série après coup. Utilisé en rattrapage par
+// ShowsPage pour les séries suivies avant l'ajout de cette fonctionnalité
+// (ou ajoutées sans cette info) — ne coûte aucun appel TMDB supplémentaire
+// puisque ShowsPage a de toute façon déjà les détails sous la main.
+export async function setShowGenres(showId, genreIds) {
+  if (!genreIds || genreIds.length === 0) return;
+  await updateDoc(showRef(showId), { genre_ids: genreIds });
 }
 
 export async function unfollowShow(showId) {

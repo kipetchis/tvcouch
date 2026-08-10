@@ -4,6 +4,8 @@ import { searchMovies, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
 import RewatchMenu from "./RewatchMenu";
+import FilterSheet from "./FilterSheet";
+import { MOVIE_GENRE_MAP } from "./genres";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -43,6 +45,8 @@ export default function MoviesPage() {
   // Tri + filtre de la collection
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");
+  const [genreFilter, setGenreFilter] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const reload = async () => {
     setLoading(true);
@@ -81,12 +85,14 @@ export default function MoviesPage() {
 
   const addAsWatched = async (movie) => {
     let runtime = null;
+    let genres = movie.genres;
     try {
       const full = await getMovie(movie.id);
       runtime = full.runtime || null;
+      genres = full.genres || genres;
     } catch {}
     await saveMovie(
-      { ...movie, runtime },
+      { ...movie, runtime, genres },
       "watched",
       new Date().toISOString().slice(0, 10)
     );
@@ -102,13 +108,17 @@ export default function MoviesPage() {
 
   const markWatched = async (movie) => {
     let runtime = movie.runtime;
-    if (!runtime) {
+    let genres = movie.genres;
+    // On rappelle TMDB si la durée manque OU si le film n'a pas encore ses
+    // genres enregistrés (ex. ajouté à la watchlist avant cette fonctionnalité).
+    if (!runtime || !(movie.genre_ids && movie.genre_ids.length)) {
       try {
         const full = await getMovie(movie.id);
-        runtime = full.runtime || null;
+        runtime = full.runtime || runtime;
+        genres = full.genres || genres;
       } catch {}
     }
-    await saveMovie({ ...movie, runtime }, "watched", new Date().toISOString().slice(0, 10));
+    await saveMovie({ ...movie, runtime, genres }, "watched", new Date().toISOString().slice(0, 10));
     reload();
   };
 
@@ -176,10 +186,16 @@ export default function MoviesPage() {
 
   const base = view === "watched" ? watched : watchlist;
   const f = filter.trim().toLowerCase();
-  const filtered = f
-    ? base.filter((m) => (m.title || "").toLowerCase().includes(f))
-    : base;
+  const filtered = base
+    .filter((m) => !f || (m.title || "").toLowerCase().includes(f))
+    .filter((m) => !genreFilter || (m.genre_ids || []).includes(genreFilter));
   const shown = sortMovies(filtered, sort);
+
+  // Options de genre disponibles, calculées sur l'onglet courant (Vus/À voir)
+  const genreOptions = Array.from(new Set(base.flatMap((m) => m.genre_ids || [])))
+    .filter((id) => MOVIE_GENRE_MAP[id])
+    .map((id) => ({ id, label: t(`genre.${MOVIE_GENRE_MAP[id]}`) }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
   return (
     <div>
@@ -234,13 +250,13 @@ export default function MoviesPage() {
           <div className="movie-tabs">
             <button
               className={view === "watched" ? "movie-tab active" : "movie-tab"}
-              onClick={() => setView("watched")}
+              onClick={() => { setView("watched"); setGenreFilter(null); }}
             >
               {t("movies.watched")} ({watched.length})
             </button>
             <button
               className={view === "watchlist" ? "movie-tab active" : "movie-tab"}
-              onClick={() => setView("watchlist")}
+              onClick={() => { setView("watchlist"); setGenreFilter(null); }}
             >
               {t("movies.watchlist")} ({watchlist.length})
             </button>
@@ -265,8 +281,20 @@ export default function MoviesPage() {
                 <option value="note">{t("sort.note")}</option>
                 <option value="year">{t("sort.year")}</option>
               </select>
+              <button className="filter-trigger" onClick={() => setFilterOpen(true)}>
+                ▾ {t("filter.genre")}
+                {genreFilter && <span className="filter-trigger-dot" />}
+              </button>
             </div>
           )}
+
+          <FilterSheet
+            open={filterOpen}
+            onClose={() => setFilterOpen(false)}
+            genreOptions={genreOptions}
+            genre={genreFilter}
+            onGenreChange={setGenreFilter}
+          />
 
           {loading ? (
             <p className="center">{t("common.loading")}</p>

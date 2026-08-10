@@ -18,20 +18,23 @@ export async function getMovieDoc(movieId) {
 
 // Ajoute/met à jour un film. status: "watched" | "watchlist"
 export async function saveMovie(movie, status, watchedDate = null) {
-  await setDoc(
-    movieRef(movie.id),
-    {
-      id: movie.id,
-      title: movie.title,
-      poster_path: movie.poster_path || null,
-      release_date: movie.release_date || null,
-      runtime: movie.runtime || null,
-      status,
-      watchedDate: watchedDate || null,
-      addedAt: Date.now(),
-    },
-    { merge: true }
-  );
+  const data = {
+    id: movie.id,
+    title: movie.title,
+    poster_path: movie.poster_path || null,
+    release_date: movie.release_date || null,
+    runtime: movie.runtime || null,
+    status,
+    watchedDate: watchedDate || null,
+    addedAt: Date.now(),
+  };
+  // genre_ids peut venir directement d'un résultat de recherche TMDB, ou
+  // être dérivé de "genres" (fiche complète). On ne l'écrit que si connu,
+  // pour ne jamais écraser une valeur déjà enregistrée par du vide.
+  const genreIds = movie.genre_ids || (movie.genres ? movie.genres.map((g) => g.id) : null);
+  if (genreIds && genreIds.length > 0) data.genre_ids = genreIds;
+
+  await setDoc(movieRef(movie.id), data, { merge: true });
 }
 
 export async function removeMovie(movieId) {
@@ -99,6 +102,8 @@ export async function setMovieRating(movieId, note, comment, movie = null) {
     if (movie.poster_path !== undefined) data.poster_path = movie.poster_path || null;
     if (movie.release_date !== undefined) data.release_date = movie.release_date || null;
     if (movie.runtime !== undefined && movie.runtime != null) data.runtime = movie.runtime;
+    const genreIds = movie.genre_ids || (movie.genres ? movie.genres.map((g) => g.id) : null);
+    if (genreIds && genreIds.length > 0) data.genre_ids = genreIds;
     if (data.addedAt === undefined) data.addedAt = Date.now();
   }
   // setDoc + merge : crée le document s'il n'existe pas, sinon met à jour.

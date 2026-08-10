@@ -506,6 +506,89 @@ body {
 }
 .rating-choice-selected .rating-choice-star { color: #f5c518; }
 
+/* ---- Bottom sheet de filtre (Statut + Genre) ---- */
+.filter-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #ddd;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-trigger-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f5c518;
+  display: inline-block;
+}
+.filter-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  z-index: 50;
+}
+.filter-sheet {
+  background: #161616;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  padding: 10px 20px 24px;
+}
+.filter-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #444;
+  border-radius: 2px;
+  margin: 6px auto 18px;
+}
+.filter-sheet-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin: 18px 0 8px;
+}
+.filter-sheet-label:first-child { margin-top: 0; }
+.filter-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.filter-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.filter-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #555;
+  flex-shrink: 0;
+  position: relative;
+}
+.filter-radio-checked { border-color: #f5c518; }
+.filter-radio-checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #f5c518;
+}
+
 .comment-box {
   width: 100%;
   background: #0d0d0d;

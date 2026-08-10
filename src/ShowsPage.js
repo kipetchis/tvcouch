@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { getAllShows } from "./store";
+import { getAllShows, setShowGenres } from "./store";
 import { getAllEpisodes, posterUrl } from "./tmdb";
 import { readEpisodeCache, writeEpisodeCache, readShowTitle, readShowOngoing } from "./episodeCache";
+import { TV_GENRE_MAP } from "./genres";
+import FilterSheet from "./FilterSheet";
 import { t } from "./i18n";
 
 function findNextEpisode(episodes, watched) {
@@ -21,7 +23,7 @@ function findNextEpisode(episodes, watched) {
 }
 
 // Construit un item d'affichage à partir d'une série et de ses épisodes
-function buildItem(show, episodes, title, ongoing) {
+function buildItem(show, episodes, title, ongoing, genreIds) {
   const watched = show.watched || {};
   const next = findNextEpisode(episodes, watched);
   const watchedCount = Object.keys(watched).length;
@@ -33,6 +35,7 @@ function buildItem(show, episodes, title, ongoing) {
     watchedCount,
     total: episodes.length,
     lastWatchedAt: show.lastWatchedAt || show.addedAt || 0,
+    genreIds: genreIds || [],
   };
 }
 
@@ -63,6 +66,8 @@ export default function ShowsPage({ onOpenShow }) {
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");
   const [section, setSection] = useState("all"); // all | inProgress | stale | upToDate | notStarted
+  const [genreFilter, setGenreFilter] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [layout, setLayout] = useState(() => {
     try {
       return localStorage.getItem("tvcouch_shows_layout") === "grid" ? "grid" : "list";
@@ -104,7 +109,7 @@ export default function ShowsPage({ onOpenShow }) {
         const toFetch = [];
         shows.forEach((show) => {
           const cached = readEpisodeCache(show.id);
-          if (cached) initial.push(buildItem(show, cached, readShowTitle(show.id), readShowOngoing(show.id)));
+          if (cached) initial.push(buildItem(show, cached, readShowTitle(show.id), readShowOngoing(show.id), show.genre_ids));
           else toFetch.push(show);
         });
 
@@ -130,7 +135,15 @@ export default function ShowsPage({ onOpenShow }) {
             // de prochain épisode daté → la série passera en « À jour ».
             const ongoing = !!(details && details.next_episode_to_air);
             writeEpisodeCache(show.id, episodes, title, ongoing);
-            const item = buildItem(show, episodes, title, ongoing);
+            const fetchedGenreIds = (details && details.genres) ? details.genres.map((g) => g.id) : [];
+            const genreIds = (show.genre_ids && show.genre_ids.length) ? show.genre_ids : fetchedGenreIds;
+            // Rattrapage silencieux : si la série n'avait pas encore ses genres
+            // enregistrés (suivie avant cette fonctionnalité), on les pose
+            // maintenant — sans appel TMDB en plus, on les a déjà sous la main.
+            if ((!show.genre_ids || show.genre_ids.length === 0) && fetchedGenreIds.length > 0) {
+              setShowGenres(show.id, fetchedGenreIds).catch(() => {});
+            }
+            const item = buildItem(show, episodes, title, ongoing, genreIds);
             setItems((prev) => {
               const others = prev.filter((it) => it.show.id !== show.id);
               return [...others, item];
@@ -170,9 +183,18 @@ export default function ShowsPage({ onOpenShow }) {
 
   // Filtre par titre
   const f = filter.trim().toLowerCase();
-  const visible = f
+  let visible = f
     ? items.filter((it) => it.title.toLowerCase().includes(f))
     : items;
+  if (genreFilter) {
+    visible = visible.filter((it) => (it.genreIds || []).includes(genreFilter));
+  }
+
+  // Options de genre disponibles, calculées à partir de toute la collection
+  const genreOptions = Array.from(new Set(items.flatMap((it) => it.genreIds || [])))
+    .filter((id) => TV_GENRE_MAP[id])
+    .map((id) => ({ id, label: t(`genre.${TV_GENRE_MAP[id]}`) }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
   const RECENT = 30 * 24 * 60 * 60 * 1000; // 30 jours
   const now = Date.now();
@@ -226,23 +248,10 @@ export default function ShowsPage({ onOpenShow }) {
       </div>
 
       <div className="section-tabs-row">
-        <div className="section-tabs">
-          {[
-            ["all", t("shows.filterAll")],
-            ["inProgress", t("shows.filterInProgress")],
-            ["stale", t("shows.filterStale")],
-            ["upToDate", t("shows.filterUpToDate")],
-            ["notStarted", t("shows.filterNotStarted")],
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              className={section === key ? "section-tab active" : "section-tab"}
-              onClick={() => setSection(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <button className="filter-trigger" onClick={() => setFilterOpen(true)}>
+          ▾ {t("filter.button")}
+          {(section !== "all" || genreFilter) && <span className="filter-trigger-dot" />}
+        </button>
         <button
           className="layout-toggle"
           onClick={toggleLayout}
@@ -252,6 +261,23 @@ export default function ShowsPage({ onOpenShow }) {
           {layout === "list" ? "▦" : "☰"}
         </button>
       </div>
+
+      <FilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        statusOptions={[
+          ["all", t("shows.filterAll")],
+          ["inProgress", t("shows.filterInProgress")],
+          ["stale", t("shows.filterStale")],
+          ["upToDate", t("shows.filterUpToDate")],
+          ["notStarted", t("shows.filterNotStarted")],
+        ].map(([value, label]) => ({ value, label }))}
+        status={section}
+        onStatusChange={setSection}
+        genreOptions={genreOptions}
+        genre={genreFilter}
+        onGenreChange={setGenreFilter}
+      />
 
       {pending > 0 && (
         <p className="muted small" style={{ margin: "0 0 12px" }}>
