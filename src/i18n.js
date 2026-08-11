@@ -309,6 +309,7 @@ const DICT = {
   "profile.importMovies": { fr: "Importer films TV Time", en: "Import TV Time movies", es: "Importar películas de TV Time" },
   "profile.importImdb": { fr: "Importer depuis IMDb (CSV)", en: "Import from IMDb (CSV)", es: "Importar desde IMDb (CSV)" },
   "profile.language": { fr: "LANGUE", en: "LANGUAGE", es: "IDIOMA" },
+  "profile.menu": { fr: "Menu du profil", en: "Profile menu", es: "Menú del perfil" },
   "profile.support": { fr: "❤️ SOUTENIR TV COUCH", en: "❤️ SUPPORT TV COUCH", es: "❤️ APOYAR TV COUCH" },
   "profile.supportText": { fr: "Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux soutenir son développement — merci beaucoup !", en: "Tv Couch is free and ad-free. If you like the app, you can support its development — thank you so much!", es: "Tv Couch es gratis y sin anuncios. Si te gusta la app, puedes apoyar su desarrollo — ¡muchas gracias!" },
   "profile.trophies": { fr: "TROPHÉES", en: "TROPHIES", es: "TROFEOS" },

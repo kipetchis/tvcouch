@@ -107,6 +107,10 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState(null);
 
+  // Menu "..." du profil (Outils, Langue, Suppression de compte)
+  const [menuOpen, setMenuOpen] = useState(false);
+  useBackClose(menuOpen, () => setMenuOpen(false));
+
   const handleDeleteAccount = async () => {
     setDeleting(true);
     setDeleteError(null);
@@ -321,7 +325,65 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
 
   return (
     <div className="profile">
-      <h2 className="profile-name">{user.displayName}</h2>
+      <div className="profile-header">
+        <h2 className="profile-name">{user.displayName}</h2>
+        <div className="profile-menu-wrap">
+          <button
+            className="profile-menu-trigger"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={t("profile.menu")}
+          >
+            ⋮
+          </button>
+          {menuOpen && (
+            <>
+              <div className="profile-menu-overlay" onClick={() => setMenuOpen(false)} />
+              <div className="profile-menu">
+                <button
+                  className="profile-menu-item"
+                  onClick={() => { setMenuOpen(false); onImportShows(); }}
+                >
+                  {t("profile.importShows")}
+                </button>
+                <button
+                  className="profile-menu-item"
+                  onClick={() => { setMenuOpen(false); onImportMovies(); }}
+                >
+                  {t("profile.importMovies")}
+                </button>
+                <button
+                  className="profile-menu-item"
+                  onClick={() => { setMenuOpen(false); onImportImdb(); }}
+                >
+                  {t("profile.importImdb")}
+                </button>
+
+                <div className="profile-menu-sep" />
+                <div className="profile-menu-label">🌐 {t("profile.language")}</div>
+                <div className="lang-switch profile-menu-lang">
+                  {LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      className={`lang-btn ${getLang() === l.code ? "lang-active" : ""}`}
+                      onClick={() => setLang(l.code)}
+                    >
+                      <img className="lang-flag" src={FLAGS[l.code]} alt="" /> {l.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="profile-menu-sep" />
+                <button
+                  className="profile-menu-item profile-menu-danger"
+                  onClick={() => { setMenuOpen(false); setShowDelete(true); }}
+                >
+                  {t("account.delete")}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Statistiques */}
       <h3 className="section-pill">{t("profile.stats")}</h3>
@@ -464,34 +526,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         <p className="muted small">{t("profile.noFavMovies")}</p>
       )}
 
-      {/* Outils */}
-      <h3 className="section-pill">{t("profile.tools")}</h3>
-      <div className="profile-tools">
-        <button className="btn-small" onClick={onImportShows}>{t("profile.importShows")}</button>
-        <button className="btn-small" onClick={onImportMovies}>{t("profile.importMovies")}</button>
-        <button className="btn-small" onClick={onImportImdb}>{t("profile.importImdb")}</button>
-      </div>
-
-      {/* Langue */}
-      <h3 className="section-pill">🌐 {t("profile.language")}</h3>
-      <div className="lang-switch">
-        {LANGUAGES.map((l) => (
-          <button
-            key={l.code}
-            className={`lang-btn ${getLang() === l.code ? "lang-active" : ""}`}
-            onClick={() => setLang(l.code)}
-          >
-            <img className="lang-flag" src={FLAGS[l.code]} alt="" /> {l.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Suppression de compte */}
-      <div className="danger-zone">
-        <button className="delete-account-btn" onClick={() => setShowDelete(true)}>
-          {t("account.delete")}
-        </button>
-      </div>
+      {/* Suppression de compte : le modal reste, seul le déclencheur a bougé dans le menu ... */}
 
       {showDelete && (
         <div className="ep-detail-overlay" onClick={() => !deleting && setShowDelete(false)}>
