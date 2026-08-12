@@ -3,7 +3,7 @@
 // ailleurs ; ici on s'assure juste que l'app peut s'OUVRIR sans réseau,
 // une fois qu'elle a déjà été visitée au moins une fois en ligne.
 
-const CACHE_NAME = "tvcouch-shell-v1";
+const CACHE_NAME = "tvcouch-shell-v2";
 
 // Chemin de base du site (ex. "/tvcouch/" sur GitHub Pages), calculé à
 // partir de l'emplacement du service worker lui-même — pas de valeur en
@@ -12,13 +12,44 @@ const BASE = self.location.pathname.replace(/sw\.js$/, "");
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll([BASE, `${BASE}index.html`, `${BASE}manifest.json`]))
-      .catch(() => {
-        // Pas grave si le pré-cache initial échoue (ex. offline dès
-        // l'install) : le cache se remplira au fil de la navigation.
-      })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      // index.html + les fichiers JS/CSS qu'il référence. Leurs noms
+      // contiennent un hash de build qu'on ne peut pas connaître à
+      // l'avance : on les découvre en lisant la page elle-même, fraîche
+      // (pas depuis le cache HTTP du navigateur), plutôt que de deviner.
+      try {
+        const htmlResponse = await fetch(`${BASE}index.html`, { cache: "reload" });
+        const html = await htmlResponse.clone().text();
+        await cache.put(`${BASE}index.html`, htmlResponse);
+
+        const assetUrls = Array.from(html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)).map(
+          (m) => m[1]
+        );
+        await Promise.all(
+          assetUrls.map((url) =>
+            fetch(url)
+              .then((res) => (res.ok ? cache.put(url, res) : null))
+              .catch(() => {
+                // Un fichier manquant ne doit pas empêcher les autres
+                // d'être mis en cache — chacun est indépendant ici,
+                // contrairement à un cache.addAll() qui est tout-ou-rien.
+              })
+          )
+        );
+      } catch {
+        // Hors ligne dès l'installation (rare) : le cache se remplira au
+        // fil de la navigation en ligne suivante à la place.
+      }
+
+      try {
+        await cache.add(`${BASE}manifest.json`);
+      } catch {
+        // Pas bloquant : le manifest sert surtout à l'installation PWA,
+        // pas au fonctionnement hors ligne de l'app elle-même.
+      }
+    })()
   );
   self.skipWaiting();
 });
