@@ -171,6 +171,11 @@ const DICT = {
   "upcoming.days": { fr: "jours", en: "days", es: "días" },
   "upcoming.today": { fr: "Aujourd'hui", en: "Today", es: "Hoy" },
   "upcoming.tomorrow": { fr: "Demain", en: "Tomorrow", es: "Mañana" },
+  "offline.banner": {
+    fr: "Hors ligne — tes modifications seront synchronisées à la reconnexion.",
+    en: "Offline — your changes will sync once you're back online.",
+    es: "Sin conexión — tus cambios se sincronizarán al reconectar.",
+  },
 
   // Fiche série (ShowDetail)
   "detail.episodes": { fr: "épisodes", en: "episodes", es: "episodios" },

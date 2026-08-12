@@ -23,3 +23,12 @@ window.addEventListener("error", (event) => {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
+
+// Enregistre le service worker (coquille de l'app en cache pour un
+// chargement hors ligne). L'échec d'enregistrement n'empêche pas l'app de
+// fonctionner normalement (juste sans capacité hors ligne).
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/sw.js`).catch(() => {});
+  });
+}

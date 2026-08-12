@@ -684,6 +684,16 @@ body {
 }
 .profile-menu-lang { padding: 0 4px 4px; flex-wrap: wrap; }
 
+/* ---- Bandeau hors ligne ---- */
+.offline-banner {
+  background: #4a3600;
+  color: #ffd166;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 0 0 10px 10px;
+}
+
 .comment-box {
   width: 100%;
   background: #0d0d0d;

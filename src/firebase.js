@@ -11,7 +11,7 @@ import {
   reauthenticateWithPopup,
   EmailAuthProvider,
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAi2OSCF8epgxaQRESX7mZm9TXhkS4sL8w",
@@ -27,6 +27,21 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
+
+// Persistance hors ligne : les lectures se servent d'un cache IndexedDB local
+// quand il n'y a pas de réseau, et les écritures (cocher un épisode, noter
+// un film…) sont mises en file d'attente localement puis synchronisées
+// automatiquement dès que la connexion revient — géré nativement par
+// Firestore, pas de système de synchro maison à maintenir.
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === "failed-precondition") {
+    // Plusieurs onglets/instances ouverts en même temps : un seul peut
+    // activer la persistance. Sans conséquence pour un usage TWA mono-tab.
+  } else if (err.code === "unimplemented") {
+    // Navigateur sans IndexedDB (très rare) : l'app continue de fonctionner,
+    // simplement sans cache hors ligne.
+  }
+});
 
 // ─── Authentification par email / mot de passe ──────
 export function registerWithEmail(email, password) {

@@ -17,6 +17,7 @@ import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
 import ScrollTopButton from "./ScrollTopButton";
 import ExitToast from "./ExitToast";
+import OfflineBanner from "./OfflineBanner";
 import { useBackClose } from "./backNav";
 import { useSwipeTabs } from "./useSwipeTabs";
 import { useLang, t } from "./i18n";
@@ -329,6 +330,7 @@ function App() {
       onTouchStart={onTabTouchStart}
       onTouchEnd={onTabTouchEnd}
     >
+      <OfflineBanner />
       <header className="header">
         <h1>
           <Logo />
