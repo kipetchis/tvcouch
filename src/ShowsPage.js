@@ -5,6 +5,7 @@ import { readEpisodeCache, writeEpisodeCache, readShowTitle, readShowOngoing } f
 import { TV_GENRE_MAP } from "./genres";
 import FilterSheet from "./FilterSheet";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 function findNextEpisode(episodes, watched) {
   const today = new Date().toISOString().slice(0, 10);
@@ -68,6 +69,8 @@ export default function ShowsPage({ onOpenShow }) {
   const [section, setSection] = useState("all"); // all | inProgress | stale | upToDate | notStarted
   const [genreFilter, setGenreFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  useBackClose(controlsOpen, () => setControlsOpen(false));
   const [layout, setLayout] = useState(() => {
     try {
       return localStorage.getItem("tvcouch_shows_layout") === "grid" ? "grid" : "list";
@@ -229,37 +232,54 @@ export default function ShowsPage({ onOpenShow }) {
   return (
     <div>
       <div className="list-controls">
-        <input
-          type="text"
-          className="filter-input"
-          placeholder={t("shows.filterTitle")}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
-        <select
-          className="sort-select"
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-        >
-          <option value="recent">{t("sort.activity")}</option>
-          <option value="title">{t("sort.title")}</option>
-          <option value="year">{t("sort.year")}</option>
-        </select>
-      </div>
+        <div className="controls-menu-wrap">
+          <button
+            className="controls-menu-trigger"
+            onClick={() => setControlsOpen((o) => !o)}
+            aria-label={t("shows.controlsMenu")}
+          >
+            ⋮
+            {(filter.trim() !== "" || sort !== "recent" || section !== "all" || genreFilter) && (
+              <span className="filter-trigger-dot controls-menu-trigger-dot" />
+            )}
+          </button>
+          {controlsOpen && (
+            <>
+              <div className="controls-menu-overlay" onClick={() => setControlsOpen(false)} />
+              <div className="controls-menu">
+                <input
+                  type="text"
+                  className="filter-input controls-menu-input"
+                  placeholder={t("shows.filterTitle")}
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                />
+                <select
+                  className="sort-select controls-menu-select"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                >
+                  <option value="recent">{t("sort.activity")}</option>
+                  <option value="title">{t("sort.title")}</option>
+                  <option value="year">{t("sort.year")}</option>
+                </select>
 
-      <div className="section-tabs-row">
-        <button className="filter-trigger" onClick={() => setFilterOpen(true)}>
-          ▾ {t("filter.button")}
-          {(section !== "all" || genreFilter) && <span className="filter-trigger-dot" />}
-        </button>
-        <button
-          className="layout-toggle"
-          onClick={toggleLayout}
-          aria-label={layout === "list" ? t("shows.gridView") : t("shows.listView")}
-          title={layout === "list" ? t("shows.gridView") : t("shows.listView")}
-        >
-          {layout === "list" ? "▦" : "☰"}
-        </button>
+                <div className="controls-menu-sep" />
+                <button
+                  className="controls-menu-item"
+                  onClick={() => { setControlsOpen(false); setFilterOpen(true); }}
+                >
+                  ▾ {t("filter.button")}
+                  {(section !== "all" || genreFilter) && <span className="filter-trigger-dot" />}
+                </button>
+                <button className="controls-menu-item" onClick={toggleLayout}>
+                  {layout === "list" ? "▦" : "☰"}{" "}
+                  {layout === "list" ? t("shows.gridView") : t("shows.listView")}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <FilterSheet

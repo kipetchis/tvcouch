@@ -625,8 +625,10 @@ body {
   justify-content: space-between;
   gap: 10px;
 }
-.profile-menu-wrap { position: relative; }
-.profile-menu-trigger {
+.profile-menu-wrap,
+.controls-menu-wrap { position: relative; }
+.profile-menu-trigger,
+.controls-menu-trigger {
   background: #1a1a1a;
   border: 1px solid #333;
   color: #ddd;
@@ -637,13 +639,17 @@ body {
   line-height: 1;
   cursor: pointer;
 }
-.profile-menu-overlay {
+.controls-menu-trigger { position: relative; flex-shrink: 0; }
+.controls-menu-trigger-dot { position: absolute; top: 3px; right: 3px; }
+.profile-menu-overlay,
+.controls-menu-overlay {
   position: fixed;
   inset: 0;
   z-index: 40;
   background: transparent;
 }
-.profile-menu {
+.profile-menu,
+.controls-menu {
   position: absolute;
   top: 44px;
   right: 0;
@@ -658,7 +664,8 @@ body {
   flex-direction: column;
   gap: 2px;
 }
-.profile-menu-item {
+.profile-menu-item,
+.controls-menu-item {
   background: none;
   border: none;
   color: #eee;
@@ -667,10 +674,15 @@ body {
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.profile-menu-item:hover { background: #2a2a2a; }
+.profile-menu-item:hover,
+.controls-menu-item:hover { background: #2a2a2a; }
 .profile-menu-danger { color: #ff6b6b; }
-.profile-menu-sep {
+.profile-menu-sep,
+.controls-menu-sep {
   height: 1px;
   background: #333;
   margin: 6px 2px;
@@ -683,6 +695,13 @@ body {
   padding: 6px 10px 2px;
 }
 .profile-menu-lang { padding: 0 4px 4px; flex-wrap: wrap; }
+
+.controls-menu-input,
+.controls-menu-select {
+  width: 100%;
+  flex: none;
+}
+
 
 /* ---- Bandeau hors ligne ---- */
 .offline-banner {

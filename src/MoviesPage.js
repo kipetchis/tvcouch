@@ -47,6 +47,8 @@ export default function MoviesPage() {
   const [filter, setFilter] = useState("");
   const [genreFilter, setGenreFilter] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  useBackClose(controlsOpen, () => setControlsOpen(false));
 
   const reload = async () => {
     setLoading(true);
@@ -292,27 +294,51 @@ export default function MoviesPage() {
 
           {base.length > 0 && (
             <div className="list-controls">
-              <input
-                type="text"
-                className="filter-input"
-                placeholder={t("movies.filterTitle")}
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-              <select
-                className="sort-select"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                <option value="recent">{t("sort.recent")}</option>
-                <option value="title">{t("sort.title")}</option>
-                <option value="note">{t("sort.note")}</option>
-                <option value="year">{t("sort.year")}</option>
-              </select>
-              <button className="filter-trigger" onClick={() => setFilterOpen(true)}>
-                ▾ {t("filter.genre")}
-                {genreFilter && <span className="filter-trigger-dot" />}
-              </button>
+              <div className="controls-menu-wrap">
+                <button
+                  className="controls-menu-trigger"
+                  onClick={() => setControlsOpen((o) => !o)}
+                  aria-label={t("movies.controlsMenu")}
+                >
+                  ⋮
+                  {(filter.trim() !== "" || sort !== "recent" || genreFilter) && (
+                    <span className="filter-trigger-dot controls-menu-trigger-dot" />
+                  )}
+                </button>
+                {controlsOpen && (
+                  <>
+                    <div className="controls-menu-overlay" onClick={() => setControlsOpen(false)} />
+                    <div className="controls-menu">
+                      <input
+                        type="text"
+                        className="filter-input controls-menu-input"
+                        placeholder={t("movies.filterTitle")}
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                      />
+                      <select
+                        className="sort-select controls-menu-select"
+                        value={sort}
+                        onChange={(e) => setSort(e.target.value)}
+                      >
+                        <option value="recent">{t("sort.recent")}</option>
+                        <option value="title">{t("sort.title")}</option>
+                        <option value="note">{t("sort.note")}</option>
+                        <option value="year">{t("sort.year")}</option>
+                      </select>
+
+                      <div className="controls-menu-sep" />
+                      <button
+                        className="controls-menu-item"
+                        onClick={() => { setControlsOpen(false); setFilterOpen(true); }}
+                      >
+                        ▾ {t("filter.genre")}
+                        {genreFilter && <span className="filter-trigger-dot" />}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
 
