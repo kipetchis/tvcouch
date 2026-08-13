@@ -389,24 +389,18 @@ function App() {
             </>
           ) : (
             <>
-              <div className="movie-tabs">
-                <button
-                  className={showsSubTab === "towatch" ? "movie-tab active" : "movie-tab"}
-                  onClick={() => setShowsSubTab("towatch")}
-                >
-                  {t("common.toWatch")}
-                </button>
-                <button
-                  className={showsSubTab === "upcoming" ? "movie-tab active" : "movie-tab"}
-                  onClick={() => setShowsSubTab("upcoming")}
-                >
-                  {t("common.upcoming")}
-                </button>
-              </div>
               {showsSubTab === "towatch" ? (
-                <ShowsPage onOpenShow={setSelectedShow} />
+                <ShowsPage
+                  onOpenShow={setSelectedShow}
+                  subTab={showsSubTab}
+                  onSubTabChange={setShowsSubTab}
+                />
               ) : (
-                <UpcomingPage onOpenShow={setSelectedShow} />
+                <UpcomingPage
+                  onOpenShow={setSelectedShow}
+                  subTab={showsSubTab}
+                  onSubTabChange={setShowsSubTab}
+                />
               )}
             </>
           )}

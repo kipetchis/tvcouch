@@ -277,23 +277,23 @@ export default function MoviesPage() {
         </>
       ) : (
         <>
-          <div className="movie-tabs">
-            <button
-              className={view === "watched" ? "movie-tab active" : "movie-tab"}
-              onClick={() => { setView("watched"); setGenreFilter(null); }}
-            >
-              {t("movies.watched")} ({watched.length})
-            </button>
-            <button
-              className={view === "watchlist" ? "movie-tab active" : "movie-tab"}
-              onClick={() => { setView("watchlist"); setGenreFilter(null); }}
-            >
-              {t("movies.watchlist")} ({watchlist.length})
-            </button>
-          </div>
+          <div className="subtabs-row">
+            <div className="movie-tabs">
+              <button
+                className={view === "watched" ? "movie-tab active" : "movie-tab"}
+                onClick={() => { setView("watched"); setGenreFilter(null); }}
+              >
+                {t("movies.watched")} ({watched.length})
+              </button>
+              <button
+                className={view === "watchlist" ? "movie-tab active" : "movie-tab"}
+                onClick={() => { setView("watchlist"); setGenreFilter(null); }}
+              >
+                {t("movies.watchlist")} ({watchlist.length})
+              </button>
+            </div>
 
-          {base.length > 0 && (
-            <div className="list-controls">
+            {base.length > 0 && (
               <div className="controls-menu-wrap">
                 <button
                   className="controls-menu-trigger"
@@ -339,8 +339,8 @@ export default function MoviesPage() {
                   </>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <FilterSheet
             open={filterOpen}

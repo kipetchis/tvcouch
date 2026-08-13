@@ -61,7 +61,7 @@ function CountdownBadge({ dateStr, todayStr }) {
   );
 }
 
-export default function UpcomingPage({ onOpenShow }) {
+export default function UpcomingPage({ onOpenShow, subTab, onSubTabChange }) {
   const [loading, setLoading] = useState(true);
   const [upcoming, setUpcoming] = useState([]);
   const [pending, setPending] = useState(0);
@@ -145,13 +145,33 @@ export default function UpcomingPage({ onOpenShow }) {
     return () => { active = false; };
   }, []);
 
-  if (loading) return <p className="center">{t("upcoming.loading")}</p>;
-  if (error) return <p className="error">{error}</p>;
+  const subTabsRow = (
+    <div className="movie-tabs" style={{ marginBottom: 16 }}>
+      <button
+        className={subTab === "towatch" ? "movie-tab active" : "movie-tab"}
+        onClick={() => onSubTabChange("towatch")}
+      >
+        {t("common.toWatch")}
+      </button>
+      <button
+        className={subTab === "upcoming" ? "movie-tab active" : "movie-tab"}
+        onClick={() => onSubTabChange("upcoming")}
+      >
+        {t("common.upcoming")}
+      </button>
+    </div>
+  );
+
+  if (loading) return (<div>{subTabsRow}<p className="center">{t("upcoming.loading")}</p></div>);
+  if (error) return (<div>{subTabsRow}<p className="error">{error}</p></div>);
 
   if (upcoming.length === 0 && pending === 0) {
     return (
-      <div className="center" style={{ minHeight: "40vh" }}>
-        <p className="muted">{t("upcoming.none")}</p>
+      <div>
+        {subTabsRow}
+        <div className="center" style={{ minHeight: "40vh" }}>
+          <p className="muted">{t("upcoming.none")}</p>
+        </div>
       </div>
     );
   }
@@ -161,6 +181,8 @@ export default function UpcomingPage({ onOpenShow }) {
 
   return (
     <div>
+      {subTabsRow}
+
       {pending > 0 && (
         <p className="muted small" style={{ margin: "0 0 12px" }}>
           {t("shows.updating")} {pending} {t("shows.updatingShows")}

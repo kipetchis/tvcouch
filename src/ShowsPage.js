@@ -58,7 +58,7 @@ function sortItems(list, sort) {
   return arr;
 }
 
-export default function ShowsPage({ onOpenShow }) {
+export default function ShowsPage({ onOpenShow, subTab, onSubTabChange }) {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [pending, setPending] = useState(0); // séries encore en cours de chargement
@@ -173,14 +173,84 @@ export default function ShowsPage({ onOpenShow }) {
     return () => { active = false; };
   }, []);
 
-  if (loading) return <p className="center">{t("shows.loading")}</p>;
-  if (error) return <p className="error">{error}</p>;
+  const subTabsRow = (
+    <div className="subtabs-row">
+      <div className="movie-tabs">
+        <button
+          className={subTab === "towatch" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("towatch")}
+        >
+          {t("common.toWatch")}
+        </button>
+        <button
+          className={subTab === "upcoming" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("upcoming")}
+        >
+          {t("common.upcoming")}
+        </button>
+      </div>
+      <div className="controls-menu-wrap">
+        <button
+          className="controls-menu-trigger"
+          onClick={() => setControlsOpen((o) => !o)}
+          aria-label={t("shows.controlsMenu")}
+        >
+          ⋮
+          {(filter.trim() !== "" || sort !== "recent" || section !== "all" || genreFilter) && (
+            <span className="filter-trigger-dot controls-menu-trigger-dot" />
+          )}
+        </button>
+        {controlsOpen && (
+          <>
+            <div className="controls-menu-overlay" onClick={() => setControlsOpen(false)} />
+            <div className="controls-menu">
+              <input
+                type="text"
+                className="filter-input controls-menu-input"
+                placeholder={t("shows.filterTitle")}
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              />
+              <select
+                className="sort-select controls-menu-select"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="recent">{t("sort.activity")}</option>
+                <option value="title">{t("sort.title")}</option>
+                <option value="year">{t("sort.year")}</option>
+              </select>
+
+              <div className="controls-menu-sep" />
+              <button
+                className="controls-menu-item"
+                onClick={() => { setControlsOpen(false); setFilterOpen(true); }}
+              >
+                ▾ {t("filter.button")}
+                {(section !== "all" || genreFilter) && <span className="filter-trigger-dot" />}
+              </button>
+              <button className="controls-menu-item" onClick={toggleLayout}>
+                {layout === "list" ? "▦" : "☰"}{" "}
+                {layout === "list" ? t("shows.gridView") : t("shows.listView")}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  if (loading) return (<div>{subTabsRow}<p className="center">{t("shows.loading")}</p></div>);
+  if (error) return (<div>{subTabsRow}<p className="error">{error}</p></div>);
 
   if (items.length === 0 && pending === 0) {
     return (
-      <p className="muted" style={{ textAlign: "center", marginTop: 40 }}>
-        {t("shows.none")}
-      </p>
+      <div>
+        {subTabsRow}
+        <p className="muted" style={{ textAlign: "center", marginTop: 40 }}>
+          {t("shows.none")}
+        </p>
+      </div>
     );
   }
 
@@ -231,56 +301,7 @@ export default function ShowsPage({ onOpenShow }) {
 
   return (
     <div>
-      <div className="list-controls">
-        <div className="controls-menu-wrap">
-          <button
-            className="controls-menu-trigger"
-            onClick={() => setControlsOpen((o) => !o)}
-            aria-label={t("shows.controlsMenu")}
-          >
-            ⋮
-            {(filter.trim() !== "" || sort !== "recent" || section !== "all" || genreFilter) && (
-              <span className="filter-trigger-dot controls-menu-trigger-dot" />
-            )}
-          </button>
-          {controlsOpen && (
-            <>
-              <div className="controls-menu-overlay" onClick={() => setControlsOpen(false)} />
-              <div className="controls-menu">
-                <input
-                  type="text"
-                  className="filter-input controls-menu-input"
-                  placeholder={t("shows.filterTitle")}
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                />
-                <select
-                  className="sort-select controls-menu-select"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                >
-                  <option value="recent">{t("sort.activity")}</option>
-                  <option value="title">{t("sort.title")}</option>
-                  <option value="year">{t("sort.year")}</option>
-                </select>
-
-                <div className="controls-menu-sep" />
-                <button
-                  className="controls-menu-item"
-                  onClick={() => { setControlsOpen(false); setFilterOpen(true); }}
-                >
-                  ▾ {t("filter.button")}
-                  {(section !== "all" || genreFilter) && <span className="filter-trigger-dot" />}
-                </button>
-                <button className="controls-menu-item" onClick={toggleLayout}>
-                  {layout === "list" ? "▦" : "☰"}{" "}
-                  {layout === "list" ? t("shows.gridView") : t("shows.listView")}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+      {subTabsRow}
 
       <FilterSheet
         open={filterOpen}

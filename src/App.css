@@ -340,6 +340,14 @@ body {
 .notfound ul { font-size: 0.85rem; color: #bbb; }
 
 /* ---- Films ---- */
+.subtabs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.subtabs-row .movie-tabs { flex: 1; margin-bottom: 0; }
+
 .movie-tabs {
   display: flex;
   gap: 8px;
