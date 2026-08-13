@@ -652,7 +652,6 @@ body {
 .controls-menu {
   position: absolute;
   top: 44px;
-  right: 0;
   z-index: 41;
   background: #1e1e1e;
   border: 1px solid #333;
@@ -664,6 +663,8 @@ body {
   flex-direction: column;
   gap: 2px;
 }
+.profile-menu { right: 0; }
+.controls-menu { left: 0; }
 .profile-menu-item,
 .controls-menu-item {
   background: none;
