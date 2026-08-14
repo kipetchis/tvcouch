@@ -22,7 +22,7 @@ export function profileUrl(path, size = "w185") {
   return `${IMG_BASE}/${size}${path}`;
 }
 
-async function tmdbFetch(path, params = {}) {
+async function tmdbFetch(path, params = {}, attempt = 0) {
   const url = new URL(WORKER_URL + path);
   // Langue courante (fr-FR / en-US / es-ES), sauf si déjà précisée
   if (params.language === undefined) {
@@ -35,6 +35,18 @@ async function tmdbFetch(path, params = {}) {
   });
 
   const response = await fetch(url.toString());
+
+  // Trop de requêtes envoyées d'un coup (ex. plusieurs listes qui se
+  // rechargent en même temps) : on patiente puis on réessaie tout seul,
+  // en respectant l'en-tête Retry-After du serveur s'il est fourni,
+  // jusqu'à 3 tentatives, plutôt que de remonter l'erreur à l'écran.
+  if (response.status === 429 && attempt < 3) {
+    const retryAfter = Number(response.headers.get("Retry-After"));
+    const waitMs = retryAfter > 0 ? retryAfter * 1000 : 1000 * Math.pow(2, attempt);
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    return tmdbFetch(path, params, attempt + 1);
+  }
+
   if (!response.ok) {
     throw new Error(`Erreur TMDB (${response.status})`);
   }

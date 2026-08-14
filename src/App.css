@@ -671,8 +671,8 @@ body {
   flex-direction: column;
   gap: 2px;
 }
-.profile-menu { right: 0; }
-.controls-menu { left: 0; }
+.profile-menu,
+.controls-menu { right: 0; }
 .profile-menu-item,
 .controls-menu-item {
   background: none;

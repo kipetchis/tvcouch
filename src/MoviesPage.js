@@ -64,12 +64,12 @@ export default function MoviesPage() {
   };
 
   // Rattrapage silencieux : renseigne les genres des films ajoutés avant
-  // cette fonctionnalité. Par paquets de 8 en parallèle (pas tous à la fois)
-  // pour ne pas saturer le Worker Cloudflare si la collection est grosse.
-  // Chaque film mis à jour réapparaît aussitôt dans les options de genre.
+  // cette fonctionnalité. Par petits paquets (pas tous à la fois) avec une
+  // pause entre chacun, pour ne pas cumuler avec d'autres appels TMDB en
+  // cours (ex. chargement des séries) et déclencher un 429 côté API.
   const backfillGenres = async (all) => {
     const missing = all.filter((m) => !(m.genre_ids && m.genre_ids.length));
-    const CHUNK = 8;
+    const CHUNK = 3;
     for (let i = 0; i < missing.length; i += CHUNK) {
       const chunk = missing.slice(i, i + CHUNK);
       await Promise.all(
@@ -87,6 +87,11 @@ export default function MoviesPage() {
           }
         })
       );
+      // Petite pause entre chaque paquet pour rester à distance de la
+      // limite de débit TMDB, même en cas de retry déjà en cours ailleurs.
+      if (i + CHUNK < missing.length) {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      }
     }
   };
 
