@@ -82,7 +82,7 @@ function writeMeta(id, genres, total) {
   }
 }
 
-export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onOpenFavorites, onOpenShow }) {
+export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onImportTrakt, onOpenFavorites, onOpenShow }) {
   const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
@@ -358,6 +358,12 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                   onClick={() => { setMenuOpen(false); onImportImdb(); }}
                 >
                   {t("profile.importImdb")}
+                </button>
+                <button
+                  className="profile-menu-item"
+                  onClick={() => { setMenuOpen(false); onImportTrakt(); }}
+                >
+                  {t("profile.importTrakt")}
                 </button>
 
                 <div className="profile-menu-sep" />

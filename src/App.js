@@ -12,6 +12,7 @@ import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
+import TraktImport from "./TraktImport";
 import ProfilePage from "./ProfilePage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
@@ -168,6 +169,7 @@ function App() {
   const [showImport, setShowImport] = useState(false);
   const [showMovieImport, setShowMovieImport] = useState(false);
   const [showImdbImport, setShowImdbImport] = useState(false);
+  const [showTraktImport, setShowTraktImport] = useState(false);
   const [favPicker, setFavPicker] = useState(null);
 
   // Retour / swipe Android : ferme l'écran ouvert au lieu de quitter l'app
@@ -175,6 +177,7 @@ function App() {
   useBackClose(showImport, () => setShowImport(false));
   useBackClose(showMovieImport, () => setShowMovieImport(false));
   useBackClose(showImdbImport, () => setShowImdbImport(false));
+  useBackClose(showTraktImport, () => setShowTraktImport(false));
   useBackClose(!!favPicker, () => setFavPicker(null));
 
   const TAB_ORDER = ["shows", "movies", "explore", "profile"];
@@ -316,6 +319,17 @@ function App() {
     );
   }
 
+  if (showTraktImport) {
+    return (
+      <div className="app">
+        <button className="btn-small back" onClick={() => setShowTraktImport(false)}>
+          ← Retour
+        </button>
+        <TraktImport onDone={() => setShowTraktImport(false)} />
+      </div>
+    );
+  }
+
   if (selectedShow) {
     return (
       <div className="app">
@@ -415,6 +429,7 @@ function App() {
           onImportShows={() => setShowImport(true)}
           onImportMovies={() => setShowMovieImport(true)}
           onImportImdb={() => setShowImdbImport(true)}
+          onImportTrakt={() => setShowTraktImport(true)}
           onOpenFavorites={(type) => setFavPicker(type)}
           onOpenShow={setSelectedShow}
         />
