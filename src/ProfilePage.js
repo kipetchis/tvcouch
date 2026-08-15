@@ -9,6 +9,7 @@ import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
+import { useTheme, setTheme } from "./theme";
 import { deleteAccount, reauthenticate, getAuthProvider, authErrorMessage } from "./firebase";
 import { useBackClose } from "./backNav";
 
@@ -109,6 +110,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
 
   // Menu "..." du profil (Outils, Langue, Suppression de compte)
   const [menuOpen, setMenuOpen] = useState(false);
+  const theme = useTheme();
   useBackClose(menuOpen, () => setMenuOpen(false));
 
   const handleDeleteAccount = async () => {
@@ -357,6 +359,23 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 >
                   {t("profile.importImdb")}
                 </button>
+
+                <div className="profile-menu-sep" />
+                <div className="profile-menu-label">🎨 {t("profile.appearance")}</div>
+                <div className="lang-switch profile-menu-lang">
+                  <button
+                    className={`lang-btn ${theme === "dark" ? "lang-active" : ""}`}
+                    onClick={() => setTheme("dark")}
+                  >
+                    {t("profile.dark")}
+                  </button>
+                  <button
+                    className={`lang-btn ${theme === "light" ? "lang-active" : ""}`}
+                    onClick={() => setTheme("light")}
+                  >
+                    {t("profile.light")}
+                  </button>
+                </div>
 
                 <div className="profile-menu-sep" />
                 <div className="profile-menu-label">🌐 {t("profile.language")}</div>
