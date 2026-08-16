@@ -10,6 +10,7 @@ import ShowsPage from "./ShowsPage";
 import UpcomingPage from "./UpcomingPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
+import BooksPage from "./BooksPage";
 import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
 import TraktImport from "./TraktImport";
@@ -180,7 +181,7 @@ function App() {
   useBackClose(showTraktImport, () => setShowTraktImport(false));
   useBackClose(!!favPicker, () => setFavPicker(null));
 
-  const TAB_ORDER = ["shows", "movies", "explore", "profile"];
+  const TAB_ORDER = ["shows", "movies", "books", "explore", "profile"];
   const { onTouchStart: onTabTouchStart, onTouchEnd: onTabTouchEnd } = useSwipeTabs(
     TAB_ORDER,
     tab,
@@ -422,6 +423,7 @@ function App() {
       )}
 
       {tab === "movies" && <MoviesPage />}
+      {tab === "books" && <BooksPage />}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
       {tab === "profile" && (
         <ProfilePage
@@ -452,6 +454,13 @@ function App() {
         >
           <span className="tab-icon">🎬</span>
           {t("nav.movies")}
+        </button>
+        <button
+          className={tab === "books" ? "tab active" : "tab"}
+          onClick={() => setTab("books")}
+        >
+          <span className="tab-icon">📚</span>
+          {t("nav.books")}
         </button>
         <button
           className={tab === "explore" ? "tab active" : "tab"}
