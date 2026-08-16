@@ -11,6 +11,7 @@ import UpcomingPage from "./UpcomingPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import BooksPage from "./BooksPage";
+import MangaPage from "./MangaPage";
 import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
 import TraktImport from "./TraktImport";
@@ -166,6 +167,7 @@ function App() {
 
   const [tab, setTab] = useState("shows");
   const [showsSubTab, setShowsSubTab] = useState("towatch"); // towatch | upcoming
+  const [booksSubTab, setBooksSubTab] = useState("romans"); // romans | manga
   const [selectedShow, setSelectedShow] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showMovieImport, setShowMovieImport] = useState(false);
@@ -423,7 +425,13 @@ function App() {
       )}
 
       {tab === "movies" && <MoviesPage />}
-      {tab === "books" && <BooksPage />}
+      {tab === "books" && (
+        booksSubTab === "romans" ? (
+          <BooksPage subTab={booksSubTab} onSubTabChange={setBooksSubTab} />
+        ) : (
+          <MangaPage subTab={booksSubTab} onSubTabChange={setBooksSubTab} />
+        )
+      )}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
       {tab === "profile" && (
         <ProfilePage

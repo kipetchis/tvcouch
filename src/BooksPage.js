@@ -37,7 +37,7 @@ function sortBooks(list, sort) {
   return arr;
 }
 
-export default function BooksPage() {
+export default function BooksPage({ subTab, onSubTabChange }) {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("read"); // read | toread
@@ -187,6 +187,21 @@ export default function BooksPage() {
 
   return (
     <div>
+      <div className="movie-tabs">
+        <button
+          className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("romans")}
+        >
+          {t("books.tabRomans")}
+        </button>
+        <button
+          className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("manga")}
+        >
+          {t("books.tabManga")}
+        </button>
+      </div>
+
       <form className="search" onSubmit={handleSearch}>
         <input
           type="text"
