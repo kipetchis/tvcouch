@@ -25,9 +25,11 @@ function AddVolumeForm({ result, seriesName, onClose, onAdded }) {
     (result.series_position && result.series_position[0]) || ""
   );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const add = async (status) => {
     setSaving(true);
+    setError(null);
     try {
       const shape = {
         id: (result.key || "").replace(/^\/?works\//, ""),
@@ -51,7 +53,7 @@ function AddVolumeForm({ result, seriesName, onClose, onAdded }) {
       );
       onAdded();
     } catch (e) {
-      // ignore
+      setError((e && e.message) || "Erreur lors de l'ajout.");
     } finally {
       setSaving(false);
     }
@@ -94,6 +96,7 @@ function AddVolumeForm({ result, seriesName, onClose, onAdded }) {
         <button className="rewatch-btn rewatch-btn-cancel" onClick={onClose}>
           {t("rewatch.cancel")}
         </button>
+        {error && <p className="error small" style={{ marginTop: 10 }}>{error}</p>}
       </div>
     </div>
   );
@@ -102,6 +105,7 @@ function AddVolumeForm({ result, seriesName, onClose, onAdded }) {
 export default function MangaSeriesDetail({ seriesName, onBack }) {
   const [volumes, setVolumes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [openVolume, setOpenVolume] = useState(null);
   useBackClose(!!openVolume, () => setOpenVolume(null));
 
@@ -113,9 +117,12 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const all = await getAllVolumes();
       setVolumes(sortVolumes(all.filter((v) => v.seriesName === seriesName)));
+    } catch (e) {
+      setLoadError((e && e.message) || "Erreur de chargement.");
     } finally {
       setLoading(false);
     }
@@ -180,6 +187,7 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
       </form>
 
       {searching && <p className="center">{t("common.loading")}</p>}
+      {loadError && <p className="error">{loadError}</p>}
 
       {results.length > 0 && (
         <div className="grid" style={{ marginBottom: 20 }}>

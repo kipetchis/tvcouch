@@ -3,6 +3,7 @@ import { getAllVolumes, saveVolume } from "./mangaStore";
 import { searchBooks, getWork, coverUrl } from "./openlibrary";
 import MangaSeriesDetail from "./MangaSeriesDetail";
 import { t } from "./i18n";
+import { useBackClose } from "./backNav";
 
 function groupBySeries(volumes) {
   const groups = new Map();
@@ -52,9 +53,11 @@ function AddVolumeForm({ result, onClose, onAdded }) {
   const [name, setName] = useState((result.series_name && result.series_name[0]) || result.title);
   const [position, setPosition] = useState((result.series_position && result.series_position[0]) || "");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const add = async (status) => {
     setSaving(true);
+    setError(null);
     try {
       const shape = {
         id: (result.key || "").replace(/^\/?works\//, ""),
@@ -78,7 +81,7 @@ function AddVolumeForm({ result, onClose, onAdded }) {
       );
       onAdded();
     } catch (e) {
-      // ignore
+      setError((e && e.message) || "Erreur lors de l'ajout.");
     } finally {
       setSaving(false);
     }
@@ -121,6 +124,7 @@ function AddVolumeForm({ result, onClose, onAdded }) {
         <button className="rewatch-btn rewatch-btn-cancel" onClick={onClose}>
           {t("rewatch.cancel")}
         </button>
+        {error && <p className="error small" style={{ marginTop: 10 }}>{error}</p>}
       </div>
     </div>
   );
@@ -129,7 +133,9 @@ function AddVolumeForm({ result, onClose, onAdded }) {
 export default function MangaPage({ subTab, onSubTabChange }) {
   const [volumes, setVolumes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [openSeries, setOpenSeries] = useState(null);
+  useBackClose(!!openSeries, () => setOpenSeries(null));
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -138,9 +144,12 @@ export default function MangaPage({ subTab, onSubTabChange }) {
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const all = await getAllVolumes();
       setVolumes(all);
+    } catch (e) {
+      setLoadError((e && e.message) || "Erreur de chargement.");
     } finally {
       setLoading(false);
     }
@@ -211,6 +220,7 @@ export default function MangaPage({ subTab, onSubTabChange }) {
       </form>
 
       {searching && <p className="center">{t("common.loading")}</p>}
+      {loadError && <p className="error">{loadError}</p>}
 
       {results.length > 0 ? (
         <div className="grid">
