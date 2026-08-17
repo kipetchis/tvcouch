@@ -120,7 +120,7 @@ body {
   padding: 16px;
 }
 
-.app.with-tabs { padding-bottom: 80px; }
+.app.with-tabs { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 
 .header {
   display: flex;
@@ -376,12 +376,14 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--bg-alt);
   border-top: 1px solid var(--border-strong);
   display: flex;
   justify-content: space-around;
   align-items: center;
+  z-index: 30;
 }
 
 .tab {
