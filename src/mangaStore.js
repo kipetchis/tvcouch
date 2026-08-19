@@ -26,6 +26,7 @@ export async function saveVolume(volume, status, readDate = null) {
     author: volume.author || null,
     authorKey: volume.authorKey || null,
     cover_i: volume.cover_i || null,
+    cover_url: volume.cover_url || null,
     first_publish_year: volume.first_publish_year || null,
     seriesName: volume.seriesName,
     seriesPosition: volume.seriesPosition || null,
@@ -78,6 +79,7 @@ export async function setVolumeRating(volumeId, note, comment, volume = null) {
     if (volume.author !== undefined) data.author = volume.author || null;
     if (volume.authorKey !== undefined) data.authorKey = volume.authorKey || null;
     if (volume.cover_i !== undefined) data.cover_i = volume.cover_i || null;
+    if (volume.cover_url !== undefined) data.cover_url = volume.cover_url || null;
     if (volume.first_publish_year !== undefined) data.first_publish_year = volume.first_publish_year || null;
     if (volume.seriesName !== undefined) data.seriesName = volume.seriesName;
     if (volume.seriesPosition !== undefined) data.seriesPosition = volume.seriesPosition || null;

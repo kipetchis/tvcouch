@@ -25,6 +25,7 @@ export async function saveBook(book, status, readDate = null) {
     author: book.author || null,
     authorKey: book.authorKey || null,
     cover_i: book.cover_i || null,
+    cover_url: book.cover_url || null,
     first_publish_year: book.first_publish_year || null,
     status,
     readDate: readDate || null,
@@ -69,6 +70,7 @@ export async function setBookRating(bookId, note, comment, book = null) {
     if (book.author !== undefined) data.author = book.author || null;
     if (book.authorKey !== undefined) data.authorKey = book.authorKey || null;
     if (book.cover_i !== undefined) data.cover_i = book.cover_i || null;
+    if (book.cover_url !== undefined) data.cover_url = book.cover_url || null;
     if (book.first_publish_year !== undefined) data.first_publish_year = book.first_publish_year || null;
     if (book.subjects && book.subjects.length > 0) data.subjects = book.subjects.slice(0, 20);
     if (data.addedAt === undefined) data.addedAt = Date.now();

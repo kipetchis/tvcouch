@@ -19,10 +19,12 @@ async function olFetch(path, params = {}) {
   return response.json();
 }
 
-// URL d'une couverture de livre à partir de son cover_id (numérique,
-// fourni par la recherche et les fiches œuvre). Tailles : S, M, L.
+// URL d'une couverture. Accepte soit un cover_id numérique Open Library
+// (tailles S/M/L), soit une URL directe déjà complète (Google Books, ou
+// toute source http/https) qu'on renvoie telle quelle.
 export function coverUrl(coverId, size = "M") {
   if (!coverId) return null;
+  if (typeof coverId === "string" && /^https?:\/\//.test(coverId)) return coverId;
   return `${WORKER_URL}/ol-covers/b/id/${coverId}-${size}.jpg`;
 }
 

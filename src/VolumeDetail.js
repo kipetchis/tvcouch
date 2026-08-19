@@ -66,7 +66,7 @@ export default function VolumeDetail({ volume, onClose, onRated, onRemove }) {
   };
 
   const hasRating = note > 0 || comment.trim().length > 0;
-  const cover = coverUrl(volume.cover_i, "L");
+  const cover = coverUrl(volume.cover_url || volume.cover_i, "L");
 
   return (
     <div className="ep-detail-overlay" onClick={onClose}>

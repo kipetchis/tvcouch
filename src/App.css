@@ -138,10 +138,11 @@ body {
   font-size: 0.85rem;
 }
 
-.search { display: flex; gap: 8px; margin-bottom: 24px; }
+.search { display: flex; gap: 8px; margin-bottom: 24px; align-items: stretch; }
 
 .search input {
   flex: 1;
+  min-width: 0;
   padding: 12px 14px;
   border-radius: 10px;
   border: none;
@@ -875,9 +876,10 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  font-size: 1.1rem;
-  padding: 0 14px;
+  font-size: 1.2rem;
+  padding: 0 12px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .comment-box {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library";
 import { getEditionByIsbn, getWork, getAuthor } from "./openlibrary";
+import { findBookByIsbnGoogle } from "./googlebooks";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -51,6 +52,20 @@ export default function BookScanner({ onFound, onClose }) {
 
   const resolveIsbn = async (isbn) => {
     setStatus("resolving");
+
+    // 1) Google Books d'abord : meilleure couverture francophone, et le
+    // résultat est déjà au bon format (normalize()), rien à reconstruire.
+    try {
+      const gb = await findBookByIsbnGoogle(isbn);
+      if (gb) {
+        onFound(gb);
+        return;
+      }
+    } catch {
+      // on tente Open Library en secours ci-dessous
+    }
+
+    // 2) Secours Open Library (édition -> œuvre -> auteur)
     try {
       const edition = await getEditionByIsbn(isbn);
       const workKey = edition.works && edition.works[0] && edition.works[0].key;
@@ -88,9 +103,6 @@ export default function BookScanner({ onFound, onClose }) {
         return;
       }
 
-      // Même forme qu'un résultat de recherche Open Library, pour que
-      // l'écran appelant puisse le traiter exactement comme s'il venait
-      // d'une recherche par titre.
       onFound({
         key: workId || isbn,
         title: (work && work.title) || edition.title,

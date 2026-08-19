@@ -34,29 +34,38 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
   const workId = (book.key || book.id || "").replace(/^\/?works\//, "");
   const authorName = (book.author_name && book.author_name[0]) || book.author || null;
   const authorKey = (book.author_key && book.author_key[0]) || book.authorKey || null;
+  const isOL = /^OL\d+W$/i.test(workId);
 
   useEffect(() => {
     let active = true;
 
-    getWork(workId)
-      .then((d) => { if (active) setDetails(d); })
-      .catch(() => {});
-
-    if (authorKey) {
-      getAuthorWorks(authorKey)
-        .then((res) => {
-          if (!active) return;
-          const works = (res.entries || [])
-            .filter((w) => (w.key || "").replace(/^\/?works\//, "") !== workId)
-            .filter((w) => w.covers && w.covers.length > 0 && w.covers[0] > 0)
-            .slice(0, 10);
-          setRecommendations(works);
-        })
+    // getWork/getAuthorWorks n'existent que côté Open Library. Pour un livre
+    // Google Books (id "gb:…"), on se sert de la description et des sujets
+    // déjà fournis à l'ajout — pas de recommandations "même auteur" pour eux.
+    if (isOL) {
+      getWork(workId)
+        .then((d) => { if (active) setDetails(d); })
         .catch(() => {});
+
+      if (authorKey) {
+        getAuthorWorks(authorKey)
+          .then((res) => {
+            if (!active) return;
+            const works = (res.entries || [])
+              .filter((w) => (w.key || "").replace(/^\/?works\//, "") !== workId)
+              .filter((w) => w.covers && w.covers.length > 0 && w.covers[0] > 0)
+              .slice(0, 10);
+            setRecommendations(works);
+          })
+          .catch(() => {});
+      }
+    } else if (book.description) {
+      // Livre Google Books : la description est déjà dans l'objet reçu.
+      setDetails({ description: book.description, subjects: book.subjects || [] });
     }
 
     return () => { active = false; };
-  }, [workId, authorKey]);
+  }, [workId, authorKey, isOL, book.description, book.subjects]);
 
   // Relit systématiquement les vraies valeurs enregistrées dans Firestore
   useEffect(() => {
@@ -86,6 +95,7 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
         author: authorName,
         authorKey,
         cover_i: book.cover_i,
+        cover_url: book.cover_url,
         first_publish_year: book.first_publish_year,
         subjects,
       });
@@ -117,7 +127,7 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
 
   const description = extractDescription(details && details.description);
   const hasRating = note > 0 || comment.trim().length > 0;
-  const cover = coverUrl(book.cover_i, "L");
+  const cover = coverUrl(book.cover_url || book.cover_i, "L");
 
   return (
     <div className="ep-detail-overlay" onClick={onClose}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllVolumes, saveVolume } from "./mangaStore";
 import { searchBooks, getWork, coverUrl } from "./openlibrary";
+import { searchBooksGoogle } from "./googlebooks";
 import MangaSeriesDetail from "./MangaSeriesDetail";
 import BookScanner from "./BookScanner";
 import { t } from "./i18n";
@@ -28,7 +29,7 @@ function groupBySeries(volumes) {
 
 function SeriesRow({ s, onOpen }) {
   const firstVol = s.volumes[0];
-  const cover = firstVol ? coverUrl(firstVol.cover_i, "M") : null;
+  const cover = firstVol ? coverUrl(firstVol.cover_url || firstVol.cover_i, "M") : null;
   return (
     <div className="ep-row" onClick={onOpen}>
       <div className="ep-row-poster">
@@ -66,15 +67,20 @@ function AddVolumeForm({ result, onClose, onAdded }) {
         author: (result.author_name && result.author_name[0]) || null,
         authorKey: (result.author_key && result.author_key[0]) || null,
         cover_i: result.cover_i || null,
+        cover_url: result.cover_url || null,
         first_publish_year: result.first_publish_year || null,
         seriesName: name.trim(),
         seriesPosition: position.trim() || null,
       };
-      let subjects;
-      try {
-        const full = await getWork(shape.id);
-        subjects = (full.subjects || []).slice(0, 20);
-      } catch {}
+      // Sujets déjà présents (Google Books) ; sinon getWork, mais seulement
+      // pour un id Open Library (OL...W) — un id "gb:" n'a pas d'œuvre OL.
+      let subjects = result.subjects || [];
+      if ((!subjects || !subjects.length) && /^OL\d+W$/i.test(shape.id)) {
+        try {
+          const full = await getWork(shape.id);
+          subjects = (full.subjects || []).slice(0, 20);
+        } catch {}
+      }
       await saveVolume(
         { ...shape, subjects },
         status,
@@ -166,8 +172,12 @@ export default function MangaPage({ subTab, onSubTabChange }) {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      const data = await searchBooks(query.trim());
-      setResults((data.docs || []).filter((d) => d.title));
+      let list = await searchBooksGoogle(query.trim());
+      if (list.length === 0) {
+        const data = await searchBooks(query.trim());
+        list = (data.docs || []).filter((d) => d.title);
+      }
+      setResults(list);
     } catch {
       // ignore
     } finally {
@@ -243,7 +253,7 @@ export default function MangaPage({ subTab, onSubTabChange }) {
       {results.length > 0 ? (
         <div className="grid">
           {results.map((r) => {
-            const cover = coverUrl(r.cover_i);
+            const cover = coverUrl(r.cover_url || r.cover_i);
             return (
               <div key={r.key} className="card" onClick={() => setAddingResult(r)}>
                 {cover ? (

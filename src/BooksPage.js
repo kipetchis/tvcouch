@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllBooks, saveBook, removeBook, setBookSubjects } from "./bookStore";
 import { searchBooks, getWork, coverUrl } from "./openlibrary";
+import { searchBooksGoogle } from "./googlebooks";
 import BookDetail from "./BookDetail";
 import BookScanner from "./BookScanner";
 import { t } from "./i18n";
@@ -16,8 +17,16 @@ function toBookShape(result) {
     authorKey: (result.author_key && result.author_key[0]) || null,
     author_key: result.author_key || [],
     cover_i: result.cover_i || null,
+    cover_url: result.cover_url || null,
     first_publish_year: result.first_publish_year || null,
+    subjects: result.subjects || [],
   };
+}
+
+// Un id commençant par "gb:" vient de Google Books : il n'a pas d'œuvre
+// Open Library associée, donc pas de getWork() à tenter dessus.
+function isOpenLibraryId(id) {
+  return typeof id === "string" && /^OL\d+W$/i.test(id);
 }
 
 function sortBooks(list, sort) {
@@ -71,7 +80,9 @@ export default function BooksPage({ subTab, onSubTabChange }) {
   // Rattrapage silencieux des sujets (genre-équivalent) manquants, par
   // petits paquets — même logique que pour les films.
   const backfillSubjects = async (all) => {
-    const missing = all.filter((b) => !(b.subjects && b.subjects.length));
+    const missing = all.filter(
+      (b) => !(b.subjects && b.subjects.length) && isOpenLibraryId(b.id)
+    );
     const CHUNK = 3;
     for (let i = 0; i < missing.length; i += CHUNK) {
       const chunk = missing.slice(i, i + CHUNK);
@@ -105,8 +116,14 @@ export default function BooksPage({ subTab, onSubTabChange }) {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      const data = await searchBooks(query.trim());
-      setResults((data.docs || []).filter((d) => d.title));
+      // Google Books d'abord (meilleure couverture FR) ; repli sur Open
+      // Library seulement s'il ne renvoie rien.
+      let list = await searchBooksGoogle(query.trim());
+      if (list.length === 0) {
+        const data = await searchBooks(query.trim());
+        list = (data.docs || []).filter((d) => d.title);
+      }
+      setResults(list);
     } catch {
       // ignore
     } finally {
@@ -121,11 +138,15 @@ export default function BooksPage({ subTab, onSubTabChange }) {
 
   const addAsRead = async (result) => {
     const shape = toBookShape(result);
-    let subjects;
-    try {
-      const full = await getWork(shape.id);
-      subjects = (full.subjects || []).slice(0, 20);
-    } catch {}
+    let subjects = shape.subjects;
+    // Les sujets ne se complètent via getWork que pour un id Open Library ;
+    // les résultats Google Books portent déjà leurs catégories.
+    if ((!subjects || !subjects.length) && isOpenLibraryId(shape.id)) {
+      try {
+        const full = await getWork(shape.id);
+        subjects = (full.subjects || []).slice(0, 20);
+      } catch {}
+    }
     await saveBook({ ...shape, subjects }, "read", new Date().toISOString().slice(0, 10));
     clearSearch();
     reload();
@@ -139,7 +160,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
 
   const markRead = async (book) => {
     let subjects = book.subjects;
-    if (!subjects || !subjects.length) {
+    if ((!subjects || !subjects.length) && isOpenLibraryId(book.id)) {
       try {
         const full = await getWork(book.id);
         subjects = (full.subjects || []).slice(0, 20);
@@ -243,7 +264,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
           <div className="grid">
             {results.map((result) => {
               const shape = toBookShape(result);
-              const cover = coverUrl(result.cover_i);
+              const cover = coverUrl(result.cover_url || result.cover_i);
               return (
                 <div key={shape.id} className="card movie-result">
                   <div onClick={() => setOpenBook(result)}>
@@ -339,7 +360,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
           ) : (
             <div className="grid">
               {shown.map((book) => {
-                const cover = coverUrl(book.cover_i);
+                const cover = coverUrl(book.cover_url || book.cover_i);
                 return (
                   <div key={book.id} className="card">
                     <div onClick={() => setOpenBook(book)}>
