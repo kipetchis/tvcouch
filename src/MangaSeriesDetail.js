@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getAllVolumes, saveVolume, setVolumeRead, removeVolume } from "./mangaStore";
 import { searchBooks, getWork, coverUrl } from "./openlibrary";
 import VolumeDetail from "./VolumeDetail";
+import BookScanner from "./BookScanner";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -113,6 +114,7 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [addingResult, setAddingResult] = useState(null);
+  const [scanning, setScanning] = useState(false);
   useBackClose(!!addingResult, () => setAddingResult(null));
 
   const load = async () => {
@@ -181,10 +183,26 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
           onChange={(e) => setQuery(e.target.value)}
         />
         <button className="btn" type="submit">{t("common.search")}</button>
+        <button
+          type="button"
+          className="scan-btn"
+          onClick={() => setScanning(true)}
+          aria-label={t("scan.button")}
+          title={t("scan.button")}
+        >
+          📷
+        </button>
         {results.length > 0 && (
           <button type="button" className="btn-small" onClick={clearSearch}>✕</button>
         )}
       </form>
+
+      {scanning && (
+        <BookScanner
+          onFound={(shape) => { setScanning(false); setAddingResult(shape); }}
+          onClose={() => setScanning(false)}
+        />
+      )}
 
       {searching && <p className="center">{t("common.loading")}</p>}
       {loadError && <p className="error">{loadError}</p>}
