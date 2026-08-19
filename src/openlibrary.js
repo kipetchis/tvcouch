@@ -31,6 +31,12 @@ export function searchBooks(query, page = 1) {
   return olFetch("/search.json", { q: query, page, limit: 20 });
 }
 
+// Résout un ISBN scanné vers son édition Open Library (contient le lien
+// vers l'œuvre parente ainsi qu'une couverture propre à cette édition).
+export function getEditionByIsbn(isbn) {
+  return olFetch(`/isbn/${isbn}.json`);
+}
+
 // Détail d'une œuvre (description, sujets/genres, couvertures, auteurs)
 // workId attendu sous forme "OL12345W" (avec ou sans le préfixe /works/)
 export function getWork(workId) {
