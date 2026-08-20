@@ -9,7 +9,10 @@
 // dans le champ cover_url, et coverUrl() (openlibrary.js) sait déjà
 // renvoyer une URL telle quelle si elle commence par http.
 
-const GB_URL = "https://www.googleapis.com/books/v1/volumes";
+// On passe par le proxy Cloudflare (même Worker que TMDB / Open Library)
+// plutôt que d'appeler googleapis.com en direct : ça évite la limite de
+// requêtes par IP (erreur 429) et met en cache les recherches répétées.
+const GB_URL = "https://tvcouch-proxy.kip3tchis.workers.dev/gbooks/volumes";
 
 // Convertit un item Google Books vers la forme d'un résultat Open Library.
 function normalize(item) {
