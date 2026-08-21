@@ -137,7 +137,7 @@ function AddVolumeForm({ result, onClose, onAdded }) {
   );
 }
 
-export default function MangaPage({ subTab, onSubTabChange }) {
+export default function MangaPage({ subTab, onSubTabChange, onOpenStats }) {
   const [volumes, setVolumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -172,7 +172,12 @@ export default function MangaPage({ subTab, onSubTabChange }) {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      let list = await searchBooksGoogle(query.trim());
+      // L'échec de Google Books (quota, réseau…) ne doit pas bloquer la
+      // recherche : on retombe sur Open Library dans ce cas.
+      let list = [];
+      try {
+        list = await searchBooksGoogle(query.trim());
+      } catch {}
       if (list.length === 0) {
         const data = await searchBooks(query.trim());
         list = (data.docs || []).filter((d) => d.title);
@@ -203,18 +208,28 @@ export default function MangaPage({ subTab, onSubTabChange }) {
 
   return (
     <div>
-      <div className="movie-tabs">
+      <div className="subtabs-row">
+        <div className="movie-tabs">
+          <button
+            className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
+            onClick={() => onSubTabChange("romans")}
+          >
+            {t("books.tabRomans")}
+          </button>
+          <button
+            className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
+            onClick={() => onSubTabChange("manga")}
+          >
+            {t("books.tabManga")}
+          </button>
+        </div>
         <button
-          className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
-          onClick={() => onSubTabChange("romans")}
+          className="controls-menu-trigger"
+          onClick={onOpenStats}
+          aria-label={t("books.stats")}
+          title={t("books.stats")}
         >
-          {t("books.tabRomans")}
-        </button>
-        <button
-          className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
-          onClick={() => onSubTabChange("manga")}
-        >
-          {t("books.tabManga")}
+          📊
         </button>
       </div>
 

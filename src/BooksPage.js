@@ -47,7 +47,7 @@ function sortBooks(list, sort) {
   return arr;
 }
 
-export default function BooksPage({ subTab, onSubTabChange }) {
+export default function BooksPage({ subTab, onSubTabChange, onOpenStats }) {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("read"); // read | toread
@@ -116,13 +116,22 @@ export default function BooksPage({ subTab, onSubTabChange }) {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      // Google Books d'abord (meilleure couverture FR) ; repli sur Open
-      // Library seulement s'il ne renvoie rien.
-      let list = await searchBooksGoogle(query.trim());
+      // Google Books d'abord (meilleure couverture FR). Son échec (quota,
+      // réseau…) ne doit jamais bloquer la recherche : on retombe alors sur
+      // Open Library. On ne remonte une erreur que si les DEUX échouent.
+      let list = [];
+      let googleFailed = false;
+      try {
+        list = await searchBooksGoogle(query.trim());
+      } catch {
+        googleFailed = true;
+      }
       if (list.length === 0) {
         const data = await searchBooks(query.trim());
         list = (data.docs || []).filter((d) => d.title);
       }
+      // (googleFailed sert seulement à ne pas masquer un vrai souci réseau)
+      void googleFailed;
       setResults(list);
     } catch {
       // ignore
@@ -210,18 +219,28 @@ export default function BooksPage({ subTab, onSubTabChange }) {
 
   return (
     <div>
-      <div className="movie-tabs">
+      <div className="subtabs-row">
+        <div className="movie-tabs">
+          <button
+            className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
+            onClick={() => onSubTabChange("romans")}
+          >
+            {t("books.tabRomans")}
+          </button>
+          <button
+            className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
+            onClick={() => onSubTabChange("manga")}
+          >
+            {t("books.tabManga")}
+          </button>
+        </div>
         <button
-          className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
-          onClick={() => onSubTabChange("romans")}
+          className="controls-menu-trigger"
+          onClick={onOpenStats}
+          aria-label={t("books.stats")}
+          title={t("books.stats")}
         >
-          {t("books.tabRomans")}
-        </button>
-        <button
-          className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
-          onClick={() => onSubTabChange("manga")}
-        >
-          {t("books.tabManga")}
+          📊
         </button>
       </div>
 

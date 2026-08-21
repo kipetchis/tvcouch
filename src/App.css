@@ -882,6 +882,53 @@ body {
   flex-shrink: 0;
 }
 
+/* ---- Statistiques Livres ---- */
+.book-stats .stats-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.stat-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.stat-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-bar-label {
+  flex: 0 0 40%;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+.stat-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--surface-3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 6px;
+}
+.stat-bar-count {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-fg);
+  min-width: 24px;
+  text-align: right;
+}
+
 .comment-box {
   width: 100%;
   background: var(--bg);
