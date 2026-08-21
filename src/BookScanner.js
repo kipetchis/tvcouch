@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from "@zxing/library";
 import { getEditionByIsbn, getWork, getAuthor } from "./openlibrary";
 import { findBookByIsbnGoogle } from "./googlebooks";
 import { t } from "./i18n";
@@ -22,7 +22,18 @@ export default function BookScanner({ onFound, onClose }) {
   useBackClose(true, onClose);
 
   useEffect(() => {
-    const reader = new BrowserMultiFormatReader();
+    // On indique au lecteur de ne chercher QUE des code-barres de livre
+    // (EAN-13, le format des ISBN, + EAN-8 par sécurité). En mode
+    // multi-format par défaut il tentait aussi QR/Micro-QR/DataMatrix, ce
+    // qui le ralentissait et faisait souvent rater l'EAN-13 fin et long
+    // d'un dos de livre.
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+    ]);
+    hints.set(DecodeHintType.TRY_HARDER, true);
+    const reader = new BrowserMultiFormatReader(hints);
     let stopped = false;
 
     reader
