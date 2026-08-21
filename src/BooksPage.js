@@ -47,7 +47,7 @@ function sortBooks(list, sort) {
   return arr;
 }
 
-export default function BooksPage({ subTab, onSubTabChange, onOpenStats }) {
+export default function BooksPage({ subTab, onSubTabChange }) {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("read"); // read | toread
@@ -219,28 +219,18 @@ export default function BooksPage({ subTab, onSubTabChange, onOpenStats }) {
 
   return (
     <div>
-      <div className="subtabs-row">
-        <div className="movie-tabs">
-          <button
-            className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
-            onClick={() => onSubTabChange("romans")}
-          >
-            {t("books.tabRomans")}
-          </button>
-          <button
-            className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
-            onClick={() => onSubTabChange("manga")}
-          >
-            {t("books.tabManga")}
-          </button>
-        </div>
+      <div className="movie-tabs">
         <button
-          className="controls-menu-trigger"
-          onClick={onOpenStats}
-          aria-label={t("books.stats")}
-          title={t("books.stats")}
+          className={subTab === "romans" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("romans")}
         >
-          📊
+          {t("books.tabRomans")}
+        </button>
+        <button
+          className={subTab === "manga" ? "movie-tab active" : "movie-tab"}
+          onClick={() => onSubTabChange("manga")}
+        >
+          {t("books.tabManga")}
         </button>
       </div>
 

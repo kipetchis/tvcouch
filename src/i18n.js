@@ -341,6 +341,7 @@ const DICT = {
 
   // Profil
   "profile.stats": { fr: "STATISTIQUES", en: "STATISTICS", es: "ESTADÍSTICAS" },
+  "profile.booksStats": { fr: "LECTURE", en: "READING", es: "LECTURA" },
   "profile.months": { fr: "mois", en: "mo", es: "meses" },
   "profile.days": { fr: "j", en: "d", es: "d" },
   "profile.hours": { fr: "h", en: "h", es: "h" },

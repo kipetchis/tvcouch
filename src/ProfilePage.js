@@ -4,6 +4,8 @@ import {
   setShowRuntime, setMovieRuntime, deleteAllUserData,
 } from "./store";
 import { getAllMovies } from "./movieStore";
+import { getAllBooks } from "./bookStore";
+import { getAllVolumes } from "./mangaStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import TranslatedTitle from "./TranslatedTitle";
@@ -82,6 +84,21 @@ function writeMeta(id, genres, total) {
   }
 }
 
+// ---- Helpers pour les statistiques de lecture (section Livres) ----
+function bookCleanSubject(raw) {
+  if (!raw) return null;
+  let s = String(raw);
+  if (s.includes("/")) s = s.split("/").pop();
+  s = s.trim().toLowerCase();
+  if (s.length < 2 || s.length > 30) return null;
+  return s;
+}
+function bookTopCounts(items, n) {
+  const map = new Map();
+  items.forEach((it) => { if (it) map.set(it, (map.get(it) || 0) + 1); });
+  return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, n);
+}
+
 export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onImportTrakt, onOpenFavorites, onOpenShow }) {
   const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesTime, setMoviesTime] = useState(0);
@@ -95,6 +112,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   // Données brutes pour les trophées
   const [showsData, setShowsData] = useState([]);
   const [moviesData, setMoviesData] = useState([]);
+  const [booksData, setBooksData] = useState([]);
+  const [volumesData, setVolumesData] = useState([]);
   const [metaMap, setMetaMap] = useState({});
   const [loginStreak] = useState(() => recordAndGetStreak());
   const [openTrophy, setOpenTrophy] = useState(null);
@@ -175,15 +194,19 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
     let active = true;
     async function compute() {
       try {
-        const [shows, movies, favs] = await Promise.all([
+        const [shows, movies, favs, books, volumes] = await Promise.all([
           getAllShows(),
           getAllMovies(),
           getFavorites(),
+          getAllBooks(),
+          getAllVolumes(),
         ]);
         if (!active) return;
         setFavorites(favs);
         setShowsData(shows);
         setMoviesData(movies);
+        setBooksData(books);
+        setVolumesData(volumes);
 
         // Temps films
         const watchedMovies = movies.filter((m) => m.status === "watched");
@@ -315,6 +338,35 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const st = formatTime(seriesTime);
   const mt = formatTime(moviesTime);
   const completing = progress.total > 0;
+
+  // ---- Statistiques de lecture (section Livres) ----
+  const bookStats = useMemo(() => {
+    const readBooks = booksData.filter((b) => b.status === "read");
+    const readVolumes = volumesData.filter((v) => v.status === "read");
+    const mangaSeries = new Set(readVolumes.map((v) => v.seriesName || v.title));
+
+    const authors = [
+      ...readBooks.map((b) => b.author),
+      ...readVolumes.map((v) => v.author),
+    ].filter(Boolean);
+
+    const subjects = [];
+    [...readBooks, ...readVolumes].forEach((item) => {
+      (item.subjects || []).forEach((s) => {
+        const c = bookCleanSubject(s);
+        if (c) subjects.push(c);
+      });
+    });
+
+    return {
+      totalRead: readBooks.length + readVolumes.length,
+      novelsRead: readBooks.length,
+      volumesRead: readVolumes.length,
+      seriesCount: mangaSeries.size,
+      topAuthors: bookTopCounts(authors, 5),
+      topSubjects: bookTopCounts(subjects, 5),
+    };
+  }, [booksData, volumesData]);
 
   const handleRemoveFavShow = async (id) => {
     await removeFavoriteShow(id);
@@ -448,6 +500,75 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           <div className="stat-label">{t("profile.moviesTime")}</div>
         </div>
       </div>
+
+      {/* Statistiques de lecture (Livres) */}
+      {bookStats.totalRead > 0 && (
+        <>
+          <h3 className="section-pill">📚 {t("profile.booksStats")}</h3>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">📖</div>
+              <div className="stat-value">{bookStats.novelsRead}</div>
+              <div className="stat-label">{t("stats.novelsRead")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">📗</div>
+              <div className="stat-value">{bookStats.volumesRead}</div>
+              <div className="stat-label">{t("stats.volumesRead")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">📚</div>
+              <div className="stat-value">{bookStats.seriesCount}</div>
+              <div className="stat-label">{t("stats.mangaSeries")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">✅</div>
+              <div className="stat-value">{bookStats.totalRead}</div>
+              <div className="stat-label">{t("stats.totalRead")}</div>
+            </div>
+          </div>
+
+          {bookStats.topAuthors.length > 0 && (
+            <>
+              <div className="stat-sublabel">{t("stats.topAuthors")}</div>
+              <div className="stat-bars">
+                {bookStats.topAuthors.map(([label, count]) => {
+                  const max = bookStats.topAuthors[0][1];
+                  return (
+                    <div key={label} className="stat-bar-row">
+                      <div className="stat-bar-label">{label}</div>
+                      <div className="stat-bar-track">
+                        <div className="stat-bar-fill" style={{ width: `${Math.round((count / max) * 100)}%` }} />
+                      </div>
+                      <div className="stat-bar-count">{count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {bookStats.topSubjects.length > 0 && (
+            <>
+              <div className="stat-sublabel">{t("stats.topGenres")}</div>
+              <div className="stat-bars">
+                {bookStats.topSubjects.map(([label, count]) => {
+                  const max = bookStats.topSubjects[0][1];
+                  return (
+                    <div key={label} className="stat-bar-row">
+                      <div className="stat-bar-label">{label}</div>
+                      <div className="stat-bar-track">
+                        <div className="stat-bar-fill" style={{ width: `${Math.round((count / max) * 100)}%` }} />
+                      </div>
+                      <div className="stat-bar-count">{count}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </>
+      )}
 
       {/* Soutenir l'app */}
       <h3 className="section-pill">{t("profile.support")}</h3>

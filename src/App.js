@@ -12,7 +12,6 @@ import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import BooksPage from "./BooksPage";
 import MangaPage from "./MangaPage";
-import BookStatsPage from "./BookStatsPage";
 import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
 import TraktImport from "./TraktImport";
@@ -169,8 +168,6 @@ function App() {
   const [tab, setTab] = useState("shows");
   const [showsSubTab, setShowsSubTab] = useState("towatch"); // towatch | upcoming
   const [booksSubTab, setBooksSubTab] = useState("romans"); // romans | manga
-  const [showBookStats, setShowBookStats] = useState(false);
-  useBackClose(showBookStats, () => setShowBookStats(false));
   const [selectedShow, setSelectedShow] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showMovieImport, setShowMovieImport] = useState(false);
@@ -429,20 +426,10 @@ function App() {
 
       {tab === "movies" && <MoviesPage />}
       {tab === "books" && (
-        showBookStats ? (
-          <BookStatsPage onBack={() => setShowBookStats(false)} />
-        ) : booksSubTab === "romans" ? (
-          <BooksPage
-            subTab={booksSubTab}
-            onSubTabChange={setBooksSubTab}
-            onOpenStats={() => setShowBookStats(true)}
-          />
+        booksSubTab === "romans" ? (
+          <BooksPage subTab={booksSubTab} onSubTabChange={setBooksSubTab} />
         ) : (
-          <MangaPage
-            subTab={booksSubTab}
-            onSubTabChange={setBooksSubTab}
-            onOpenStats={() => setShowBookStats(true)}
-          />
+          <MangaPage subTab={booksSubTab} onSubTabChange={setBooksSubTab} />
         )
       )}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}

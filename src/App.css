@@ -888,6 +888,12 @@ body {
   gap: 10px;
   margin-bottom: 8px;
 }
+.stat-sublabel {
+  font-size: 0.85rem;
+  color: var(--text-muted-3);
+  margin: 14px 0 8px;
+  font-weight: 600;
+}
 .stat-bars {
   display: flex;
   flex-direction: column;
