@@ -17,15 +17,22 @@ export default function BookScanner({ onFound, onClose }) {
   const [status, setStatus] = useState("scanning"); // scanning | resolving | error
   const [error, setError] = useState(null);
   const [manualIsbn, setManualIsbn] = useState("");
+  // Incrémenté pour relancer la caméra (bouton Réessayer) : le useEffect
+  // ci-dessous en dépend, donc le changer redémarre proprement le scan.
+  const [scanAttempt, setScanAttempt] = useState(0);
 
   // Écran plein : s'enregistre lui-même dans la navigation retour/swipe,
   // comme les autres écrans "modaux" de l'app (fiche, popup...).
   useBackClose(true, onClose);
 
   useEffect(() => {
-    // Lecteur multi-format par défaut : c'est celui qui détectait bien les
-    // code-barres au départ. (Un essai de restriction EAN-13 uniquement
-    // avait au contraire cassé la détection sur certains appareils.)
+    // On ne relance la caméra que quand on est en mode "scanning".
+    if (status !== "scanning") return;
+
+    // Multi-format nu : c'est la configuration qui détecte correctement
+    // sur cet appareil. On ne la touche pas (une tentative de restriction
+    // des formats avait cassé la détection). L'accélération éventuelle sera
+    // traitée à part pour ne pas risquer de re-casser ce qui marche.
     const reader = new BrowserMultiFormatReader();
     let stopped = false;
 
@@ -52,7 +59,7 @@ export default function BookScanner({ onFound, onClose }) {
       try { reader.reset(); } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, scanAttempt]);
 
   const resolveIsbn = async (isbn) => {
     setStatus("resolving");
@@ -122,8 +129,10 @@ export default function BookScanner({ onFound, onClose }) {
   };
 
   const retry = () => {
-    setStatus("scanning");
     setError(null);
+    setManualIsbn("");
+    setStatus("scanning");
+    setScanAttempt((n) => n + 1); // force le redémarrage de la caméra
   };
 
   // Saisie manuelle : on retire tirets et espaces (les ISBN sont souvent
