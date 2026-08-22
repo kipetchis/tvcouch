@@ -881,6 +881,28 @@ body {
   cursor: pointer;
   flex-shrink: 0;
 }
+.scanner-overlay {
+  flex-direction: column;
+  overflow-y: auto;
+}
+.scanner-manual {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 480px;
+}
+.scanner-manual-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.scanner-manual-row {
+  display: flex;
+  gap: 8px;
+}
+.scanner-manual-row .filter-input {
+  flex: 1;
+  min-width: 0;
+}
 
 /* ---- Statistiques Livres ---- */
 .book-stats .stats-grid {

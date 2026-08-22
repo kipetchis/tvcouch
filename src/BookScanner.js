@@ -16,6 +16,7 @@ export default function BookScanner({ onFound, onClose }) {
   const videoRef = useRef(null);
   const [status, setStatus] = useState("scanning"); // scanning | resolving | error
   const [error, setError] = useState(null);
+  const [manualIsbn, setManualIsbn] = useState("");
 
   // Écran plein : s'enregistre lui-même dans la navigation retour/swipe,
   // comme les autres écrans "modaux" de l'app (fiche, popup...).
@@ -133,8 +134,20 @@ export default function BookScanner({ onFound, onClose }) {
     setError(null);
   };
 
+  // Saisie manuelle : on retire tirets et espaces (les ISBN sont souvent
+  // écrits "978-2-7234-6775-9"), puis on valide et on résout comme un scan.
+  const submitManual = () => {
+    const cleaned = manualIsbn.replace(/[\s-]/g, "");
+    if (!looksLikeIsbn(cleaned)) {
+      setError(t("scan.invalidIsbn"));
+      setStatus("error");
+      return;
+    }
+    resolveIsbn(cleaned);
+  };
+
   return (
-    <div className="ep-detail-overlay" onClick={onClose}>
+    <div className="ep-detail-overlay scanner-overlay" onClick={onClose}>
       <div className="scanner-box" onClick={(e) => e.stopPropagation()}>
         <button className="btn-small ep-detail-close" onClick={onClose}>✕</button>
         <video ref={videoRef} className="scanner-video" muted playsInline />
@@ -151,6 +164,26 @@ export default function BookScanner({ onFound, onClose }) {
             <button className="btn-small" onClick={retry}>{t("scan.retry")}</button>
           </div>
         )}
+      </div>
+
+      {/* Saisie manuelle : filet de sécurité si la caméra ne détecte pas
+          le code-barres (mauvaise lumière, code abîmé, appareil capricieux). */}
+      <div className="scanner-manual" onClick={(e) => e.stopPropagation()}>
+        <div className="scanner-manual-label">{t("scan.manualLabel")}</div>
+        <div className="scanner-manual-row">
+          <input
+            type="text"
+            inputMode="numeric"
+            className="filter-input"
+            placeholder="978…"
+            value={manualIsbn}
+            onChange={(e) => setManualIsbn(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }}
+          />
+          <button className="btn" onClick={submitManual} disabled={!manualIsbn.trim()}>
+            {t("scan.manualValidate")}
+          </button>
+        </div>
       </div>
     </div>
   );
