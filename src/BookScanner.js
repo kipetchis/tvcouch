@@ -29,16 +29,33 @@ export default function BookScanner({ onFound, onClose }) {
     // On ne relance la caméra que quand on est en mode "scanning".
     if (status !== "scanning") return;
 
-    // Multi-format nu : c'est la configuration qui détecte correctement
-    // sur cet appareil. On ne la touche pas (une tentative de restriction
-    // des formats avait cassé la détection). L'accélération éventuelle sera
-    // traitée à part pour ne pas risquer de re-casser ce qui marche.
+    // Multi-format nu pour les formats (config qui détecte correctement
+    // sur cet appareil — ne pas restreindre les formats, ça casse). En
+    // revanche on accélère par deux leviers sans risque : cadence d'analyse
+    // plus rapide, et flux caméra haute résolution (code-barres plus net,
+    // détecté du premier coup au lieu de plusieurs tentatives ratées).
     const reader = new BrowserMultiFormatReader();
+    // Délai entre deux tentatives de décodage : plus court = détection plus
+    // réactive (défaut ~500 ms, souvent la vraie cause de la lenteur).
+    reader.timeBetweenDecodingAttempts = 100;
     let stopped = false;
+
+    const constraints = {
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        // focusMode en "advanced" seulement : c'est un réglage optionnel,
+        // silencieusement ignoré par les navigateurs qui ne le gèrent pas,
+        // alors qu'en contrainte principale il pourrait faire échouer tout
+        // le démarrage caméra sur certains d'entre eux.
+        advanced: [{ focusMode: "continuous" }],
+      },
+    };
 
     reader
       .decodeFromConstraints(
-        { video: { facingMode: "environment" } },
+        constraints,
         videoRef.current,
         (result) => {
           if (stopped || !result) return;
