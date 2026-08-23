@@ -3,6 +3,7 @@ import { getAllShows } from "./store";
 import { getAllMovies } from "./movieStore";
 import { getAllBooks } from "./bookStore";
 import { getAllVolumes } from "./mangaStore";
+import { MOVIE_GENRE_MAP, TV_GENRE_MAP } from "./genres";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -85,12 +86,58 @@ export default function StatsPage({ onBack }) {
     let moviesMinutes = 0;
     watchedMovies.forEach((m) => { if (m.runtime) moviesMinutes += m.runtime; });
 
+    // Genres préférés : fusion films + séries. On traduit les IDs TMDB en
+    // clés i18n (deux mappings distincts), puis on affiche le libellé
+    // traduit. Une série n'est comptée qu'une fois (peu importe le nombre
+    // d'épisodes vus), comme un film vu.
+    const genreLabels = [];
+    watchedMovies.forEach((m) => {
+      (m.genre_ids || []).forEach((id) => {
+        const key = MOVIE_GENRE_MAP[id];
+        if (key) genreLabels.push(t(`genre.${key}`));
+      });
+    });
+    shows.forEach((s) => {
+      const seen = Object.keys(s.watched || {}).length > 0;
+      if (!seen) return;
+      (s.genre_ids || []).forEach((id) => {
+        const key = TV_GENRE_MAP[id];
+        if (key) genreLabels.push(t(`genre.${key}`));
+      });
+    });
+    const topGenres = topCounts(genreLabels, 8);
+
+    // Séries les plus regardées (par nombre d'épisodes vus)
+    const seriesByEpisodes = shows
+      .map((s) => ({ name: s.name || "?", n: Object.keys(s.watched || {}).length }))
+      .filter((x) => x.n > 0)
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8)
+      .map((x) => [x.name, x.n]);
+
+    // Décennies des œuvres vues (films + séries), à partir de l'année.
+    const decades = [];
+    watchedMovies.forEach((m) => {
+      const y = (m.release_date || "").slice(0, 4);
+      if (y.length === 4) decades.push(`${y.slice(0, 3)}0s`);
+    });
+    shows.forEach((s) => {
+      const seen = Object.keys(s.watched || {}).length > 0;
+      if (!seen) return;
+      const y = (s.first_air_date || "").slice(0, 4);
+      if (y.length === 4) decades.push(`${y.slice(0, 3)}0s`);
+    });
+    const topDecades = topCounts(decades, 10).sort((a, b) => b[0].localeCompare(a[0]));
+
     return {
       showsCount: shows.length,
       episodesWatched,
       seriesTime: formatTime(seriesMinutes),
       moviesWatched: watchedMovies.length,
       moviesTime: formatTime(moviesMinutes),
+      topGenres,
+      seriesByEpisodes,
+      topDecades,
     };
   }, [shows, movies]);
 
@@ -176,6 +223,25 @@ export default function StatsPage({ onBack }) {
           <div className="stat-label">{t("profile.moviesTime")}</div>
         </div>
       </div>
+
+      {screen.topGenres.length > 0 && (
+        <>
+          <div className="stat-sublabel">{t("stats.topGenresScreen")}</div>
+          <BarList rows={screen.topGenres} />
+        </>
+      )}
+      {screen.seriesByEpisodes.length > 0 && (
+        <>
+          <div className="stat-sublabel">{t("stats.topSeries")}</div>
+          <BarList rows={screen.seriesByEpisodes} />
+        </>
+      )}
+      {screen.topDecades.length > 0 && (
+        <>
+          <div className="stat-sublabel">{t("stats.decades")}</div>
+          <BarList rows={screen.topDecades} />
+        </>
+      )}
 
       {/* ── Lecture ── */}
       {bookStats.totalRead > 0 && (
