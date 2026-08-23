@@ -85,6 +85,14 @@ export async function removeBookRating(bookId) {
   });
 }
 
+// Nombre de fois où le livre a été RELU (en plus de la première lecture).
+// 0 ou absent = lu une seule fois. 1 = relu une fois (affiché "×2"), etc.
+export async function setBookRereadCount(bookId, count) {
+  await updateDoc(bookRef(bookId), {
+    rereadCount: count > 0 ? count : deleteField(),
+  });
+}
+
 // Renseigne les sujets (genre-équivalent) d'un livre après coup —
 // rattrapage pour les livres ajoutés avant cette info, sans appel réseau
 // en plus quand on l'a déjà sous la main (ex. fiche déjà chargée).

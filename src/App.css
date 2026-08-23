@@ -1002,6 +1002,23 @@ body {
   font-weight: 600;
   margin-top: 6px;
 }
+.reread-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.reread-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.reread-buttons {
+  display: flex;
+  gap: 6px;
+}
 /* ---- Barre de tri / filtre (listes Séries & Films) ---- */
 .list-controls {
   display: flex;

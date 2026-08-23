@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { setBookRating, removeBookRating, getBookDoc } from "./bookStore";
+import { setBookRating, removeBookRating, getBookDoc, setBookRereadCount } from "./bookStore";
 import { getWork, getAuthorWorks, coverUrl } from "./openlibrary";
 import { t } from "./i18n";
 
@@ -27,6 +27,7 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [readDate, setReadDate] = useState(book.readDate || null);
+  const [rereadCount, setRereadCount] = useState(book.rereadCount || 0);
 
   const [details, setDetails] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -76,6 +77,7 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
         if (data.note) setNote(data.note);
         if (data.comment) setComment(data.comment);
         if (data.readDate) setReadDate(data.readDate);
+        if (data.rereadCount) setRereadCount(data.rereadCount);
         if (data.note || data.comment) setSaved(true);
       })
       .catch(() => {});
@@ -125,6 +127,17 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
     }
   };
 
+  const addReread = async () => {
+    const next = rereadCount + 1;
+    setRereadCount(next);
+    try { await setBookRereadCount(workId, next); } catch {}
+  };
+  const removeReread = async () => {
+    const next = Math.max(0, rereadCount - 1);
+    setRereadCount(next);
+    try { await setBookRereadCount(workId, next); } catch {}
+  };
+
   const description = extractDescription(details && details.description);
   const hasRating = note > 0 || comment.trim().length > 0;
   const cover = coverUrl(book.cover_url || book.cover_i, "L");
@@ -146,6 +159,23 @@ export default function BookDetail({ book, onClose, onRated, onOpenBook }) {
               <p className="watched-badge">
                 ✓ {t("book.readOn")} {formatReadDate(readDate)}
               </p>
+            )}
+            {readDate && (
+              <div className="reread-row">
+                <span className="reread-label">
+                  {rereadCount > 0
+                    ? `${t("reread.read")} ×${rereadCount + 1}`
+                    : t("reread.readOnce")}
+                </span>
+                <div className="reread-buttons">
+                  {rereadCount > 0 && (
+                    <button className="btn-small" onClick={removeReread}>−</button>
+                  )}
+                  <button className="btn-small" onClick={addReread}>
+                    +1 {t("reread.again")}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

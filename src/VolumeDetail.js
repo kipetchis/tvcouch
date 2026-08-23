@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { setVolumeRating, removeVolumeRating, getVolumeDoc } from "./mangaStore";
+import { setVolumeRating, removeVolumeRating, getVolumeDoc, setVolumeRereadCount } from "./mangaStore";
 import { coverUrl } from "./openlibrary";
 import { t } from "./i18n";
 
@@ -18,6 +18,7 @@ export default function VolumeDetail({ volume, onClose, onRated, onRemove }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [readDate, setReadDate] = useState(volume.readDate || null);
+  const [rereadCount, setRereadCount] = useState(volume.rereadCount || 0);
 
   useEffect(() => {
     let active = true;
@@ -27,6 +28,7 @@ export default function VolumeDetail({ volume, onClose, onRated, onRemove }) {
         if (data.note) setNote(data.note);
         if (data.comment) setComment(data.comment);
         if (data.readDate) setReadDate(data.readDate);
+        if (data.rereadCount) setRereadCount(data.rereadCount);
         if (data.note || data.comment) setSaved(true);
       })
       .catch(() => {});
@@ -68,6 +70,17 @@ export default function VolumeDetail({ volume, onClose, onRated, onRemove }) {
   const hasRating = note > 0 || comment.trim().length > 0;
   const cover = coverUrl(volume.cover_url || volume.cover_i, "L");
 
+  const addReread = async () => {
+    const next = rereadCount + 1;
+    setRereadCount(next);
+    try { await setVolumeRereadCount(volume.id, next); } catch {}
+  };
+  const removeReread = async () => {
+    const next = Math.max(0, rereadCount - 1);
+    setRereadCount(next);
+    try { await setVolumeRereadCount(volume.id, next); } catch {}
+  };
+
   return (
     <div className="ep-detail-overlay" onClick={onClose}>
       <div className="ep-detail" onClick={(e) => e.stopPropagation()}>
@@ -84,6 +97,23 @@ export default function VolumeDetail({ volume, onClose, onRated, onRemove }) {
             )}
             {readDate && (
               <p className="watched-badge">✓ {t("book.readOn")} {formatReadDate(readDate)}</p>
+            )}
+            {readDate && (
+              <div className="reread-row">
+                <span className="reread-label">
+                  {rereadCount > 0
+                    ? `${t("reread.read")} ×${rereadCount + 1}`
+                    : t("reread.readOnce")}
+                </span>
+                <div className="reread-buttons">
+                  {rereadCount > 0 && (
+                    <button className="btn-small" onClick={removeReread}>−</button>
+                  )}
+                  <button className="btn-small" onClick={addReread}>
+                    +1 {t("reread.again")}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

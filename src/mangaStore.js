@@ -95,3 +95,11 @@ export async function removeVolumeRating(volumeId) {
     comment: deleteField(),
   });
 }
+
+// Nombre de fois où le tome a été RELU (en plus de la première lecture).
+// 0 ou absent = lu une seule fois. 1 = relu une fois (affiché "×2"), etc.
+export async function setVolumeRereadCount(volumeId, count) {
+  await updateDoc(volumeRef(volumeId), {
+    rereadCount: count > 0 ? count : deleteField(),
+  });
+}
