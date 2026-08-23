@@ -386,6 +386,7 @@ const DICT = {
   "profile.support": { fr: "❤️ SOUTENIR TV COUCH", en: "❤️ SUPPORT TV COUCH", es: "❤️ APOYAR TV COUCH" },
   "profile.supportText": { fr: "Tv Couch est gratuit et sans publicité. Si l'app te plaît, tu peux soutenir son développement — merci beaucoup !", en: "Tv Couch is free and ad-free. If you like the app, you can support its development — thank you so much!", es: "Tv Couch es gratis y sin anuncios. Si te gusta la app, puedes apoyar su desarrollo — ¡muchas gracias!" },
   "profile.trophies": { fr: "TROPHÉES", en: "TROPHIES", es: "TROFEOS" },
+  "profile.bookTrophies": { fr: "TROPHÉES LIVRES", en: "BOOK TROPHIES", es: "TROFEOS DE LIBROS" },
   "profile.unlocked": { fr: "Débloqué", en: "Unlocked", es: "Desbloqueado" },
   "profile.locked": { fr: "Verrouillé", en: "Locked", es: "Bloqueado" },
   "profile.next": { fr: "prochain", en: "next", es: "siguiente" },
@@ -471,6 +472,25 @@ const DICT = {
   "trophy.fan.phrase": { fr: "Tu as des chouchous, avoue.", en: "You have favorites, admit it.", es: "Tienes favoritos, admítelo." },
   "trophy.casanier.name": { fr: "Casanier", en: "Homebody", es: "Casero" },
   "trophy.casanier.phrase": { fr: "Le canapé, c'est la vie.", en: "The couch is life.", es: "El sofá es la vida." },
+
+  "trophy.premierepage.name": { fr: "Première page", en: "First Page", es: "Primera página" },
+  "trophy.premierepage.phrase": { fr: "Tout commence par un premier livre.", en: "It all starts with a first book.", es: "Todo empieza con un primer libro." },
+  "trophy.devoreur.name": { fr: "Dévoreur de livres", en: "Book Devourer", es: "Devoralibros" },
+  "trophy.devoreur.phrase": { fr: "Les pages n'ont qu'à bien se tenir.", en: "Pages don't stand a chance.", es: "Las páginas no tienen escapatoria." },
+  "trophy.ratbiblio.name": { fr: "Rat de bibliothèque", en: "Bookworm", es: "Ratón de biblioteca" },
+  "trophy.ratbiblio.phrase": { fr: "Une bibliothèque entière dans la tête.", en: "A whole library in your head.", es: "Una biblioteca entera en la cabeza." },
+  "trophy.otaku.name": { fr: "Otaku", en: "Otaku", es: "Otaku" },
+  "trophy.otaku.phrase": { fr: "Tome après tome, sans jamais lâcher.", en: "Volume after volume, never stopping.", es: "Tomo tras tomo, sin parar." },
+  "trophy.collectioncomplete.name": { fr: "Collection complète", en: "Complete Collection", es: "Colección completa" },
+  "trophy.collectioncomplete.phrase": { fr: "Une série entière, jusqu'au dernier tome.", en: "A whole series, down to the last volume.", es: "Una serie entera, hasta el último tomo." },
+  "trophy.chroniqueur.name": { fr: "Chroniqueur", en: "Reviewer", es: "Cronista" },
+  "trophy.chroniqueur.phrase": { fr: "Chaque livre mérite quelques mots.", en: "Every book deserves a few words.", es: "Cada libro merece unas palabras." },
+  "trophy.eclectiquelitt.name": { fr: "Éclectique littéraire", en: "Literary Eclectic", es: "Ecléctico literario" },
+  "trophy.eclectiquelitt.phrase": { fr: "Tous les genres t'attirent.", en: "Every genre draws you in.", es: "Todos los géneros te atraen." },
+  "trophy.lecteurcomplet.name": { fr: "Lecteur complet", en: "Well-Rounded Reader", es: "Lector completo" },
+  "trophy.lecteurcomplet.phrase": { fr: "Romans et mangas, sans distinction.", en: "Novels and manga alike.", es: "Novelas y mangas por igual." },
+  "trophy.bonnesresolutions.name": { fr: "Bonnes résolutions", en: "New Year's Resolution", es: "Buenos propósitos" },
+  "trophy.bonnesresolutions.phrase": { fr: "Commencer l'année un livre à la main.", en: "Starting the year with a book in hand.", es: "Empezar el año con un libro en la mano." },
 };
 
 export function t(key) {

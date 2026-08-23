@@ -317,6 +317,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
     const stats = computeTrophyStats({
       shows: showsData,
       movies: moviesData,
+      books: booksData,
+      volumes: volumesData,
       favorites,
       metaMap,
       seriesMinutes: seriesTime,
@@ -331,9 +333,13 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
     stats.unlockedCount = unlockedCount;
     // 2e passage pour le trophée méta "Casanier"
     return TROPHIES.map((def) => ({ def, res: evaluateTrophy(def, stats) }));
-  }, [showsData, moviesData, favorites, metaMap, seriesTime, moviesTime, loginStreak]);
+  }, [showsData, moviesData, booksData, volumesData, favorites, metaMap, seriesTime, moviesTime, loginStreak]);
 
-  const unlockedTotal = trophyResults.filter((t) => t.res.unlocked).length;
+  // Séparation films/séries vs livres pour deux grilles distinctes
+  const screenTrophies = trophyResults.filter((t) => t.def.category !== "books");
+  const bookTrophies = trophyResults.filter((t) => t.def.category === "books");
+  const screenUnlocked = screenTrophies.filter((t) => t.res.unlocked).length;
+  const bookUnlocked = bookTrophies.filter((t) => t.res.unlocked).length;
 
   const st = formatTime(seriesTime);
   const mt = formatTime(moviesTime);
@@ -562,10 +568,32 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         </div>
       </div>
 
-      {/* Trophées */}
-      <h3 className="section-pill">🏆 {t("profile.trophies")} · {unlockedTotal}/{TROPHIES.length}</h3>
+      {/* Trophées séries & films */}
+      <h3 className="section-pill">🏆 {t("profile.trophies")} · {screenUnlocked}/{screenTrophies.length}</h3>
       <div className="trophy-grid">
-        {trophyResults.map(({ def, res }) => (
+        {screenTrophies.map(({ def, res }) => (
+          <button
+            key={def.id}
+            className={`trophy ${res.unlocked ? "trophy-unlocked" : "trophy-locked"}`}
+            onClick={() => setOpenTrophy({ def, res })}
+          >
+            <div className="trophy-emoji">{def.emoji}</div>
+            <div className="trophy-name">{trophyName(def)}</div>
+            <div className="trophy-state">
+              {res.unlocked ? (
+                res.label
+              ) : (
+                <>🔒 {res.current.toLocaleString()}/{res.target.toLocaleString()}</>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Trophées livres (section distincte) */}
+      <h3 className="section-pill">📚 {t("profile.bookTrophies")} · {bookUnlocked}/{bookTrophies.length}</h3>
+      <div className="trophy-grid">
+        {bookTrophies.map(({ def, res }) => (
           <button
             key={def.id}
             className={`trophy ${res.unlocked ? "trophy-unlocked" : "trophy-locked"}`}

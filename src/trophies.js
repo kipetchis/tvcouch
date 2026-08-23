@@ -11,6 +11,8 @@ export const GENRE = { SCIFI: 10765, MYSTERY: 9648, COMEDY: 35, CRIME: 80 };
 export function computeTrophyStats({
   shows,
   movies,
+  books,
+  volumes,
   favorites,
   metaMap,
   seriesMinutes,
@@ -88,6 +90,48 @@ export function computeTrophyStats({
     (favorites.movies ? favorites.movies.length : 0);
   const totalMinutes = (seriesMinutes || 0) + (moviesMinutes || 0);
 
+  // ─── Métriques livres (romans + tomes de manga) ───
+  const bookList = books || [];
+  const volumeList = volumes || [];
+  const readBooks = bookList.filter((b) => b.status === "read");
+  const readVolumes = volumeList.filter((v) => v.status === "read");
+
+  let bookComments = 0;
+  const bookGenreSet = new Set();
+  const cleanSub = (raw) => {
+    if (!raw) return null;
+    let s = String(raw);
+    if (s.includes("/")) s = s.split("/").pop();
+    s = s.trim().toLowerCase();
+    return s.length >= 2 && s.length <= 30 ? s : null;
+  };
+  let bookNewYear = 0;
+  [...readBooks, ...readVolumes].forEach((item) => {
+    if (item.comment && item.comment.trim()) bookComments += 1;
+    (item.subjects || []).forEach((sub) => {
+      const c = cleanSub(sub);
+      if (c) bookGenreSet.add(c);
+    });
+    // Clin d'œil "1er janvier" côté lecture (flag distinct des séries)
+    if (typeof item.readDate === "string" && item.readDate.slice(5, 10) === "01-01") {
+      bookNewYear = 1;
+    }
+  });
+
+  // Séries manga "à jour" = au moins un tome, et tous les tomes ajoutés lus
+  const mangaSeriesMap = new Map();
+  volumeList.forEach((v) => {
+    const key = v.seriesName || v.title;
+    if (!mangaSeriesMap.has(key)) mangaSeriesMap.set(key, { total: 0, read: 0 });
+    const g = mangaSeriesMap.get(key);
+    g.total += 1;
+    if (v.status === "read") g.read += 1;
+  });
+  let mangaComplete = 0;
+  mangaSeriesMap.forEach((g) => {
+    if (g.total > 0 && g.read === g.total) mangaComplete += 1;
+  });
+
   return {
     episodes,
     movies: watchedMovies.length,
@@ -110,6 +154,14 @@ export function computeTrophyStats({
     genreComedy: genre.comedy,
     genreCrime: genre.crime,
     loginStreak: loginStreak || 0,
+    // ─── Métriques livres ───
+    novelsRead: readBooks.length,
+    volumesRead: readVolumes.length,
+    mangaComplete,
+    bookComments,
+    bookGenres: bookGenreSet.size,
+    bookEclectic: readBooks.length > 0 && readVolumes.length > 0 ? 1 : 0,
+    bookNewYear,
     unlockedCount: 0, // rempli après coup pour le trophée méta
   };
 }
@@ -158,6 +210,17 @@ export const TROPHIES = [
   { id: "eclectique", emoji: "🍿", metric: "eclectic", goal: 1 },
   { id: "fan", emoji: "❤️", metric: "favoritesCount", goal: 5 },
   { id: "casanier", emoji: "🛋️", metric: "unlockedCount", goal: 20 },
+
+  // ─── Trophées Livres (category: "books") ───
+  { id: "premierepage", emoji: "📖", category: "books", metric: "novelsRead", goal: 1 },
+  { id: "devoreur", emoji: "📚", category: "books", metric: "novelsRead", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "ratbiblio", emoji: "🦉", category: "books", metric: "novelsRead", goal: 250 },
+  { id: "otaku", emoji: "📗", category: "books", metric: "volumesRead", tiers: [["Bronze", 50], ["Argent", 200], ["Or", 500]] },
+  { id: "collectioncomplete", emoji: "🏯", category: "books", metric: "mangaComplete", goal: 1 },
+  { id: "chroniqueur", emoji: "✍️", category: "books", metric: "bookComments", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "eclectiquelitt", emoji: "🎨", category: "books", metric: "bookGenres", goal: 5 },
+  { id: "lecteurcomplet", emoji: "🌗", category: "books", metric: "bookEclectic", goal: 1 },
+  { id: "bonnesresolutions", emoji: "📅", category: "books", metric: "bookNewYear", goal: 1 },
 ];
 
 // Nom et phrase traduits d'un trophée (via i18n)
