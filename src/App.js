@@ -16,6 +16,7 @@ import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
 import TraktImport from "./TraktImport";
 import ProfilePage from "./ProfilePage";
+import StatsPage from "./StatsPage";
 import FavoritePicker from "./FavoritePicker";
 import ExplorerPage from "./ExplorerPage";
 import ScrollTopButton from "./ScrollTopButton";
@@ -182,6 +183,8 @@ function App() {
   useBackClose(showImdbImport, () => setShowImdbImport(false));
   useBackClose(showTraktImport, () => setShowTraktImport(false));
   useBackClose(!!favPicker, () => setFavPicker(null));
+  const [showStats, setShowStats] = useState(false);
+  useBackClose(showStats, () => setShowStats(false));
 
   const TAB_ORDER = ["shows", "movies", "books", "explore", "profile"];
   const { onTouchStart: onTabTouchStart, onTouchEnd: onTabTouchEnd } = useSwipeTabs(
@@ -434,15 +437,20 @@ function App() {
       )}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
       {tab === "profile" && (
-        <ProfilePage
-          user={user}
-          onImportShows={() => setShowImport(true)}
-          onImportMovies={() => setShowMovieImport(true)}
-          onImportImdb={() => setShowImdbImport(true)}
-          onImportTrakt={() => setShowTraktImport(true)}
-          onOpenFavorites={(type) => setFavPicker(type)}
-          onOpenShow={setSelectedShow}
-        />
+        showStats ? (
+          <StatsPage onBack={() => setShowStats(false)} />
+        ) : (
+          <ProfilePage
+            user={user}
+            onImportShows={() => setShowImport(true)}
+            onImportMovies={() => setShowMovieImport(true)}
+            onImportImdb={() => setShowImdbImport(true)}
+            onImportTrakt={() => setShowTraktImport(true)}
+            onOpenFavorites={(type) => setFavPicker(type)}
+            onOpenShow={setSelectedShow}
+            onOpenStats={() => setShowStats(true)}
+          />
+        )
       )}
 
       <ScrollTopButton />

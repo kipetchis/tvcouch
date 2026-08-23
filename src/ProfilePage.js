@@ -99,7 +99,7 @@ function bookTopCounts(items, n) {
   return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, n);
 }
 
-export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onImportTrakt, onOpenFavorites, onOpenShow }) {
+export default function ProfilePage({ user, onImportShows, onImportMovies, onImportImdb, onImportTrakt, onOpenFavorites, onOpenShow, onOpenStats }) {
   const [seriesTime, setSeriesTime] = useState(0); // minutes
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
@@ -527,48 +527,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
               <div className="stat-label">{t("stats.totalRead")}</div>
             </div>
           </div>
-
-          {bookStats.topAuthors.length > 0 && (
-            <>
-              <div className="stat-sublabel">{t("stats.topAuthors")}</div>
-              <div className="stat-bars">
-                {bookStats.topAuthors.map(([label, count]) => {
-                  const max = bookStats.topAuthors[0][1];
-                  return (
-                    <div key={label} className="stat-bar-row">
-                      <div className="stat-bar-label">{label}</div>
-                      <div className="stat-bar-track">
-                        <div className="stat-bar-fill" style={{ width: `${Math.round((count / max) * 100)}%` }} />
-                      </div>
-                      <div className="stat-bar-count">{count}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {bookStats.topSubjects.length > 0 && (
-            <>
-              <div className="stat-sublabel">{t("stats.topGenres")}</div>
-              <div className="stat-bars">
-                {bookStats.topSubjects.map(([label, count]) => {
-                  const max = bookStats.topSubjects[0][1];
-                  return (
-                    <div key={label} className="stat-bar-row">
-                      <div className="stat-bar-label">{label}</div>
-                      <div className="stat-bar-track">
-                        <div className="stat-bar-fill" style={{ width: `${Math.round((count / max) * 100)}%` }} />
-                      </div>
-                      <div className="stat-bar-count">{count}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
         </>
       )}
+
+      {/* Accès aux statistiques détaillées (barres auteurs/genres, lectures
+          par année, etc. — déplacées ici pour alléger le Profil) */}
+      <button className="btn stats-detail-btn" onClick={onOpenStats}>
+        📊 {t("stats.seeDetailed")}
+      </button>
 
       {/* Soutenir l'app */}
       <h3 className="section-pill">{t("profile.support")}</h3>
