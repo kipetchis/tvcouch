@@ -4,6 +4,7 @@ import { searchBooks, getWork, coverUrl } from "./openlibrary";
 import { searchBooksGoogle } from "./googlebooks";
 import BookDetail from "./BookDetail";
 import BookScanner from "./BookScanner";
+import { BOOK_GENRES, bookMatchesGenre } from "./bookGenres";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -61,6 +62,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
 
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");
+  const [genreFilter, setGenreFilter] = useState("");
   const [controlsOpen, setControlsOpen] = useState(false);
   useBackClose(controlsOpen, () => setControlsOpen(false));
 
@@ -214,7 +216,11 @@ export default function BooksPage({ subTab, onSubTabChange }) {
 
   const base = view === "read" ? read : toRead;
   const f = filter.trim().toLowerCase();
-  const filtered = base.filter((b) => !f || (b.title || "").toLowerCase().includes(f));
+  const filtered = base.filter(
+    (b) =>
+      (!f || (b.title || "").toLowerCase().includes(f)) &&
+      bookMatchesGenre(b.subjects, genreFilter)
+  );
   const shown = sortBooks(filtered, sort);
 
   return (
@@ -324,7 +330,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
                   aria-label={t("books.controlsMenu")}
                 >
                   ⋮
-                  {(filter.trim() !== "" || sort !== "recent") && (
+                  {(filter.trim() !== "" || sort !== "recent" || genreFilter !== "") && (
                     <span className="filter-trigger-dot controls-menu-trigger-dot" />
                   )}
                 </button>
@@ -348,6 +354,16 @@ export default function BooksPage({ subTab, onSubTabChange }) {
                         <option value="title">{t("sort.title")}</option>
                         <option value="note">{t("sort.note")}</option>
                         <option value="year">{t("sort.year")}</option>
+                      </select>
+                      <select
+                        className="sort-select controls-menu-select"
+                        value={genreFilter}
+                        onChange={(e) => setGenreFilter(e.target.value)}
+                      >
+                        <option value="">{t("books.allGenres")}</option>
+                        {BOOK_GENRES.map((g) => (
+                          <option key={g.id} value={g.id}>{t(`bookGenre.${g.id}`)}</option>
+                        ))}
                       </select>
                     </div>
                   </>
