@@ -114,8 +114,8 @@ export default function GameDetail({ game, onClose, onRated }) {
       <div className="ep-detail" onClick={(e) => e.stopPropagation()}>
         <button className="btn-small ep-detail-close" onClick={onClose}>✕</button>
 
-        <div className="movie-detail-head">
-          {cover && <img src={cover} alt={game.name} />}
+        <div className="movie-detail-head game-detail-head">
+          {cover && <img className="game-detail-cover" src={cover} alt={game.name} />}
           <div>
             <h2 className="ep-detail-title">{game.name}</h2>
             <p className="muted small">{year || "—"}</p>

@@ -998,6 +998,18 @@ body {
   border-radius: 10px;
   flex-shrink: 0;
 }
+/* Jaquette de jeu : les images RAWG sont en paysage (16:9). On empile la
+   jaquette au-dessus des infos, en pleine largeur, ratio préservé. */
+.game-detail-head {
+  flex-direction: column;
+}
+.game-detail-head img.game-detail-cover {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+}
 .watched-badge {
   color: var(--success);
   font-size: 0.85rem;
