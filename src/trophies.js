@@ -13,6 +13,7 @@ export function computeTrophyStats({
   movies,
   books,
   volumes,
+  games,
   favorites,
   metaMap,
   seriesMinutes,
@@ -132,6 +133,19 @@ export function computeTrophyStats({
     if (g.total > 0 && g.read === g.total) mangaComplete += 1;
   });
 
+  // ─── Métriques jeux vidéo ───
+  const gameList = games || [];
+  const doneGames = gameList.filter((g) => g.status === "done");
+  const gameReplays = doneGames.reduce((sum, g) => sum + (g.replayCount || 0), 0);
+  const gameStudioSet = new Set(doneGames.map((g) => g.studio).filter(Boolean));
+  const gameGenreSet = new Set();
+  doneGames.forEach((g) => {
+    (g.genres || []).forEach((genreName) => {
+      if (genreName) gameGenreSet.add(String(genreName).toLowerCase());
+    });
+  });
+  const gameComments = doneGames.filter((g) => g.comment && g.comment.trim()).length;
+
   return {
     episodes,
     movies: watchedMovies.length,
@@ -162,6 +176,12 @@ export function computeTrophyStats({
     bookGenres: bookGenreSet.size,
     bookEclectic: readBooks.length > 0 && readVolumes.length > 0 ? 1 : 0,
     bookNewYear,
+    // ─── Métriques jeux ───
+    gamesDone: doneGames.length,
+    gameReplays,
+    gameStudios: gameStudioSet.size,
+    gameGenres: gameGenreSet.size,
+    gameComments,
     unlockedCount: 0, // rempli après coup pour le trophée méta
   };
 }
@@ -221,6 +241,16 @@ export const TROPHIES = [
   { id: "eclectiquelitt", emoji: "🎨", category: "books", metric: "bookGenres", goal: 5 },
   { id: "lecteurcomplet", emoji: "🌗", category: "books", metric: "bookEclectic", goal: 1 },
   { id: "bonnesresolutions", emoji: "📅", category: "books", metric: "bookNewYear", goal: 1 },
+
+  // ─── Trophées Jeux vidéo (category: "games") ───
+  { id: "firstrun", emoji: "🎮", category: "games", metric: "gamesDone", goal: 1 },
+  { id: "gamer", emoji: "🕹️", category: "games", metric: "gamesDone", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "hardcore", emoji: "👾", category: "games", metric: "gamesDone", goal: 250 },
+  { id: "completionniste", emoji: "🔁", category: "games", metric: "gameReplays", tiers: [["Bronze", 5], ["Argent", 20], ["Or", 50]] },
+  { id: "explorateurstudios", emoji: "🏢", category: "games", metric: "gameStudios", tiers: [["Bronze", 10], ["Argent", 30], ["Or", 60]] },
+  { id: "polyvalent", emoji: "🎲", category: "games", metric: "gameGenres", goal: 8 },
+  { id: "critiquejv", emoji: "🎙️", category: "games", metric: "gameComments", tiers: [["Bronze", 10], ["Argent", 50], ["Or", 100]] },
+  { id: "backlog", emoji: "📚", category: "games", metric: "gamesDone", goal: 25 },
 ];
 
 // Nom et phrase traduits d'un trophée (via i18n)

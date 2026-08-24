@@ -5,6 +5,7 @@ import {
 } from "./store";
 import { getAllMovies } from "./movieStore";
 import { getAllBooks } from "./bookStore";
+import { getAllGames } from "./gameStore";
 import { getAllVolumes } from "./mangaStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
@@ -114,6 +115,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [moviesData, setMoviesData] = useState([]);
   const [booksData, setBooksData] = useState([]);
   const [volumesData, setVolumesData] = useState([]);
+  const [gamesData, setGamesData] = useState([]);
   const [metaMap, setMetaMap] = useState({});
   const [loginStreak] = useState(() => recordAndGetStreak());
   const [openTrophy, setOpenTrophy] = useState(null);
@@ -194,12 +196,13 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
     let active = true;
     async function compute() {
       try {
-        const [shows, movies, favs, books, volumes] = await Promise.all([
+        const [shows, movies, favs, books, volumes, gamesList] = await Promise.all([
           getAllShows(),
           getAllMovies(),
           getFavorites(),
           getAllBooks(),
           getAllVolumes(),
+          getAllGames(),
         ]);
         if (!active) return;
         setFavorites(favs);
@@ -207,6 +210,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         setMoviesData(movies);
         setBooksData(books);
         setVolumesData(volumes);
+        setGamesData(gamesList);
 
         // Temps films
         const watchedMovies = movies.filter((m) => m.status === "watched");
@@ -319,6 +323,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       movies: moviesData,
       books: booksData,
       volumes: volumesData,
+      games: gamesData,
       favorites,
       metaMap,
       seriesMinutes: seriesTime,
@@ -333,12 +338,16 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
     stats.unlockedCount = unlockedCount;
     // 2e passage pour le trophée méta "Casanier"
     return TROPHIES.map((def) => ({ def, res: evaluateTrophy(def, stats) }));
-  }, [showsData, moviesData, booksData, volumesData, favorites, metaMap, seriesTime, moviesTime, loginStreak]);
+  }, [showsData, moviesData, booksData, volumesData, gamesData, favorites, metaMap, seriesTime, moviesTime, loginStreak]);
 
-  // Séparation films/séries vs livres pour deux grilles distinctes
-  const screenTrophies = trophyResults.filter((t) => t.def.category !== "books");
+  // Séparation en trois grilles : films/séries, livres, jeux
+  const screenTrophies = trophyResults.filter(
+    (t) => t.def.category !== "books" && t.def.category !== "games"
+  );
   const bookTrophies = trophyResults.filter((t) => t.def.category === "books");
+  const gameTrophies = trophyResults.filter((t) => t.def.category === "games");
   const screenUnlocked = screenTrophies.filter((t) => t.res.unlocked).length;
+  const gameUnlocked = gameTrophies.filter((t) => t.res.unlocked).length;
   const bookUnlocked = bookTrophies.filter((t) => t.res.unlocked).length;
 
   const st = formatTime(seriesTime);
@@ -373,6 +382,20 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       topSubjects: bookTopCounts(subjects, 5),
     };
   }, [booksData, volumesData]);
+
+  // ---- Aperçu jeux (compteurs pour le Profil) ----
+  const gameStats = useMemo(() => {
+    const done = gamesData.filter((g) => g.status === "done");
+    const todo = gamesData.filter((g) => g.status === "todo");
+    const replays = done.reduce((sum, g) => sum + (g.replayCount || 0), 0);
+    const studios = new Set(done.map((g) => g.studio).filter(Boolean));
+    return {
+      doneCount: done.length,
+      todoCount: todo.length,
+      replays,
+      studios: studios.size,
+    };
+  }, [gamesData]);
 
   const handleRemoveFavShow = async (id) => {
     await removeFavoriteShow(id);
@@ -536,6 +559,34 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         </>
       )}
 
+      {(gameStats.doneCount > 0 || gameStats.todoCount > 0) && (
+        <>
+          <h3 className="section-pill">🎮 {t("stats.gamesSection")}</h3>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">🎮</div>
+              <div className="stat-value">{gameStats.doneCount}</div>
+              <div className="stat-label">{t("stats.gamesDone")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">📋</div>
+              <div className="stat-value">{gameStats.todoCount}</div>
+              <div className="stat-label">{t("stats.gamesTodo")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🔁</div>
+              <div className="stat-value">{gameStats.replays}</div>
+              <div className="stat-label">{t("stats.gamesReplays")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🏢</div>
+              <div className="stat-value">{gameStats.studios}</div>
+              <div className="stat-label">{t("stats.gamesStudios")}</div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Accès aux statistiques détaillées (barres auteurs/genres, lectures
           par année, etc. — déplacées ici pour alléger le Profil) */}
       <button className="btn stats-detail-btn" onClick={onOpenStats}>
@@ -594,6 +645,28 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       <h3 className="section-pill">📚 {t("profile.bookTrophies")} · {bookUnlocked}/{bookTrophies.length}</h3>
       <div className="trophy-grid">
         {bookTrophies.map(({ def, res }) => (
+          <button
+            key={def.id}
+            className={`trophy ${res.unlocked ? "trophy-unlocked" : "trophy-locked"}`}
+            onClick={() => setOpenTrophy({ def, res })}
+          >
+            <div className="trophy-emoji">{def.emoji}</div>
+            <div className="trophy-name">{trophyName(def)}</div>
+            <div className="trophy-state">
+              {res.unlocked ? (
+                res.label
+              ) : (
+                <>🔒 {res.current.toLocaleString()}/{res.target.toLocaleString()}</>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Trophées jeux (section distincte) */}
+      <h3 className="section-pill">🎮 {t("profile.gameTrophies")} · {gameUnlocked}/{gameTrophies.length}</h3>
+      <div className="trophy-grid">
+        {gameTrophies.map(({ def, res }) => (
           <button
             key={def.id}
             className={`trophy ${res.unlocked ? "trophy-unlocked" : "trophy-locked"}`}

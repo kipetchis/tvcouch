@@ -3,6 +3,8 @@ import { getAllShows } from "./store";
 import { getAllMovies } from "./movieStore";
 import { getAllBooks } from "./bookStore";
 import { getAllVolumes } from "./mangaStore";
+import { getAllGames } from "./gameStore";
+import { GAME_GENRES, gameGenresOf } from "./gameGenres";
 import { MOVIE_GENRE_MAP, TV_GENRE_MAP } from "./genres";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
@@ -54,18 +56,20 @@ export default function StatsPage({ onBack }) {
   const [movies, setMovies] = useState([]);
   const [books, setBooks] = useState([]);
   const [volumes, setVolumes] = useState([]);
+  const [games, setGames] = useState([]);
 
   useBackClose(true, onBack);
 
   useEffect(() => {
     let active = true;
-    Promise.all([getAllShows(), getAllMovies(), getAllBooks(), getAllVolumes()])
-      .then(([sh, mv, bk, vol]) => {
+    Promise.all([getAllShows(), getAllMovies(), getAllBooks(), getAllVolumes(), getAllGames()])
+      .then(([sh, mv, bk, vol, gm]) => {
         if (!active) return;
         setShows(sh);
         setMovies(mv);
         setBooks(bk);
         setVolumes(vol);
+        setGames(gm);
       })
       .catch(() => {})
       .finally(() => { if (active) setLoading(false); });
@@ -174,6 +178,40 @@ export default function StatsPage({ onBack }) {
       byYear: topCounts(years, 10).sort((a, b) => b[0].localeCompare(a[0])),
     };
   }, [books, volumes]);
+
+  const gameStats = useMemo(() => {
+    const doneGames = games.filter((g) => g.status === "done");
+    const todoGames = games.filter((g) => g.status === "todo");
+
+    // Genres préférés (parmi les jeux faits), via le mapping mots-clés.
+    const genreLabels = [];
+    doneGames.forEach((g) => {
+      gameGenresOf(g.genres || []).forEach((id) => {
+        genreLabels.push(t(`gameGenre.${id}`));
+      });
+    });
+
+    // Studios les plus joués
+    const studios = doneGames.map((g) => g.studio).filter(Boolean);
+
+    // Refaits : total des replayCount
+    const replays = doneGames.reduce((sum, g) => sum + (g.replayCount || 0), 0);
+
+    // Complétions par année (date de fin)
+    const years = doneGames
+      .map((g) => g.doneDate)
+      .filter(Boolean)
+      .map((d) => String(d).slice(0, 4));
+
+    return {
+      doneCount: doneGames.length,
+      todoCount: todoGames.length,
+      replays,
+      topGenres: topCounts(genreLabels, 8),
+      topStudios: topCounts(studios, 8),
+      byYear: topCounts(years, 10).sort((a, b) => b[0].localeCompare(a[0])),
+    };
+  }, [games]);
 
   if (loading) {
     return (
@@ -286,6 +324,54 @@ export default function StatsPage({ onBack }) {
             <>
               <div className="stat-sublabel">{t("stats.byYear")}</div>
               <BarList rows={bookStats.byYear} />
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── Jeux vidéo ── */}
+      {(gameStats.doneCount > 0 || gameStats.todoCount > 0) && (
+        <>
+          <h3 className="section-pill">🎮 {t("stats.gamesSection")}</h3>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">🎮</div>
+              <div className="stat-value">{gameStats.doneCount}</div>
+              <div className="stat-label">{t("stats.gamesDone")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">📋</div>
+              <div className="stat-value">{gameStats.todoCount}</div>
+              <div className="stat-label">{t("stats.gamesTodo")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🔁</div>
+              <div className="stat-value">{gameStats.replays}</div>
+              <div className="stat-label">{t("stats.gamesReplays")}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🏢</div>
+              <div className="stat-value">{gameStats.topStudios.length}</div>
+              <div className="stat-label">{t("stats.gamesStudios")}</div>
+            </div>
+          </div>
+
+          {gameStats.topGenres.length > 0 && (
+            <>
+              <div className="stat-sublabel">{t("stats.gamesTopGenres")}</div>
+              <BarList rows={gameStats.topGenres} />
+            </>
+          )}
+          {gameStats.topStudios.length > 0 && (
+            <>
+              <div className="stat-sublabel">{t("stats.gamesTopStudios")}</div>
+              <BarList rows={gameStats.topStudios} />
+            </>
+          )}
+          {gameStats.byYear.length > 0 && (
+            <>
+              <div className="stat-sublabel">{t("stats.gamesByYear")}</div>
+              <BarList rows={gameStats.byYear} />
             </>
           )}
         </>
