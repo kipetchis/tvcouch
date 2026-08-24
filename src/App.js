@@ -11,6 +11,7 @@ import UpcomingPage from "./UpcomingPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import BooksPage from "./BooksPage";
+import GamesPage from "./GamesPage";
 import MangaPage from "./MangaPage";
 import MovieImport from "./MovieImport";
 import ImdbImport from "./ImdbImport";
@@ -186,7 +187,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   useBackClose(showStats, () => setShowStats(false));
 
-  const TAB_ORDER = ["shows", "movies", "books", "explore", "profile"];
+  const TAB_ORDER = ["shows", "movies", "books", "games", "explore", "profile"];
   const { onTouchStart: onTabTouchStart, onTouchEnd: onTabTouchEnd } = useSwipeTabs(
     TAB_ORDER,
     tab,
@@ -436,6 +437,7 @@ function App() {
         )
       )}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
+      {tab === "games" && <GamesPage />}
       {tab === "profile" && (
         showStats ? (
           <StatsPage onBack={() => setShowStats(false)} />
@@ -477,6 +479,13 @@ function App() {
         >
           <span className="tab-icon">📚</span>
           {t("nav.books")}
+        </button>
+        <button
+          className={tab === "games" ? "tab active" : "tab"}
+          onClick={() => setTab("games")}
+        >
+          <span className="tab-icon">🎮</span>
+          {t("nav.games")}
         </button>
         <button
           className={tab === "explore" ? "tab active" : "tab"}
