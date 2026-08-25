@@ -309,7 +309,11 @@ export default function MangaPage({ subTab, onSubTabChange }) {
         <AddVolumeForm
           result={addingResult}
           onClose={() => setAddingResult(null)}
-          onAdded={() => { setAddingResult(null); clearSearch(); load(); }}
+          onAdded={() => {
+            setResults((prev) => prev.filter((r) => r.key !== addingResult.key));
+            setAddingResult(null);
+            load();
+          }}
         />
       )}
     </div>

@@ -87,17 +87,22 @@ export default function GamesPage() {
     return { ...result, studio, genres };
   };
 
+  // Retire l'item ajouté de la liste des résultats, mais garde la recherche
+  // affichée pour enchaîner les ajouts (utile pour les longues séries).
+  const dropResult = (id) =>
+    setResults((prev) => prev.filter((r) => String(r.id) !== String(id)));
+
   const addAsDone = async (result) => {
+    dropResult(result.id);
     const g = await withStudio(result);
     await saveGame(g, "done", new Date().toISOString().slice(0, 10));
-    clearSearch();
     reload();
   };
 
   const addToTodo = async (result) => {
+    dropResult(result.id);
     const g = await withStudio(result);
     await saveGame(g, "todo");
-    clearSearch();
     reload();
   };
 

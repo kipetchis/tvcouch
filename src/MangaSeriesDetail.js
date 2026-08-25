@@ -163,7 +163,12 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      let list = await searchBooksGoogle(query.trim());
+      // L'échec de Google Books (quota, réseau…) ne doit pas bloquer la
+      // recherche : on retombe sur Open Library dans ce cas.
+      let list = [];
+      try {
+        list = await searchBooksGoogle(query.trim());
+      } catch {}
       if (list.length === 0) {
         const data = await searchBooks(query.trim());
         list = (data.docs || []).filter((d) => d.title);
@@ -269,7 +274,11 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
           result={addingResult}
           seriesName={seriesName}
           onClose={() => setAddingResult(null)}
-          onAdded={() => { setAddingResult(null); clearSearch(); load(); }}
+          onAdded={() => {
+            setResults((prev) => prev.filter((r) => r.key !== addingResult.key));
+            setAddingResult(null);
+            load();
+          }}
         />
       )}
 

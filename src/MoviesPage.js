@@ -118,7 +118,12 @@ export default function MoviesPage() {
     setResults([]);
   };
 
+  // Retire le film ajouté des résultats, en gardant la recherche affichée.
+  const dropResult = (id) =>
+    setResults((prev) => prev.filter((m) => String(m.id) !== String(id)));
+
   const addAsWatched = async (movie) => {
+    dropResult(movie.id);
     let runtime = null;
     let genres = movie.genres;
     try {
@@ -131,13 +136,12 @@ export default function MoviesPage() {
       "watched",
       new Date().toISOString().slice(0, 10)
     );
-    clearSearch();
     reload();
   };
 
   const addToWatchlist = async (movie) => {
+    dropResult(movie.id);
     await saveMovie(movie, "watchlist");
-    clearSearch();
     reload();
   };
 

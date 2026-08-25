@@ -147,7 +147,13 @@ export default function BooksPage({ subTab, onSubTabChange }) {
     setResults([]);
   };
 
+  // Retire l'item ajouté des résultats, en gardant la recherche affichée
+  // pour enchaîner (utile pour ajouter plusieurs tomes d'une série).
+  const dropResult = (key) =>
+    setResults((prev) => prev.filter((r) => r.key !== key));
+
   const addAsRead = async (result) => {
+    dropResult(result.key);
     const shape = toBookShape(result);
     let subjects = shape.subjects;
     // Les sujets ne se complètent via getWork que pour un id Open Library ;
@@ -159,13 +165,12 @@ export default function BooksPage({ subTab, onSubTabChange }) {
       } catch {}
     }
     await saveBook({ ...shape, subjects }, "read", new Date().toISOString().slice(0, 10));
-    clearSearch();
     reload();
   };
 
   const addToToRead = async (result) => {
+    dropResult(result.key);
     await saveBook(toBookShape(result), "toread");
-    clearSearch();
     reload();
   };
 
