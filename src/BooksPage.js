@@ -59,6 +59,7 @@ export default function BooksPage({ subTab, onSubTabChange }) {
   const [scanning, setScanning] = useState(false);
 
   useBackClose(!!openBook, () => setOpenBook(null));
+  useBackClose(results.length > 0, () => setResults([]));
 
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");

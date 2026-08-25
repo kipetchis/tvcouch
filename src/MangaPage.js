@@ -143,6 +143,7 @@ export default function MangaPage({ subTab, onSubTabChange }) {
   const [loadError, setLoadError] = useState(null);
   const [openSeries, setOpenSeries] = useState(null);
   useBackClose(!!openSeries, () => setOpenSeries(null));
+  useBackClose(results.length > 0, () => setResults([]));
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);

@@ -122,6 +122,7 @@ export default function MangaSeriesDetail({ seriesName, onBack }) {
   const [addingResult, setAddingResult] = useState(null);
   const [scanning, setScanning] = useState(false);
   useBackClose(!!addingResult, () => setAddingResult(null));
+  useBackClose(results.length > 0, () => setResults([]));
 
   const load = async () => {
     setLoading(true);

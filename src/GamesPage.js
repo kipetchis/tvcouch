@@ -34,6 +34,7 @@ export default function GamesPage() {
   const [openGame, setOpenGame] = useState(null);
 
   useBackClose(!!openGame, () => setOpenGame(null));
+  useBackClose(results.length > 0, () => setResults([]));
 
   const [sort, setSort] = useState("recent");
   const [filter, setFilter] = useState("");

@@ -40,6 +40,7 @@ export default function MoviesPage() {
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
+  useBackClose(results.length > 0, () => setResults([]));
   useBackClose(!!rewatchMovie, () => setRewatchMovie(null));
 
   // Tri + filtre de la collection
