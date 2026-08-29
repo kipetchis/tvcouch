@@ -40,7 +40,7 @@ async function tmdbFetch(path, params = {}, attempt = 0) {
   // rechargent en même temps) : on patiente puis on réessaie tout seul,
   // en respectant l'en-tête Retry-After du serveur s'il est fourni,
   // jusqu'à 3 tentatives, plutôt que de remonter l'erreur à l'écran.
-  if (response.status === 429 && attempt < 3) {
+  if (response.status === 429 && attempt < 4) {
     const retryAfter = Number(response.headers.get("Retry-After"));
     const waitMs = retryAfter > 0 ? retryAfter * 1000 : 1000 * Math.pow(2, attempt);
     await new Promise((resolve) => setTimeout(resolve, waitMs));
@@ -154,9 +154,24 @@ export async function getAllEpisodes(showId) {
   const details = await getShow(showId);
   const seasons = (details.seasons || []).filter((s) => s.season_number >= 1);
 
-  const seasonResults = await Promise.all(
-    seasons.map((s) => getSeason(showId, s.season_number).catch(() => null))
-  );
+  // Charger toutes les saisons d'un coup (Promise.all sur 20+ saisons)
+  // saturait l'API TMDB et déclenchait des 429 sur les longues séries.
+  // On charge par petits paquets, avec une courte pause entre chaque, pour
+  // rester sous la limite de débit. Le cache 6h du Worker fait que les
+  // ouvertures suivantes de la même série ne recoûtent quasi rien.
+  const BATCH_SIZE = 4;
+  const PAUSE_MS = 300;
+  const seasonResults = [];
+  for (let i = 0; i < seasons.length; i += BATCH_SIZE) {
+    const batch = seasons.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((s) => getSeason(showId, s.season_number).catch(() => null))
+    );
+    seasonResults.push(...batchResults);
+    if (i + BATCH_SIZE < seasons.length) {
+      await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
+    }
+  }
 
   const episodes = [];
   seasonResults.forEach((s) => {
