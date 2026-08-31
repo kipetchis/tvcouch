@@ -143,10 +143,10 @@ export default function MangaPage({ subTab, onSubTabChange }) {
   const [loadError, setLoadError] = useState(null);
   const [openSeries, setOpenSeries] = useState(null);
   useBackClose(!!openSeries, () => setOpenSeries(null));
-  useBackClose(results.length > 0, () => setResults([]));
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
+  useBackClose(results.length > 0, () => setResults([]));
   const [searching, setSearching] = useState(false);
   const [addingResult, setAddingResult] = useState(null);
   const [scanning, setScanning] = useState(false);
