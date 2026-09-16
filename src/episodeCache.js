@@ -7,7 +7,24 @@
 import { getLang } from "./i18n";
 
 const CACHE_PREFIX = "tvcouch_eps_";
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 h
+// TTL à deux vitesses : une série TERMINÉE ne change plus jamais, inutile de
+// la re-télécharger souvent → cache long. Une série EN COURS peut recevoir de
+// nouveaux épisodes → cache court pour rester à jour. La majorité des séries
+// étant terminées, ça évite l'essentiel des appels TMDB au lancement.
+const CACHE_TTL_ONGOING = 24 * 60 * 60 * 1000;      // 24 h (séries en cours)
+const CACHE_TTL_ENDED = 30 * 24 * 60 * 60 * 1000;   // 30 j (séries terminées)
+
+// Durée de validité applicable à une entrée de cache selon son statut.
+// ongoing === true → court ; sinon (terminée ou statut inconnu) → long.
+function ttlFor(parsed) {
+  return parsed && parsed.ongoing === true ? CACHE_TTL_ONGOING : CACHE_TTL_ENDED;
+}
+
+// Une entrée est-elle encore valide ? (existe, datée, non expirée selon son TTL)
+function isFresh(parsed) {
+  if (!parsed || !parsed.ts) return false;
+  return Date.now() - parsed.ts <= ttlFor(parsed);
+}
 
 function cacheKey(showId) {
   return `${CACHE_PREFIX}${getLang()}_${showId}`;
@@ -48,7 +65,7 @@ export function readEpisodeCache(showId) {
     const raw = localStorage.getItem(cacheKey(showId));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.ts || Date.now() - parsed.ts > CACHE_TTL) return null;
+    if (!isFresh(parsed)) return null;
     return parsed.episodes || null;
   } catch {
     return null;
@@ -61,7 +78,7 @@ export function readShowTitle(showId) {
     const raw = localStorage.getItem(cacheKey(showId));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.ts || Date.now() - parsed.ts > CACHE_TTL) return null;
+    if (!isFresh(parsed)) return null;
     return parsed.title || null;
   } catch {
     return null;
@@ -74,7 +91,7 @@ export function readShowOngoing(showId) {
     const raw = localStorage.getItem(cacheKey(showId));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.ts || Date.now() - parsed.ts > CACHE_TTL) return null;
+    if (!isFresh(parsed)) return null;
     return typeof parsed.ongoing === "boolean" ? parsed.ongoing : null;
   } catch {
     return null;
