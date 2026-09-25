@@ -10,6 +10,7 @@ import { getAllVolumes } from "./mangaStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
+import FriendsPanel from "./FriendsPanel";
 import { getMyProfile } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
@@ -110,6 +111,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [myUsername, setMyUsername] = useState(null);
   const [showUsernameSetup, setShowUsernameSetup] = useState(false);
   useBackClose(showUsernameSetup, () => setShowUsernameSetup(false));
+  const [showFriends, setShowFriends] = useState(false);
+  useBackClose(showFriends, () => setShowFriends(false));
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
@@ -607,13 +610,18 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         📊 {t("stats.seeDetailed")}
       </button>
 
-      {/* Espace communautaire — étape 1 : pseudo */}
+      {/* Espace communautaire — pseudo + gestion des amis */}
       <h3 className="section-pill">👥 {t("social.section")}</h3>
       <div className="support-box">
         {myUsername ? (
-          <p className="small" style={{ margin: 0 }}>
-            {t("social.myUsername")} : <strong>{myUsername}</strong>
-          </p>
+          <>
+            <p className="small" style={{ margin: "0 0 10px" }}>
+              {t("social.myUsername")} : <strong>{myUsername}</strong>
+            </p>
+            <button className="btn" onClick={() => setShowFriends(true)}>
+              {t("social.openFriends")}
+            </button>
+          </>
         ) : (
           <>
             <p className="muted small" style={{ margin: "0 0 10px" }}>
@@ -632,6 +640,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           onDone={(uname) => { setMyUsername(uname); setShowUsernameSetup(false); }}
         />
       )}
+
+      {showFriends && <FriendsPanel onClose={() => setShowFriends(false)} />}
 
       {/* Soutenir l'app */}
       <h3 className="section-pill">{t("profile.support")}</h3>

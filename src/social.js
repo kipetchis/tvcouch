@@ -10,7 +10,8 @@
 // pris entre-temps. C'est la technique standard et sûre sur Firestore.
 import { db, auth } from "./firebase";
 import {
-  doc, getDoc, setDoc, runTransaction, serverTimestamp,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, serverTimestamp,
+  collection, query, where, getDocs,
 } from "firebase/firestore";
 
 // Règles de validation d'un pseudo : 3 à 20 caractères, lettres/chiffres/
@@ -103,5 +104,142 @@ export async function claimUsername(name) {
   } catch (e) {
     const reason = ["taken", "has-username"].includes(e.message) ? e.message : "error";
     return { ok: false, reason };
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// Étape 2 : amitiés (recherche, demandes, acceptation, retrait)
+// ─────────────────────────────────────────────────────────────
+//
+// Une amitié = UN document dans "friendships", partagé par les deux
+// utilisateurs. Son id est déterministe : les deux uid triés puis joints
+// par "_", donc une seule et même clé quel que soit qui envoie la demande
+// (pas de doublon possible). Contenu :
+//   users:       [uidA, uidB]      (triés)
+//   status:      "pending" | "accepted"
+//   requestedBy: uid de l'envoyeur
+//   names:       { [uid]: displayName }  (pour l'affichage sans relire les profils)
+//   createdAt / updatedAt
+
+// Id déterministe d'une paire d'utilisateurs.
+export function pairId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
+
+function friendshipRef(uid1, uid2) {
+  return doc(db, "friendships", pairId(uid1, uid2));
+}
+
+// Cherche un utilisateur par pseudo EXACT (insensible à la casse).
+// Renvoie { uid, displayName } ou null si introuvable.
+export async function findUserByUsername(name) {
+  const lower = normalizeUsername(name);
+  if (!isValidUsername(lower)) return null;
+  try {
+    const snap = await getDoc(doc(db, "usernames", lower));
+    if (!snap.exists()) return null;
+    const data = snap.data();
+    return { uid: data.uid, displayName: data.displayName || lower };
+  } catch {
+    return null;
+  }
+}
+
+// Envoie une demande d'ami à l'utilisateur d'uid cible.
+// Renvoie { ok } ou { ok:false, reason }.
+export async function sendFriendRequest(targetUid, targetDisplayName) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  if (targetUid === user.uid) return { ok: false, reason: "self" };
+
+  // Nom d'affichage de l'envoyeur (depuis son profil).
+  let myName = user.uid;
+  try {
+    const me = await getMyProfile();
+    if (me && (me.displayName || me.username)) myName = me.displayName || me.username;
+  } catch {}
+
+  const ref = friendshipRef(user.uid, targetUid);
+  try {
+    const existing = await getDoc(ref);
+    if (existing.exists()) {
+      const d = existing.data();
+      if (d.status === "accepted") return { ok: false, reason: "already-friends" };
+      return { ok: false, reason: "already-pending" };
+    }
+    await setDoc(ref, {
+      users: [user.uid, targetUid].sort(),
+      status: "pending",
+      requestedBy: user.uid,
+      names: { [user.uid]: myName, [targetUid]: targetDisplayName || targetUid },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Accepte une demande d'ami (le destinataire passe le doc en "accepted").
+export async function acceptFriendRequest(otherUid) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  try {
+    await updateDoc(friendshipRef(user.uid, otherUid), {
+      status: "accepted",
+      updatedAt: serverTimestamp(),
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Refuse une demande reçue, ou annule une demande envoyée, ou retire un ami :
+// dans tous les cas, on supprime le document de relation.
+export async function removeFriendship(otherUid) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  try {
+    await deleteDoc(friendshipRef(user.uid, otherUid));
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Liste toutes les relations où l'utilisateur courant apparaît, classées en
+// trois groupes : amis (accepted), demandes reçues (pending, envoyées par
+// l'autre), demandes envoyées (pending, envoyées par moi).
+export async function getFriendships() {
+  const user = auth.currentUser;
+  if (!user) return { friends: [], incoming: [], outgoing: [] };
+  try {
+    const q = query(
+      collection(db, "friendships"),
+      where("users", "array-contains", user.uid)
+    );
+    const snap = await getDocs(q);
+    const friends = [];
+    const incoming = [];
+    const outgoing = [];
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+      const otherUid = (d.users || []).find((u) => u !== user.uid);
+      if (!otherUid) return;
+      const entry = {
+        uid: otherUid,
+        name: (d.names && d.names[otherUid]) || otherUid,
+        status: d.status,
+      };
+      if (d.status === "accepted") friends.push(entry);
+      else if (d.status === "pending" && d.requestedBy === user.uid) outgoing.push(entry);
+      else if (d.status === "pending") incoming.push(entry);
+    });
+    return { friends, incoming, outgoing };
+  } catch {
+    return { friends: [], incoming: [], outgoing: [] };
   }
 }
