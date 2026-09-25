@@ -162,12 +162,12 @@ export async function sendFriendRequest(targetUid, targetDisplayName) {
 
   const ref = friendshipRef(user.uid, targetUid);
   try {
-    const existing = await getDoc(ref);
-    if (existing.exists()) {
-      const d = existing.data();
-      if (d.status === "accepted") return { ok: false, reason: "already-friends" };
-      return { ok: false, reason: "already-pending" };
-    }
+    // On ne pré-lit PAS le document : les règles interdisent de lire une
+    // relation dont on n'est pas déjà membre, et un document encore
+    // inexistant n'a pas de membres. La détection "déjà ami / en attente"
+    // se fait côté interface à partir des relations déjà chargées. Ici on
+    // tente directement la création ; si une relation existe déjà, la règle
+    // create la refusera (doc déjà présent) et on renverra une erreur douce.
     await setDoc(ref, {
       users: [user.uid, targetUid].sort(),
       status: "pending",
