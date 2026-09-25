@@ -9,6 +9,8 @@ import { getAllGames } from "./gameStore";
 import { getAllVolumes } from "./mangaStore";
 import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
+import UsernameSetup from "./UsernameSetup";
+import { getMyProfile } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
@@ -105,10 +107,22 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [moviesTime, setMoviesTime] = useState(0);
   const [favorites, setFavorites] = useState({ shows: [], movies: [] });
   const [openMovie, setOpenMovie] = useState(null);
+  const [myUsername, setMyUsername] = useState(null);
+  const [showUsernameSetup, setShowUsernameSetup] = useState(false);
+  useBackClose(showUsernameSetup, () => setShowUsernameSetup(false));
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+
+  // Charge le pseudo public de l'utilisateur (espace amis)
+  useEffect(() => {
+    let active = true;
+    getMyProfile()
+      .then((p) => { if (active && p && p.username) setMyUsername(p.displayName || p.username); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   // Données brutes pour les trophées
   const [showsData, setShowsData] = useState([]);
@@ -592,6 +606,32 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       <button className="btn stats-detail-btn" onClick={onOpenStats}>
         📊 {t("stats.seeDetailed")}
       </button>
+
+      {/* Espace communautaire — étape 1 : pseudo */}
+      <h3 className="section-pill">👥 {t("social.section")}</h3>
+      <div className="support-box">
+        {myUsername ? (
+          <p className="small" style={{ margin: 0 }}>
+            {t("social.myUsername")} : <strong>{myUsername}</strong>
+          </p>
+        ) : (
+          <>
+            <p className="muted small" style={{ margin: "0 0 10px" }}>
+              {t("social.setUsernamePrompt")}
+            </p>
+            <button className="btn" onClick={() => setShowUsernameSetup(true)}>
+              {t("social.setUsernameBtn")}
+            </button>
+          </>
+        )}
+      </div>
+
+      {showUsernameSetup && (
+        <UsernameSetup
+          onCancel={() => setShowUsernameSetup(false)}
+          onDone={(uname) => { setMyUsername(uname); setShowUsernameSetup(false); }}
+        />
+      )}
 
       {/* Soutenir l'app */}
       <h3 className="section-pill">{t("profile.support")}</h3>

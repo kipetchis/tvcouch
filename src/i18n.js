@@ -105,6 +105,18 @@ const DICT = {
   "nav.explore": { fr: "Explorer", en: "Explore", es: "Explorar" },
   "nav.books": { fr: "Livres", en: "Books", es: "Libros" },
   "nav.games": { fr: "Jeux", en: "Games", es: "Juegos" },
+  "social.section": { fr: "AMIS", en: "FRIENDS", es: "AMIGOS" },
+  "social.chooseUsername": { fr: "Choisis ton pseudo", en: "Choose your username", es: "Elige tu nombre de usuario" },
+  "social.usernameHint": { fr: "Ton pseudo permet à tes amis de te retrouver. 3 à 20 caractères : lettres, chiffres, tiret ou underscore.", en: "Your username lets friends find you. 3–20 characters: letters, digits, hyphen or underscore.", es: "Tu nombre de usuario permite que tus amigos te encuentren. 3–20 caracteres: letras, dígitos, guion o guion bajo." },
+  "social.usernamePlaceholder": { fr: "pseudo", en: "username", es: "usuario" },
+  "social.checking": { fr: "Vérification…", en: "Checking…", es: "Comprobando…" },
+  "social.available": { fr: "Disponible", en: "Available", es: "Disponible" },
+  "social.taken": { fr: "Déjà pris", en: "Already taken", es: "Ya está en uso" },
+  "social.invalidUsername": { fr: "3 à 20 caractères : lettres, chiffres, - ou _", en: "3–20 chars: letters, digits, - or _", es: "3–20 caracteres: letras, dígitos, - o _" },
+  "social.confirmUsername": { fr: "Valider ce pseudo", en: "Confirm username", es: "Confirmar usuario" },
+  "social.setUsernamePrompt": { fr: "Choisis un pseudo pour accéder à l'espace amis.", en: "Choose a username to access the friends area.", es: "Elige un usuario para acceder al área de amigos." },
+  "social.setUsernameBtn": { fr: "Choisir mon pseudo", en: "Choose my username", es: "Elegir mi usuario" },
+  "social.myUsername": { fr: "Ton pseudo", en: "Your username", es: "Tu usuario" },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
