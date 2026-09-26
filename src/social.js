@@ -243,3 +243,166 @@ export async function getFriendships() {
     return { friends: [], incoming: [], outgoing: [] };
   }
 }
+
+
+// ─────────────────────────────────────────────────────────────
+// Étape 3 : profil public-amis (résumé lisible par les amis)
+// ─────────────────────────────────────────────────────────────
+//
+// On NE donne PAS aux amis l'accès direct aux collections privées
+// users/{uid}/... (qui contiennent aussi commentaires, dates, etc.).
+// À la place, l'app génère un document résumé friendData/{uid} contenant
+// uniquement ce qu'on accepte de montrer : les listes de titres et des
+// compteurs. Les amis lisent ce résumé, jamais les données brutes.
+//
+// Le résumé est régénéré au plus une fois par jour (throttle localStorage),
+// à l'ouverture du Profil — voir maybePublishFriendData().
+
+const FRIENDDATA_TS_KEY = "tvcouch_frienddata_ts";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const LIST_CAP = 500; // borne de sécurité par liste (taille du document)
+
+function slimShow(s) {
+  const watched = s.watched || {};
+  return {
+    id: s.id,
+    name: s.name || "",
+    poster_path: s.poster_path || null,
+    watchedCount: Object.keys(watched).length,
+  };
+}
+function slimMovie(m) {
+  return {
+    id: m.id,
+    title: m.title || "",
+    poster_path: m.poster_path || null,
+    note: m.note || null,
+    status: m.status || "watched",
+  };
+}
+function slimBook(b) {
+  return {
+    id: b.id,
+    title: b.title || "",
+    author: b.author || null,
+    cover_i: b.cover_i || null,
+    cover_url: b.cover_url || null,
+    note: b.note || null,
+    status: b.status || "read",
+  };
+}
+function slimVolume(v) {
+  return {
+    id: v.id,
+    title: v.title || "",
+    seriesName: v.seriesName || null,
+    seriesPosition: v.seriesPosition || null,
+    cover_i: v.cover_i || null,
+    cover_url: v.cover_url || null,
+    note: v.note || null,
+    status: v.status || "read",
+  };
+}
+function slimGame(g) {
+  return {
+    id: g.id,
+    name: g.name || "",
+    cover_url: g.cover_url || null,
+    note: g.note || null,
+    status: g.status || "done",
+  };
+}
+
+// Construit puis publie le résumé friendData/{uid} pour l'utilisateur courant.
+// Les fonctions de lecture des stores sont passées en paramètres pour éviter
+// une dépendance circulaire entre modules.
+export async function publishFriendData({ shows, movies, books, volumes, games }) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+
+  // Nom d'affichage depuis le profil public (déjà défini si on a un pseudo).
+  let displayName = user.displayName || user.uid;
+  let username = null;
+  try {
+    const prof = await getMyProfile();
+    if (prof) {
+      displayName = prof.displayName || displayName;
+      username = prof.username || null;
+    }
+  } catch {}
+
+  const watchedMovies = (movies || []).filter((m) => m.status === "watched");
+  const readBooks = (books || []).filter((b) => b.status === "read");
+  const readVolumes = (volumes || []).filter((v) => v.status === "read");
+  const doneGames = (games || []).filter((g) => g.status === "done");
+
+  let episodesWatched = 0;
+  (shows || []).forEach((s) => { episodesWatched += Object.keys(s.watched || {}).length; });
+
+  const data = {
+    displayName,
+    username,
+    updatedAt: serverTimestamp(),
+    stats: {
+      showsFollowed: (shows || []).length,
+      episodesWatched,
+      moviesWatched: watchedMovies.length,
+      booksRead: readBooks.length,
+      volumesRead: readVolumes.length,
+      gamesDone: doneGames.length,
+    },
+    shows: (shows || []).slice(0, LIST_CAP).map(slimShow),
+    movies: watchedMovies.slice(0, LIST_CAP).map(slimMovie),
+    books: readBooks.slice(0, LIST_CAP).map(slimBook),
+    volumes: readVolumes.slice(0, LIST_CAP).map(slimVolume),
+    games: doneGames.slice(0, LIST_CAP).map(slimGame),
+  };
+
+  try {
+    await setDoc(doc(db, "friendData", user.uid), data);
+    try { localStorage.setItem(FRIENDDATA_TS_KEY, String(Date.now())); } catch {}
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Régénère le résumé au plus une fois par jour. À appeler à l'ouverture du
+// Profil (seulement si l'utilisateur a un pseudo). Renvoie true si publié.
+export async function maybePublishFriendData(loaders) {
+  const user = auth.currentUser;
+  if (!user) return false;
+  // Pas de pseudo → pas d'espace amis → rien à publier.
+  try {
+    const prof = await getMyProfile();
+    if (!prof || !prof.username) return false;
+  } catch {
+    return false;
+  }
+  // Throttle : une fois par jour maximum.
+  try {
+    const last = Number(localStorage.getItem(FRIENDDATA_TS_KEY) || 0);
+    if (last && Date.now() - last < ONE_DAY_MS) return false;
+  } catch {}
+
+  const [shows, movies, books, volumes, games] = await Promise.all([
+    loaders.getAllShows().catch(() => []),
+    loaders.getAllMovies().catch(() => []),
+    loaders.getAllBooks().catch(() => []),
+    loaders.getAllVolumes().catch(() => []),
+    loaders.getAllGames().catch(() => []),
+  ]);
+  const res = await publishFriendData({ shows, movies, books, volumes, games });
+  return res.ok;
+}
+
+// Lit le résumé public d'un ami (friendData/{uid}). Renvoie null si absent
+// ou si les règles refusent l'accès (pas amis).
+export async function getFriendData(uid) {
+  try {
+    const snap = await getDoc(doc(db, "friendData", uid));
+    return snap.exists() ? snap.data() : null;
+  } catch {
+    return null;
+  }
+}

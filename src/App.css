@@ -1192,6 +1192,19 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Nom d'ami cliquable (ouvre son profil) : ressemble à un lien, occupe la
+   largeur restante pour une grande zone de clic. */
+.friend-name-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  color: var(--accent-fg);
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
 .friend-actions {
   display: flex;
   gap: 6px;

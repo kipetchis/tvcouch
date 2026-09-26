@@ -11,7 +11,7 @@ import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
 import FriendsPanel from "./FriendsPanel";
-import { getMyProfile } from "./social";
+import { getMyProfile, maybePublishFriendData } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
@@ -125,6 +125,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       .then((p) => { if (active && p && p.username) setMyUsername(p.displayName || p.username); })
       .catch(() => {});
     return () => { active = false; };
+  }, []);
+
+  // Régénère le résumé public-amis (friendData) au plus une fois par jour,
+  // pour que les amis voient des listes à jour. Ne fait rien sans pseudo.
+  useEffect(() => {
+    maybePublishFriendData({
+      getAllShows, getAllMovies, getAllBooks, getAllVolumes, getAllGames,
+    }).catch(() => {});
   }, []);
 
   // Données brutes pour les trophées

@@ -3,6 +3,7 @@ import {
   findUserByUsername, sendFriendRequest, acceptFriendRequest,
   removeFriendship, getFriendships,
 } from "./social";
+import FriendProfile from "./FriendProfile";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -16,8 +17,10 @@ export default function FriendsPanel({ onClose }) {
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openFriend, setOpenFriend] = useState(null); // ami dont on consulte le profil
 
   useBackClose(true, onClose);
+  useBackClose(!!openFriend, () => setOpenFriend(null));
 
   const reload = async () => {
     const { friends, incoming, outgoing } = await getFriendships();
@@ -147,7 +150,12 @@ export default function FriendsPanel({ onClose }) {
               ) : (
                 friends.map((f) => (
                   <div key={f.uid} className="friend-row">
-                    <span className="friend-name">{f.name}</span>
+                    <button
+                      className="friend-name friend-name-btn"
+                      onClick={() => setOpenFriend(f)}
+                    >
+                      {f.name}
+                    </button>
                     <button className="btn-small" onClick={() => doRemove(f.uid)}>{t("social.removeFriend")}</button>
                   </div>
                 ))
@@ -156,6 +164,14 @@ export default function FriendsPanel({ onClose }) {
           )}
         </div>
       </div>
+
+      {openFriend && (
+        <FriendProfile
+          uid={openFriend.uid}
+          name={openFriend.name}
+          onClose={() => setOpenFriend(null)}
+        />
+      )}
     </div>
   );
 }
