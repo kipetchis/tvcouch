@@ -8,6 +8,7 @@ import { searchShows, posterUrl } from "./tmdb";
 import ShowDetail from "./ShowDetail";
 import ShowsPage from "./ShowsPage";
 import UpcomingPage from "./UpcomingPage";
+import AgendaPage from "./AgendaPage";
 import ImportPage from "./ImportPage";
 import MoviesPage from "./MoviesPage";
 import BooksPage from "./BooksPage";
@@ -187,7 +188,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   useBackClose(showStats, () => setShowStats(false));
 
-  const TAB_ORDER = ["shows", "movies", "books", "games", "explore", "profile"];
+  const TAB_ORDER = ["shows", "movies", "books", "games", "agenda", "explore", "profile"];
   const { onTouchStart: onTabTouchStart, onTouchEnd: onTabTouchEnd } = useSwipeTabs(
     TAB_ORDER,
     tab,
@@ -438,6 +439,7 @@ function App() {
       )}
       {tab === "explore" && <ExplorerPage onOpenShow={setSelectedShow} />}
       {tab === "games" && <GamesPage />}
+      {tab === "agenda" && <AgendaPage onOpenShow={setSelectedShow} />}
       {tab === "profile" && (
         showStats ? (
           <StatsPage onBack={() => setShowStats(false)} />
@@ -486,6 +488,13 @@ function App() {
         >
           <span className="tab-icon">🎮</span>
           {t("nav.games")}
+        </button>
+        <button
+          className={tab === "agenda" ? "tab active" : "tab"}
+          onClick={() => setTab("agenda")}
+        >
+          <span className="tab-icon">🗓️</span>
+          {t("nav.agenda")}
         </button>
         <button
           className={tab === "explore" ? "tab active" : "tab"}

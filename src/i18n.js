@@ -182,6 +182,11 @@ const DICT = {
   "feed.verbGame": { fr: "a terminé", en: "finished", es: "terminó" },
   "feed.today": { fr: "aujourd'hui", en: "today", es: "hoy" },
   "feed.yesterday": { fr: "hier", en: "yesterday", es: "ayer" },
+  "nav.agenda": { fr: "À venir", en: "Upcoming", es: "Próximos" },
+  "agenda.title": { fr: "À venir", en: "Upcoming", es: "Próximos" },
+  "agenda.empty": { fr: "Rien à l'horizon. Ajoute des séries en cours, ou des films et jeux pas encore sortis.", en: "Nothing on the horizon. Add ongoing shows, or unreleased movies and games.", es: "Nada a la vista. Añade series en curso, o películas y juegos aún no estrenados." },
+  "agenda.today": { fr: "aujourd'hui", en: "today", es: "hoy" },
+  "agenda.tomorrow": { fr: "demain", en: "tomorrow", es: "mañana" },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
