@@ -149,6 +149,10 @@ const DICT = {
   "friend.tabBooks": { fr: "Romans", en: "Novels", es: "Novelas" },
   "friend.tabManga": { fr: "Mangas", en: "Manga", es: "Manga" },
   "friend.tabGames": { fr: "Jeux", en: "Games", es: "Juegos" },
+  "friend.modeProfile": { fr: "Son profil", en: "Their profile", es: "Su perfil" },
+  "friend.modeCompare": { fr: "Comparer", en: "Compare", es: "Comparar" },
+  "friend.common": { fr: "En commun", en: "In common", es: "En común" },
+  "friend.youOnly": { fr: "Toi seulement", en: "You only", es: "Solo tú" },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
