@@ -5,6 +5,7 @@ import {
   getReceivedRecommendations, markRecommendationRead, dismissRecommendation,
 } from "./social";
 import FriendProfile from "./FriendProfile";
+import ActivityFeed from "./ActivityFeed";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
 
@@ -32,9 +33,11 @@ export default function FriendsPanel({ onClose }) {
   const [recos, setRecos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openFriend, setOpenFriend] = useState(null); // ami dont on consulte le profil
+  const [showFeed, setShowFeed] = useState(false);
 
   useBackClose(true, onClose);
   useBackClose(!!openFriend, () => setOpenFriend(null));
+  useBackClose(showFeed, () => setShowFeed(false));
 
   const reload = async () => {
     const [{ friends, incoming, outgoing }, recs] = await Promise.all([
@@ -106,6 +109,13 @@ export default function FriendsPanel({ onClose }) {
 
         <div className="ep-detail-body">
           <h2 className="ep-detail-title">👥 {t("social.section")}</h2>
+
+          {/* Accès au fil d'activité des amis */}
+          {friends.length > 0 && (
+            <button className="btn" style={{ marginTop: 8 }} onClick={() => setShowFeed(true)}>
+              📰 {t("feed.open")}
+            </button>
+          )}
 
           {/* Recommandations reçues */}
           {recos.length > 0 && (
@@ -243,6 +253,8 @@ export default function FriendsPanel({ onClose }) {
           onClose={() => setOpenFriend(null)}
         />
       )}
+
+      {showFeed && <ActivityFeed onClose={() => setShowFeed(false)} />}
     </div>
   );
 }

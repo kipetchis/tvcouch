@@ -313,6 +313,65 @@ function slimGame(g) {
   };
 }
 
+// Convertit une date (nombre ms, ou chaîne ISO "AAAA-MM-JJ") en millisecondes.
+// Renvoie 0 si absente/invalide.
+function toMs(v) {
+  if (!v) return 0;
+  if (typeof v === "number") return v;
+  const t = Date.parse(v);
+  return isNaN(t) ? 0 : t;
+}
+
+// Construit le fil d'activité récent de l'utilisateur à partir de ses listes
+// brutes : dernier épisode vu par série, films vus, romans/tomes lus, jeux
+// terminés — chacun avec sa date. Trié du plus récent au plus ancien, borné.
+// Le champ `cover` reste la référence BRUTE (poster_path / cover_url / cover_i)
+// et sera résolu à l'affichage selon le `type`.
+function buildRecentActivity({ shows, movies, books, volumes, games }) {
+  const acts = [];
+
+  (shows || []).forEach((s) => {
+    const watched = s.watched || {};
+    let last = 0;
+    let count = 0;
+    Object.values(watched).forEach((v) => {
+      count += 1;
+      const ms = toMs(v);
+      if (ms > last) last = ms;
+    });
+    const when = last || toMs(s.lastWatchedAt) || toMs(s.addedAt);
+    if (count > 0 && when) {
+      acts.push({ type: "show", id: String(s.id), title: s.name || "", cover: s.poster_path || null, date: when });
+    }
+  });
+
+  (movies || []).filter((m) => m.status === "watched").forEach((m) => {
+    const when = toMs(m.watchedAt) || toMs(m.addedAt);
+    if (when) acts.push({ type: "movie", id: String(m.id), title: m.title || "", cover: m.poster_path || null, note: m.note || null, date: when });
+  });
+
+  (books || []).filter((b) => b.status === "read").forEach((b) => {
+    const when = toMs(b.readAt) || toMs(b.addedAt);
+    if (when) acts.push({ type: "book", id: String(b.id), title: b.title || "", cover: b.cover_url || b.cover_i || null, note: b.note || null, date: when });
+  });
+
+  (volumes || []).filter((v) => v.status === "read").forEach((v) => {
+    const when = toMs(v.readAt) || toMs(v.addedAt);
+    const title = v.seriesName
+      ? `${v.seriesName}${v.seriesPosition ? ` T${v.seriesPosition}` : ""}`
+      : (v.title || "");
+    if (when) acts.push({ type: "volume", id: String(v.id), title, cover: v.cover_url || v.cover_i || null, note: v.note || null, date: when });
+  });
+
+  (games || []).filter((g) => g.status === "done").forEach((g) => {
+    const when = toMs(g.doneAt) || toMs(g.addedAt);
+    if (when) acts.push({ type: "game", id: String(g.id), title: g.name || "", cover: g.cover_url || null, note: g.note || null, date: when });
+  });
+
+  acts.sort((a, b) => b.date - a.date);
+  return acts.slice(0, 20);
+}
+
 // Construit puis publie le résumé friendData/{uid} pour l'utilisateur courant.
 // Les fonctions de lecture des stores sont passées en paramètres pour éviter
 // une dépendance circulaire entre modules.
@@ -356,6 +415,7 @@ export async function publishFriendData({ shows, movies, books, volumes, games }
     books: readBooks.slice(0, LIST_CAP).map(slimBook),
     volumes: readVolumes.slice(0, LIST_CAP).map(slimVolume),
     games: doneGames.slice(0, LIST_CAP).map(slimGame),
+    recentActivity: buildRecentActivity({ shows, movies, books, volumes, games }),
   };
 
   try {
@@ -379,11 +439,21 @@ export async function maybePublishFriendData(loaders) {
   } catch {
     return false;
   }
-  // Throttle : une fois par jour maximum.
+  // Migration : si mon résumé existe déjà mais n'a pas encore le champ
+  // recentActivity (ancien format), on force une republication pour l'ajouter,
+  // en ignorant le throttle une seule fois.
+  let force = false;
   try {
-    const last = Number(localStorage.getItem(FRIENDDATA_TS_KEY) || 0);
-    if (last && Date.now() - last < ONE_DAY_MS) return false;
+    const mine = await getFriendData(auth.currentUser.uid);
+    if (mine && mine.recentActivity === undefined) force = true;
   } catch {}
+  // Throttle : une fois par jour maximum (sauf migration forcée).
+  if (!force) {
+    try {
+      const last = Number(localStorage.getItem(FRIENDDATA_TS_KEY) || 0);
+      if (last && Date.now() - last < ONE_DAY_MS) return false;
+    } catch {}
+  }
 
   const [shows, movies, books, volumes, games] = await Promise.all([
     loaders.getAllShows().catch(() => []),
@@ -405,6 +475,27 @@ export async function getFriendData(uid) {
   } catch {
     return null;
   }
+}
+
+// Fil d'activité des amis : lit le résumé de chaque ami confirmé, fusionne
+// leurs `recentActivity` en y ajoutant le nom de l'ami, trie du plus récent
+// au plus ancien et borne la liste. Chaque entrée :
+//   { type, id, title, cover, note, date, friendUid, friendName }
+export async function getFriendsActivity() {
+  const { friends } = await getFriendships();
+  if (!friends || friends.length === 0) return [];
+  const perFriend = await Promise.all(
+    friends.map(async (f) => {
+      const d = await getFriendData(f.uid);
+      if (!d || !Array.isArray(d.recentActivity)) return [];
+      const friendName = d.displayName || f.name;
+      return d.recentActivity.map((a) => ({ ...a, friendUid: f.uid, friendName }));
+    })
+  );
+  const flat = [];
+  perFriend.forEach((arr) => arr.forEach((a) => flat.push(a)));
+  flat.sort((a, b) => (b.date || 0) - (a.date || 0));
+  return flat.slice(0, 60);
 }
 
 

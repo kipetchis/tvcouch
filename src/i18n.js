@@ -172,6 +172,16 @@ const DICT = {
   "reco.catBooks": { fr: "un roman", en: "a novel", es: "una novela" },
   "reco.catVolumes": { fr: "un tome", en: "a volume", es: "un tomo" },
   "reco.catGames": { fr: "un jeu", en: "a game", es: "un juego" },
+  "feed.title": { fr: "Fil d'activité", en: "Activity feed", es: "Actividad" },
+  "feed.open": { fr: "Fil d'activité", en: "Activity feed", es: "Actividad" },
+  "feed.empty": { fr: "Rien de neuf chez tes amis pour l'instant.", en: "Nothing new from your friends yet.", es: "Nada nuevo de tus amigos por ahora." },
+  "feed.verbShow": { fr: "a regardé", en: "watched", es: "vio" },
+  "feed.verbMovie": { fr: "a vu", en: "watched", es: "vio" },
+  "feed.verbBook": { fr: "a lu", en: "read", es: "leyó" },
+  "feed.verbVolume": { fr: "a lu", en: "read", es: "leyó" },
+  "feed.verbGame": { fr: "a terminé", en: "finished", es: "terminó" },
+  "feed.today": { fr: "aujourd'hui", en: "today", es: "hoy" },
+  "feed.yesterday": { fr: "hier", en: "yesterday", es: "ayer" },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
