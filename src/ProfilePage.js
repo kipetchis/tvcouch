@@ -11,7 +11,7 @@ import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
 import FriendsPanel from "./FriendsPanel";
-import { getMyProfile, maybePublishFriendData } from "./social";
+import { getMyProfile, maybePublishFriendData, getUnreadRecoCount } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
@@ -113,6 +113,7 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   useBackClose(showUsernameSetup, () => setShowUsernameSetup(false));
   const [showFriends, setShowFriends] = useState(false);
   useBackClose(showFriends, () => setShowFriends(false));
+  const [recoCount, setRecoCount] = useState(0); // recos reçues non lues (pastille)
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
@@ -126,6 +127,12 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       .catch(() => {});
     return () => { active = false; };
   }, []);
+
+  // Nombre de recommandations reçues non lues (pastille sur "Gérer mes amis").
+  const refreshRecoCount = () => {
+    getUnreadRecoCount().then(setRecoCount).catch(() => {});
+  };
+  useEffect(() => { refreshRecoCount(); }, []);
 
   // Régénère le résumé public-amis (friendData) au plus une fois par jour,
   // pour que les amis voient des listes à jour. Ne fait rien sans pseudo.
@@ -628,6 +635,17 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
             </p>
             <button className="btn" onClick={() => setShowFriends(true)}>
               {t("social.openFriends")}
+              {recoCount > 0 && (
+                <span
+                  style={{
+                    display: "inline-block", marginLeft: 8, minWidth: 20, padding: "0 6px",
+                    borderRadius: 10, background: "#e74c3c", color: "#fff",
+                    fontSize: "0.8em", fontWeight: 700, lineHeight: "20px", textAlign: "center",
+                  }}
+                >
+                  {recoCount}
+                </span>
+              )}
             </button>
           </>
         ) : (
@@ -649,7 +667,9 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
         />
       )}
 
-      {showFriends && <FriendsPanel onClose={() => setShowFriends(false)} />}
+      {showFriends && (
+        <FriendsPanel onClose={() => { setShowFriends(false); refreshRecoCount(); }} />
+      )}
 
       {/* Soutenir l'app */}
       <h3 className="section-pill">{t("profile.support")}</h3>

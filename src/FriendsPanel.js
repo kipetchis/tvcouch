@@ -2,10 +2,23 @@ import { useState, useEffect } from "react";
 import {
   findUserByUsername, sendFriendRequest, acceptFriendRequest,
   removeFriendship, getFriendships,
+  getReceivedRecommendations, markRecommendationRead, dismissRecommendation,
 } from "./social";
 import FriendProfile from "./FriendProfile";
 import { t } from "./i18n";
 import { useBackClose } from "./backNav";
+
+// Libellé de catégorie pour l'affichage d'une reco ("une série", "un film"…).
+function catLabel(cat) {
+  const map = {
+    shows: "reco.catShows",
+    movies: "reco.catMovies",
+    books: "reco.catBooks",
+    volumes: "reco.catVolumes",
+    games: "reco.catGames",
+  };
+  return t(map[cat] || "reco.catShows");
+}
 
 export default function FriendsPanel({ onClose }) {
   const [query, setQuery] = useState("");
@@ -16,6 +29,7 @@ export default function FriendsPanel({ onClose }) {
   const [friends, setFriends] = useState([]);
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
+  const [recos, setRecos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openFriend, setOpenFriend] = useState(null); // ami dont on consulte le profil
 
@@ -23,10 +37,14 @@ export default function FriendsPanel({ onClose }) {
   useBackClose(!!openFriend, () => setOpenFriend(null));
 
   const reload = async () => {
-    const { friends, incoming, outgoing } = await getFriendships();
+    const [{ friends, incoming, outgoing }, recs] = await Promise.all([
+      getFriendships(),
+      getReceivedRecommendations(),
+    ]);
     setFriends(friends);
     setIncoming(incoming);
     setOutgoing(outgoing);
+    setRecos(recs);
     setLoading(false);
   };
 
@@ -70,6 +88,17 @@ export default function FriendsPanel({ onClose }) {
   const doAccept = async (uid) => { await acceptFriendRequest(uid); reload(); };
   const doRemove = async (uid) => { await removeFriendship(uid); reload(); };
 
+  // Marque une reco comme lue (met à jour l'état local sans tout recharger).
+  const doMarkReco = async (id) => {
+    await markRecommendationRead(id);
+    setRecos((prev) => prev.map((r) => (r.id === id ? { ...r, status: "read" } : r)));
+  };
+  // Supprime une reco reçue.
+  const doDismissReco = async (id) => {
+    await dismissRecommendation(id);
+    setRecos((prev) => prev.filter((r) => r.id !== id));
+  };
+
   return (
     <div className="ep-detail-overlay" onClick={onClose}>
       <div className="ep-detail" onClick={(e) => e.stopPropagation()}>
@@ -77,6 +106,48 @@ export default function FriendsPanel({ onClose }) {
 
         <div className="ep-detail-body">
           <h2 className="ep-detail-title">👥 {t("social.section")}</h2>
+
+          {/* Recommandations reçues */}
+          {recos.length > 0 && (
+            <>
+              <h3 className="section-pill">{t("reco.received")} ({recos.length})</h3>
+              {recos.map((r) => {
+                const it = r.item || {};
+                const unread = r.status !== "read";
+                return (
+                  <div
+                    key={r.id}
+                    className="reco-card"
+                    style={{
+                      display: "flex", gap: 10, alignItems: "flex-start",
+                      padding: 10, marginBottom: 8, borderRadius: 8,
+                      background: unread ? "var(--accent-bg, rgba(120,120,255,0.08))" : "var(--card-bg, rgba(255,255,255,0.03))",
+                    }}
+                  >
+                    {it.cover && (
+                      <img src={it.cover} alt={it.title} style={{ width: 48, borderRadius: 4, flexShrink: 0 }} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="small">
+                        <strong>{r.fromName}</strong> {t("reco.recommendsYou")} {catLabel(r.category)}
+                        {unread && <span className="ep-rating-badge" style={{ marginLeft: 6 }}>{t("reco.newBadge")}</span>}
+                      </div>
+                      <div style={{ fontWeight: 600, marginTop: 2 }}>{it.title}</div>
+                      {r.message && (
+                        <div className="muted small" style={{ marginTop: 4, fontStyle: "italic" }}>« {r.message} »</div>
+                      )}
+                      <div className="friend-actions" style={{ marginTop: 6 }}>
+                        {unread && (
+                          <button className="btn-small" onClick={() => doMarkReco(r.id)}>{t("reco.markRead")}</button>
+                        )}
+                        <button className="btn-small" onClick={() => doDismissReco(r.id)}>{t("reco.dismiss")}</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
 
           {/* Recherche par pseudo */}
           <form className="search" onSubmit={handleSearch} style={{ marginTop: 12 }}>

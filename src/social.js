@@ -10,7 +10,7 @@
 // pris entre-temps. C'est la technique standard et sûre sur Firestore.
 import { db, auth } from "./firebase";
 import {
-  doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, serverTimestamp,
+  doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, runTransaction, serverTimestamp,
   collection, query, where, getDocs,
 } from "firebase/firestore";
 
@@ -404,5 +404,126 @@ export async function getFriendData(uid) {
     return snap.exists() ? snap.data() : null;
   } catch {
     return null;
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// Étape 4b : recommandations (recommander une œuvre à un ami)
+// ─────────────────────────────────────────────────────────────
+//
+// Une recommandation = UN document dans "recommendations" (id auto) :
+//   from:      uid de l'expéditeur
+//   fromName:  nom affiché de l'expéditeur (pour l'affichage sans relecture)
+//   to:        uid du destinataire
+//   category:  "shows" | "movies" | "books" | "volumes" | "games"
+//   item:      { id, title, cover }  (résumé auto-suffisant à afficher)
+//   message:   petit mot facultatif (chaîne, éventuellement vide)
+//   status:    "unread" | "read"
+//   createdAt
+//
+// Règles : seul l'expéditeur crée (et doit être ami accepté avec le
+// destinataire) ; expéditeur et destinataire peuvent lire et supprimer ;
+// seul le destinataire peut mettre à jour, et uniquement le champ "status".
+
+// Envoie une recommandation. `item` doit contenir { id, title, cover }.
+// Renvoie { ok } ou { ok:false, reason }.
+export async function sendRecommendation(toUid, toName, category, item, message) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  if (!toUid || toUid === user.uid) return { ok: false, reason: "self" };
+  if (!item || item.id == null) return { ok: false, reason: "bad-item" };
+
+  // Nom d'affichage de l'expéditeur (depuis son profil public).
+  let myName = user.uid;
+  try {
+    const me = await getMyProfile();
+    if (me && (me.displayName || me.username)) myName = me.displayName || me.username;
+  } catch {}
+
+  try {
+    await addDoc(collection(db, "recommendations"), {
+      from: user.uid,
+      fromName: myName,
+      to: toUid,
+      category: category || "",
+      item: {
+        id: String(item.id),
+        title: item.title || "",
+        cover: item.cover || null,
+      },
+      message: (message || "").slice(0, 500),
+      status: "unread",
+      createdAt: serverTimestamp(),
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Liste les recommandations REÇUES par l'utilisateur courant, triées de la
+// plus récente à la plus ancienne (tri côté client pour éviter un index
+// composite). Chaque entrée : { id, from, fromName, category, item, message,
+// status, createdAt }.
+export async function getReceivedRecommendations() {
+  const user = auth.currentUser;
+  if (!user) return [];
+  try {
+    const q = query(collection(db, "recommendations"), where("to", "==", user.uid));
+    const snap = await getDocs(q);
+    const list = [];
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+      list.push({ id: docSnap.id, ...d });
+    });
+    list.sort((a, b) => {
+      const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return list;
+  } catch {
+    return [];
+  }
+}
+
+// Nombre de recommandations reçues non lues (pour la pastille du Profil).
+// Une seule condition where (pas d'index composite nécessaire).
+export async function getUnreadRecoCount() {
+  const user = auth.currentUser;
+  if (!user) return 0;
+  try {
+    const q = query(collection(db, "recommendations"), where("to", "==", user.uid));
+    const snap = await getDocs(q);
+    let n = 0;
+    snap.forEach((docSnap) => { if (docSnap.data().status !== "read") n += 1; });
+    return n;
+  } catch {
+    return 0;
+  }
+}
+
+// Marque une recommandation reçue comme lue.
+export async function markRecommendationRead(recoId) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  try {
+    await updateDoc(doc(db, "recommendations", recoId), { status: "read" });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
+  }
+}
+
+// Supprime une recommandation (expéditeur ou destinataire).
+export async function dismissRecommendation(recoId) {
+  const user = auth.currentUser;
+  if (!user) return { ok: false, reason: "no-user" };
+  try {
+    await deleteDoc(doc(db, "recommendations", recoId));
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "error" };
   }
 }
