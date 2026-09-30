@@ -96,7 +96,10 @@ export default function FriendProfile({ uid, name, onClose }) {
 
   // Charge mes listes la première fois qu'on passe en mode comparaison.
   useEffect(() => {
-    if (mode !== "compare" || mine || loadingMine) return;
+    // Ne dépend PAS de loadingMine (sinon le setLoadingMine(true) relance
+    // l'effet, son nettoyage passe active=false, et le résultat du chargement
+    // est ignoré → chargement infini).
+    if (mode !== "compare" || mine) return;
     let active = true;
     setLoadingMine(true);
     Promise.all([getAllShows(), getAllMovies(), getAllBooks(), getAllVolumes(), getAllGames()])
@@ -107,7 +110,8 @@ export default function FriendProfile({ uid, name, onClose }) {
       .catch(() => {})
       .finally(() => { if (active) setLoadingMine(false); });
     return () => { active = false; };
-  }, [mode, mine, loadingMine]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, mine]);
 
   const displayName = (data && data.displayName) || name || "";
 
