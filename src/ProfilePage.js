@@ -12,6 +12,7 @@ import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
 import FriendsPanel from "./FriendsPanel";
 import RetrospectivePage from "./RetrospectivePage";
+import { downloadBackup } from "./backup";
 import { getMyProfile, maybePublishFriendData, getUnreadRecoCount } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
@@ -117,6 +118,18 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [recoCount, setRecoCount] = useState(0); // recos reçues non lues (pastille)
   const [showRetro, setShowRetro] = useState(false);
   useBackClose(showRetro, () => setShowRetro(false));
+  const [backupMsg, setBackupMsg] = useState(null);
+
+  const handleBackup = async () => {
+    setMenuOpen(false);
+    try {
+      await downloadBackup();
+      setBackupMsg(t("profile.backupDone"));
+    } catch {
+      setBackupMsg(t("profile.backupError"));
+    }
+    setTimeout(() => setBackupMsg(null), 4000);
+  };
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
@@ -483,6 +496,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 </button>
 
                 <div className="profile-menu-sep" />
+                <button
+                  className="profile-menu-item"
+                  onClick={handleBackup}
+                >
+                  💾 {t("profile.backup")}
+                </button>
+
+                <div className="profile-menu-sep" />
                 <div className="profile-menu-label">🎨 {t("profile.appearance")}</div>
                 <div className="lang-switch profile-menu-lang">
                   <button
@@ -525,6 +546,10 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
           )}
         </div>
       </div>
+
+      {backupMsg && (
+        <p className="login-info" style={{ textAlign: "center", marginTop: 8 }}>{backupMsg}</p>
+      )}
 
       {/* Statistiques */}
       <h3 className="section-pill">{t("profile.stats")}</h3>

@@ -202,6 +202,9 @@ const DICT = {
   "retro.topMovies": { fr: "Films les mieux notés", en: "Top-rated movies", es: "Películas mejor valoradas" },
   "retro.topGames": { fr: "Jeux les mieux notés", en: "Top-rated games", es: "Juegos mejor valorados" },
   "retro.topGenres": { fr: "Genres favoris", en: "Favorite genres", es: "Géneros favoritos" },
+  "profile.backup": { fr: "Sauvegarder mes données", en: "Back up my data", es: "Copia de seguridad" },
+  "profile.backupDone": { fr: "Sauvegarde téléchargée ✓", en: "Backup downloaded ✓", es: "Copia descargada ✓" },
+  "profile.backupError": { fr: "Échec de la sauvegarde.", en: "Backup failed.", es: "Error en la copia." },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
