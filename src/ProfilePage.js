@@ -11,6 +11,7 @@ import { getShow, getShowRuntime, getMovie, posterUrl } from "./tmdb";
 import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
 import FriendsPanel from "./FriendsPanel";
+import RetrospectivePage from "./RetrospectivePage";
 import { getMyProfile, maybePublishFriendData, getUnreadRecoCount } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
@@ -114,6 +115,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   const [showFriends, setShowFriends] = useState(false);
   useBackClose(showFriends, () => setShowFriends(false));
   const [recoCount, setRecoCount] = useState(0); // recos reçues non lues (pastille)
+  const [showRetro, setShowRetro] = useState(false);
+  useBackClose(showRetro, () => setShowRetro(false));
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
   useBackClose(!!openMovie, () => setOpenMovie(null));
@@ -624,6 +627,12 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       <button className="btn stats-detail-btn" onClick={onOpenStats}>
         📊 {t("stats.seeDetailed")}
       </button>
+
+      <button className="btn stats-detail-btn" onClick={() => setShowRetro(true)}>
+        📅 {t("retro.open")} {new Date().getFullYear()}
+      </button>
+
+      {showRetro && <RetrospectivePage onClose={() => setShowRetro(false)} />}
 
       {/* Espace communautaire — pseudo + gestion des amis */}
       <h3 className="section-pill">👥 {t("social.section")}</h3>
