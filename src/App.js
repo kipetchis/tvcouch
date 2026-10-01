@@ -466,49 +466,49 @@ function App() {
           onClick={() => setTab("shows")}
         >
           <span className="tab-icon">📺</span>
-          {t("nav.shows")}
+          {tab === "shows" && <span className="tab-label">{t("nav.shows")}</span>}
         </button>
         <button
           className={tab === "movies" ? "tab active" : "tab"}
           onClick={() => setTab("movies")}
         >
           <span className="tab-icon">🎬</span>
-          {t("nav.movies")}
+          {tab === "movies" && <span className="tab-label">{t("nav.movies")}</span>}
         </button>
         <button
           className={tab === "books" ? "tab active" : "tab"}
           onClick={() => setTab("books")}
         >
           <span className="tab-icon">📚</span>
-          {t("nav.books")}
+          {tab === "books" && <span className="tab-label">{t("nav.books")}</span>}
         </button>
         <button
           className={tab === "games" ? "tab active" : "tab"}
           onClick={() => setTab("games")}
         >
           <span className="tab-icon">🎮</span>
-          {t("nav.games")}
+          {tab === "games" && <span className="tab-label">{t("nav.games")}</span>}
         </button>
         <button
           className={tab === "agenda" ? "tab active" : "tab"}
           onClick={() => setTab("agenda")}
         >
           <span className="tab-icon">🗓️</span>
-          {t("nav.agenda")}
+          {tab === "agenda" && <span className="tab-label">{t("nav.agenda")}</span>}
         </button>
         <button
           className={tab === "explore" ? "tab active" : "tab"}
           onClick={() => setTab("explore")}
         >
           <span className="tab-icon">🔍</span>
-          {t("nav.explore")}
+          {tab === "explore" && <span className="tab-label">{t("nav.explore")}</span>}
         </button>
         <button
           className={tab === "profile" ? "tab active" : "tab"}
           onClick={() => setTab("profile")}
         >
           <span className="tab-icon">👤</span>
-          {t("nav.profile")}
+          {tab === "profile" && <span className="tab-label">{t("nav.profile")}</span>}
         </button>
       </nav>
     </div>
