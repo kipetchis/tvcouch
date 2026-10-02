@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   getAllShows, getFavorites, removeFavoriteShow, removeFavoriteMovie,
   setShowRuntime, setMovieRuntime, deleteAllUserData,
@@ -12,7 +12,7 @@ import MovieDetail from "./MovieDetail";
 import UsernameSetup from "./UsernameSetup";
 import FriendsPanel from "./FriendsPanel";
 import RetrospectivePage from "./RetrospectivePage";
-import { downloadBackup } from "./backup";
+import { downloadBackup, restoreBackup, isValidBackup } from "./backup";
 import { getMyProfile, maybePublishFriendData, getUnreadRecoCount } from "./social";
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
@@ -120,6 +120,8 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
   useBackClose(showRetro, () => setShowRetro(false));
   const [backupMsg, setBackupMsg] = useState(null);
 
+  const restoreInputRef = useRef(null);
+
   const handleBackup = async () => {
     setMenuOpen(false);
     try {
@@ -129,6 +131,37 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       setBackupMsg(t("profile.backupError"));
     }
     setTimeout(() => setBackupMsg(null), 4000);
+  };
+
+  const handleRestoreFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ""; // permet de re-sélectionner le même fichier plus tard
+    if (!file) return;
+
+    let backup;
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      setBackupMsg(t("profile.restoreInvalid"));
+      setTimeout(() => setBackupMsg(null), 4000);
+      return;
+    }
+    if (!isValidBackup(backup)) {
+      setBackupMsg(t("profile.restoreInvalid"));
+      setTimeout(() => setBackupMsg(null), 4000);
+      return;
+    }
+    if (!window.confirm(t("profile.restoreConfirm"))) return;
+
+    try {
+      await restoreBackup(backup);
+      setBackupMsg(t("profile.restoreDone"));
+      // Recharge l'app pour que toutes les pages reflètent les données restaurées.
+      setTimeout(() => { try { window.location.reload(); } catch {} }, 1200);
+    } catch {
+      setBackupMsg(t("profile.restoreError"));
+      setTimeout(() => setBackupMsg(null), 4000);
+    }
   };
 
   // Retour / swipe : ferme la fiche film avant de revenir à la liste
@@ -502,6 +535,12 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
                 >
                   💾 {t("profile.backup")}
                 </button>
+                <button
+                  className="profile-menu-item"
+                  onClick={() => { setMenuOpen(false); if (restoreInputRef.current) restoreInputRef.current.click(); }}
+                >
+                  📥 {t("profile.restore")}
+                </button>
 
                 <div className="profile-menu-sep" />
                 <div className="profile-menu-label">🎨 {t("profile.appearance")}</div>
@@ -550,6 +589,14 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       {backupMsg && (
         <p className="login-info" style={{ textAlign: "center", marginTop: 8 }}>{backupMsg}</p>
       )}
+
+      <input
+        ref={restoreInputRef}
+        type="file"
+        accept="application/json,.json"
+        style={{ display: "none" }}
+        onChange={handleRestoreFile}
+      />
 
       {/* Statistiques */}
       <h3 className="section-pill">{t("profile.stats")}</h3>

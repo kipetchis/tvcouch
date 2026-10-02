@@ -205,6 +205,11 @@ const DICT = {
   "profile.backup": { fr: "Sauvegarder mes données", en: "Back up my data", es: "Copia de seguridad" },
   "profile.backupDone": { fr: "Sauvegarde téléchargée ✓", en: "Backup downloaded ✓", es: "Copia descargada ✓" },
   "profile.backupError": { fr: "Échec de la sauvegarde.", en: "Backup failed.", es: "Error en la copia." },
+  "profile.restore": { fr: "Restaurer une sauvegarde", en: "Restore a backup", es: "Restaurar una copia" },
+  "profile.restoreConfirm": { fr: "Restaurer cette sauvegarde ? Tes listes seront complétées et mises à jour (rien n'est supprimé).", en: "Restore this backup? Your lists will be added to and updated (nothing is deleted).", es: "¿Restaurar esta copia? Tus listas se completarán y actualizarán (no se elimina nada)." },
+  "profile.restoreDone": { fr: "Sauvegarde restaurée ✓", en: "Backup restored ✓", es: "Copia restaurada ✓" },
+  "profile.restoreError": { fr: "Échec de la restauration.", en: "Restore failed.", es: "Error al restaurar." },
+  "profile.restoreInvalid": { fr: "Fichier de sauvegarde invalide.", en: "Invalid backup file.", es: "Archivo de copia no válido." },
   "nav.profile": { fr: "Profil", en: "Profile", es: "Perfil" },
 
   // Général / communs
