@@ -9,12 +9,12 @@ const STORAGE_KEY = "tvcouch_theme";
 // Palettes disponibles. `bg` et `accent` servent d'aperçu (pastilles) dans le
 // sélecteur du profil ; `label` est une clé i18n.
 export const PALETTES = [
-  { id: "dark",        label: "theme.dark",       bg: "#0d0d0d", accent: "#f5c518" },
-  { id: "orange-nuit", label: "theme.orangeNuit", bg: "#140b03", accent: "#4ea8ff" },
-  { id: "ocean",       label: "theme.ocean",      bg: "#061018", accent: "#3fd0c9" },
-  { id: "foret",       label: "theme.foret",      bg: "#07120a", accent: "#e7b73c" },
-  { id: "rose",        label: "theme.rose",       bg: "#16070f", accent: "#ff6fae" },
-  { id: "violet",      label: "theme.violet",     bg: "#0a0718", accent: "#22d3ee" },
+  { id: "dark",        label: "theme.dark",       bg: "#1a1a1a", accent: "#f5c518" },
+  { id: "orange-nuit", label: "theme.orangeNuit", bg: "#4a2a0c", accent: "#4ea8ff" },
+  { id: "ocean",       label: "theme.ocean",      bg: "#0b2b3a", accent: "#3fd0c9" },
+  { id: "foret",       label: "theme.foret",      bg: "#0f2e16", accent: "#e7b73c" },
+  { id: "rose",        label: "theme.rose",       bg: "#3a0f26", accent: "#ff6fae" },
+  { id: "violet",      label: "theme.violet",     bg: "#1a1140", accent: "#22d3ee" },
 ];
 
 const DEFAULT_ID = "dark";
