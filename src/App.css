@@ -1,8 +1,83 @@
 * { box-sizing: border-box; }
 
+/* ─────────────────────────────────────────────────────────────
+   Palettes de couleurs (duos). Chaque palette = un jeu de variables
+   appliqué via data-theme sur <html> (voir theme.js). La palette
+   "dark" (défaut) reprend exactement les couleurs d'origine.
+   Les couleurs de texte restent claires : toutes les palettes sont
+   sur fond sombre.
+   ───────────────────────────────────────────────────────────── */
+:root,
+:root[data-theme="dark"] {
+  --accent: #f5c518;
+  --accent-ink: #000;
+  --accent-glow: color-mix(in srgb, var(--accent) 25%, transparent);
+  --bg: #0d0d0d;
+  --bar: #141414;
+  --panel: #1a1a1a;
+  --field: #1e1e1e;
+  --chip: #333;
+  --border: #262626;
+}
+:root[data-theme="orange-nuit"] {
+  --accent: #4ea8ff;
+  --accent-ink: #04131f;
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --bg: #140b03;
+  --bar: #1b1006;
+  --panel: #241509;
+  --field: #2a1b0e;
+  --chip: #3e2a14;
+  --border: #3a2812;
+}
+:root[data-theme="ocean"] {
+  --accent: #3fd0c9;
+  --accent-ink: #002220;
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --bg: #061018;
+  --bar: #0a1a28;
+  --panel: #0e2130;
+  --field: #112a3c;
+  --chip: #1d3f52;
+  --border: #1a3647;
+}
+:root[data-theme="foret"] {
+  --accent: #e7b73c;
+  --accent-ink: #1a1200;
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --bg: #07120a;
+  --bar: #0b1d10;
+  --panel: #102716;
+  --field: #143019;
+  --chip: #244a2b;
+  --border: #1d3a22;
+}
+:root[data-theme="rose"] {
+  --accent: #ff6fae;
+  --accent-ink: #1c0010;
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --bg: #16070f;
+  --bar: #200b18;
+  --panel: #2a1020;
+  --field: #331228;
+  --chip: #4a1f39;
+  --border: #3f1731;
+}
+:root[data-theme="violet"] {
+  --accent: #22d3ee;
+  --accent-ink: #00141a;
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --bg: #0a0718;
+  --bar: #120d26;
+  --panel: #1a1136;
+  --field: #211645;
+  --chip: #342357;
+  --border: #2b1d4a;
+}
+
 body {
   margin: 0;
-  background: #0d0d0d;
+  background: var(--bg);
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -49,14 +124,14 @@ body {
   padding: 12px 14px;
   border-radius: 10px;
   border: none;
-  background: #1e1e1e;
+  background: var(--field);
   color: #fff;
   font-size: 1rem;
 }
 
 .btn {
-  background: #f5c518;
-  color: #000;
+  background: var(--accent);
+  color: var(--accent-ink);
   border: none;
   padding: 12px 18px;
   border-radius: 10px;
@@ -66,7 +141,7 @@ body {
 }
 
 .btn-small {
-  background: #333;
+  background: var(--chip);
   color: #fff;
   border: none;
   padding: 6px 12px;
@@ -83,7 +158,7 @@ body {
 
 .section-pill {
   display: inline-block;
-  background: #333;
+  background: var(--chip);
   color: #ddd;
   font-size: 0.72rem;
   letter-spacing: 0.05em;
@@ -99,7 +174,7 @@ body {
 }
 
 .card {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -139,7 +214,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 12px;
   padding: 10px;
   margin-bottom: 10px;
@@ -166,7 +241,7 @@ body {
 .ep-row-countdown-word {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #f5c518;
+  color: var(--accent);
   line-height: 1.1;
 }
 .ep-row-countdown-label {
@@ -174,7 +249,7 @@ body {
   color: #999;
   margin-top: 2px;
 }
-.ep-row-countdown-soon .ep-row-countdown-num { color: #f5c518; }
+.ep-row-countdown-soon .ep-row-countdown-num { color: var(--accent); }
 
 .ep-row-poster img {
   width: 70px;
@@ -189,7 +264,7 @@ body {
 
 .ep-row-info { flex: 1; min-width: 0; }
 .ep-row-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
-.ep-row-ep { color: #f5c518; font-weight: 700; font-size: 0.9rem; }
+.ep-row-ep { color: var(--accent); font-weight: 700; font-size: 0.9rem; }
 .ep-row-name {
   color: #ddd;
   font-size: 0.85rem;
@@ -219,7 +294,7 @@ body {
 .overview { font-size: 0.85rem; color: #bbb; line-height: 1.4; margin-top: 12px; }
 
 .seasons { display: flex; flex-direction: column; gap: 8px; }
-.season { background: #1a1a1a; border-radius: 10px; overflow: hidden; }
+.season { background: var(--panel); border-radius: 10px; overflow: hidden; }
 
 .season-header {
   width: 100%;
@@ -252,12 +327,12 @@ body {
   justify-content: space-between;
   gap: 10px;
   padding: 10px 8px;
-  border-top: 1px solid #262626;
+  border-top: 1px solid var(--border);
   cursor: pointer;
 }
 
 .ep-text { flex: 1; font-size: 0.85rem; line-height: 1.3; }
-.ep-num { color: #f5c518; font-weight: 600; margin-right: 6px; }
+.ep-num { color: var(--accent); font-weight: 600; margin-right: 6px; }
 .ep-name { color: #eee; }
 
 .check {
@@ -281,8 +356,8 @@ body {
   left: 0;
   right: 0;
   height: 64px;
-  background: #141414;
-  border-top: 1px solid #262626;
+  background: var(--bar);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -302,7 +377,7 @@ body {
   padding: 6px;
 }
 
-.tab.active { color: #f5c518; }
+.tab.active { color: var(--accent); }
 .tab-icon { font-size: 1.3rem; }
 /* Libellé affiché uniquement sous l'onglet actif : on évite qu'il passe à la
    ligne (ex. « À venir ») pour garder la barre nette. */
@@ -329,7 +404,7 @@ body {
 
 .import-log {
   margin-top: 16px;
-  background: #141414;
+  background: var(--bar);
   border-radius: 10px;
   padding: 10px;
   font-size: 0.8rem;
@@ -339,7 +414,7 @@ body {
 .log-line { padding: 2px 0; color: #ccc; }
 
 .notfound { margin: 16px 0; }
-.notfound summary { cursor: pointer; color: #f5c518; }
+.notfound summary { cursor: pointer; color: var(--accent); }
 .notfound ul { font-size: 0.85rem; color: #bbb; }
 
 /* ---- Films ---- */
@@ -358,7 +433,7 @@ body {
 }
 .movie-tab {
   flex: 1;
-  background: #1a1a1a;
+  background: var(--panel);
   color: #999;
   border: none;
   padding: 10px;
@@ -367,7 +442,7 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
 }
-.movie-tab.active { background: #f5c518; color: #000; }
+.movie-tab.active { background: var(--accent); color: var(--accent-ink); }
 
 .movie-actions {
   display: flex;
@@ -390,14 +465,14 @@ body {
 }
 
 .stat-card {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 12px;
   padding: 16px;
   text-align: center;
 }
 .stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
-.stat-value { font-size: 1.8rem; font-weight: 700; color: #f5c518; }
-.stat-value-time { font-size: 1rem; color: #f5c518; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-value-time { font-size: 1rem; color: var(--accent); }
 .stat-value-time b { font-size: 1.3rem; }
 .stat-value-small { font-size: 0.85rem; color: #999; padding: 8px 0; }
 .stat-label { font-size: 0.75rem; color: #999; margin-top: 4px; }
@@ -413,7 +488,7 @@ body {
 
 /* ---- Où regarder ---- */
 .providers {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 20px;
@@ -442,7 +517,7 @@ body {
 
 /* ---- À venir ---- */
 .upcoming-date {
-  color: #f5c518;
+  color: var(--accent);
   font-size: 0.8rem;
   margin-top: 4px;
   font-weight: 600;
@@ -450,7 +525,7 @@ body {
 
 /* ---- Note badge dans la liste ---- */
 .ep-rating-badge {
-  color: #f5c518;
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 700;
   margin-left: 8px;
@@ -470,7 +545,7 @@ body {
 }
 
 .ep-detail {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 16px;
   max-width: 480px;
   width: 100%;
@@ -520,7 +595,7 @@ body {
   line-height: 1;
   transition: color 0.1s;
 }
-.star-filled { color: #f5c518; }
+.star-filled { color: var(--accent); }
 
 .rating-scale { display: flex; gap: 6px; }
 .rating-choice {
@@ -529,8 +604,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: var(--panel);
+  border: 1px solid var(--chip);
   border-radius: 10px;
   padding: 8px 4px;
   cursor: pointer;
@@ -540,19 +615,19 @@ body {
 .rating-choice-star { font-size: 1.3rem; line-height: 1; color: #444; }
 .rating-choice-label { font-size: 0.7rem; text-align: center; }
 .rating-choice-selected {
-  border-color: #f5c518;
-  background: rgba(245, 197, 24, 0.12);
-  color: #f5c518;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
 }
-.rating-choice-selected .rating-choice-star { color: #f5c518; }
+.rating-choice-selected .rating-choice-star { color: var(--accent); }
 
 /* ---- Bottom sheet de filtre (Statut + Genre) ---- */
 .filter-trigger {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: var(--panel);
+  border: 1px solid var(--chip);
   border-radius: 10px;
   color: #ddd;
   padding: 8px 14px;
@@ -564,7 +639,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #f5c518;
+  background: var(--accent);
   display: inline-block;
 }
 .filter-sheet-overlay {
@@ -620,13 +695,13 @@ body {
   flex-shrink: 0;
   position: relative;
 }
-.filter-radio-checked { border-color: #f5c518; }
+.filter-radio-checked { border-color: var(--accent); }
 .filter-radio-checked::after {
   content: "";
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: #f5c518;
+  background: var(--accent);
 }
 
 /* ---- Menu "..." du profil ---- */
@@ -640,8 +715,8 @@ body {
 .controls-menu-wrap { position: relative; }
 .profile-menu-trigger,
 .controls-menu-trigger {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: var(--panel);
+  border: 1px solid var(--chip);
   color: #ddd;
   width: 36px;
   height: 36px;
@@ -664,8 +739,8 @@ body {
   position: absolute;
   top: 44px;
   z-index: 41;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: var(--field);
+  border: 1px solid var(--chip);
   border-radius: 12px;
   padding: 8px;
   min-width: 230px;
@@ -696,7 +771,7 @@ body {
 .profile-menu-sep,
 .controls-menu-sep {
   height: 1px;
-  background: #333;
+  background: var(--chip);
   margin: 6px 2px;
 }
 .profile-menu-label {
@@ -727,8 +802,8 @@ body {
 
 .comment-box {
   width: 100%;
-  background: #0d0d0d;
-  border: 1px solid #333;
+  background: var(--bg);
+  border: 1px solid var(--chip);
   border-radius: 10px;
   color: #fff;
   padding: 10px;
@@ -772,9 +847,9 @@ body {
 
 .filter-input,
 .sort-select {
-  background: #1e1e1e;
+  background: var(--field);
   color: #fff;
-  border: 1px solid #333;
+  border: 1px solid var(--chip);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.9rem;
@@ -798,12 +873,12 @@ body {
   padding-right: 30px;
 }
 
-.sort-select option { background: #1e1e1e; color: #fff; }
+.sort-select option { background: var(--field); color: #fff; }
 
 .filter-input:focus,
 .sort-select:focus {
-  border-color: #f5c518;
-  box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 /* ---- Focus jaune sur la barre de recherche ---- */
@@ -813,8 +888,8 @@ body {
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 .search input:focus {
-  border-color: #f5c518;
-  box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 /* ---- Casting (fiche film) ---- */
@@ -895,8 +970,8 @@ body {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(245, 197, 24, 0.92);
-  color: #000;
+  background: color-mix(in srgb, var(--accent) 92%, transparent);
+  color: var(--accent-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -906,7 +981,7 @@ body {
 
 /* ---- Soutenir l'app (don) ---- */
 .support-box {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 8px;
@@ -933,7 +1008,7 @@ body {
   margin-bottom: 8px;
 }
 .trophy {
-  background: #1a1a1a;
+  background: var(--panel);
   border: none;
   border-radius: 12px;
   padding: 12px 6px;
@@ -957,11 +1032,11 @@ body {
   margin-top: 3px;
   color: #999;
 }
-.trophy-unlocked .trophy-state { color: #f5c518; }
+.trophy-unlocked .trophy-state { color: var(--accent); }
 
 /* Popup trophée */
 .trophy-modal {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 16px;
   max-width: 360px;
   width: 100%;
@@ -981,8 +1056,8 @@ body {
 .trophy-modal-status { margin-top: 4px; }
 .trophy-modal-badge {
   display: inline-block;
-  background: #f5c518;
-  color: #000;
+  background: var(--accent);
+  color: var(--accent-ink);
   font-size: 0.8rem;
   font-weight: 600;
   padding: 6px 14px;
@@ -1004,7 +1079,7 @@ body {
 .link-btn {
   background: none;
   border: none;
-  color: #f5c518;
+  color: var(--accent);
   cursor: pointer;
   font-size: 0.85rem;
   padding: 4px;
@@ -1027,7 +1102,7 @@ body {
   content: "";
   flex: 1;
   height: 1px;
-  background: #333;
+  background: var(--chip);
 }
 
 .login-google { max-width: 300px; width: 100%; padding: 10px; }
@@ -1041,9 +1116,9 @@ body {
   margin-bottom: 8px;
 }
 .lang-btn {
-  background: #1a1a1a;
+  background: var(--panel);
   color: #ccc;
-  border: 1px solid #333;
+  border: 1px solid var(--chip);
   border-radius: 10px;
   padding: 8px 14px;
   cursor: pointer;
@@ -1051,7 +1126,7 @@ body {
 }
 .lang-btn:hover { border-color: #555; }
 .lang-active {
-  border-color: #f5c518;
+  border-color: var(--accent);
   color: #fff;
   background: #262010;
 }
@@ -1075,9 +1150,9 @@ body {
 }
 .section-tab {
   flex: 0 0 auto;
-  background: #1a1a1a;
+  background: var(--panel);
   color: #ccc;
-  border: 1px solid #333;
+  border: 1px solid var(--chip);
   border-radius: 20px;
   padding: 7px 14px;
   font-size: 0.82rem;
@@ -1087,9 +1162,9 @@ body {
 }
 .section-tab:hover { border-color: #555; }
 .section-tab.active {
-  background: #f5c518;
-  color: #000;
-  border-color: #f5c518;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
   font-weight: 600;
 }
 
@@ -1102,8 +1177,8 @@ body {
   height: 46px;
   border-radius: 50%;
   border: none;
-  background: #f5c518;
-  color: #000;
+  background: var(--accent);
+  color: var(--accent-ink);
   font-size: 1.4rem;
   font-weight: 700;
   cursor: pointer;
@@ -1127,7 +1202,7 @@ body {
   cursor: pointer;
   border-radius: 8px;
   overflow: hidden;
-  background: #1a1a1a;
+  background: var(--panel);
   transition: transform 0.1s;
 }
 .show-grid-card:active { transform: scale(0.96); }
@@ -1150,11 +1225,11 @@ body {
 }
 .show-grid-bar {
   height: 4px;
-  background: #333;
+  background: var(--chip);
 }
 .show-grid-bar-fill {
   height: 100%;
-  background: #f5c518;
+  background: var(--accent);
 }
 
 /* Bouton bascule liste / grille */
@@ -1171,9 +1246,9 @@ body {
 }
 .layout-toggle {
   flex: 0 0 auto;
-  background: #1a1a1a;
-  color: #f5c518;
-  border: 1px solid #333;
+  background: var(--panel);
+  color: var(--accent);
+  border: 1px solid var(--chip);
   border-radius: 8px;
   width: 38px;
   height: 34px;
@@ -1208,7 +1283,7 @@ body {
 }
 
 .delete-modal {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 16px;
   max-width: 380px;
   width: 100%;
@@ -1253,7 +1328,7 @@ body {
   left: 50%;
   bottom: 76px; /* au-dessus de la barre d'onglets */
   transform: translateX(-50%);
-  background: #262626;
+  background: var(--border);
   color: #fff;
   padding: 10px 18px;
   border-radius: 24px;
@@ -1270,7 +1345,7 @@ body {
 
 /* ---- Popup revisionnage (Pas vu / +1) ---- */
 .rewatch-menu {
-  background: #1a1a1a;
+  background: var(--panel);
   border-radius: 16px;
   max-width: 320px;
   width: 100%;
@@ -1280,7 +1355,7 @@ body {
   font-size: 1rem;
   font-weight: 600;
   text-align: center;
-  color: #f5c518;
+  color: var(--accent);
   margin-bottom: 16px;
 }
 .rewatch-btn {
@@ -1295,8 +1370,8 @@ body {
   margin-bottom: 10px;
 }
 .rewatch-btn-add {
-  background: #f5c518;
-  color: #000;
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 .rewatch-btn-unwatch {
   background: #2a1414;
@@ -1317,8 +1392,8 @@ body {
   position: absolute;
   bottom: -4px;
   right: -6px;
-  background: #f5c518;
-  color: #000;
+  background: var(--accent);
+  color: var(--accent-ink);
   font-size: 0.6rem;
   font-weight: 700;
   padding: 1px 4px;
@@ -1349,8 +1424,8 @@ body {
   padding: 0 6px;
   font-size: 0.68rem;
   font-weight: 700;
-  color: #f5c518;
-  border-color: #f5c518;
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ---- Réalisateur / créateur (avant le casting) ---- */
@@ -1377,6 +1452,41 @@ body {
   color: #fff;
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px dotted #f5c518;
+  border-bottom: 1px dotted var(--accent);
 }
 .person-link:active { opacity: 0.7; }
+
+/* ---- Sélecteur de palettes (menu Profil) ---- */
+.palette-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px 0 2px;
+}
+.palette-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-align: left;
+}
+.palette-btn.palette-active { border-color: var(--accent); }
+.palette-swatch {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.palette-dot { width: 14px; height: 18px; display: block; }
+.palette-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

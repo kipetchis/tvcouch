@@ -17,7 +17,7 @@ import { getMyProfile, maybePublishFriendData, getUnreadRecoCount } from "./soci
 import TranslatedTitle from "./TranslatedTitle";
 import { TROPHIES, computeTrophyStats, evaluateTrophy, trophyName, trophyPhrase } from "./trophies";
 import { LANGUAGES, FLAGS, getLang, setLang, t } from "./i18n";
-import { useTheme, setTheme } from "./theme";
+import { useTheme, setTheme, PALETTES } from "./theme";
 import { deleteAccount, reauthenticate, getAuthProvider, authErrorMessage } from "./firebase";
 import { useBackClose } from "./backNav";
 
@@ -544,19 +544,21 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
 
                 <div className="profile-menu-sep" />
                 <div className="profile-menu-label">🎨 {t("profile.appearance")}</div>
-                <div className="lang-switch profile-menu-lang">
-                  <button
-                    className={`lang-btn ${theme === "dark" ? "lang-active" : ""}`}
-                    onClick={() => setTheme("dark")}
-                  >
-                    {t("profile.dark")}
-                  </button>
-                  <button
-                    className={`lang-btn ${theme === "light" ? "lang-active" : ""}`}
-                    onClick={() => setTheme("light")}
-                  >
-                    {t("profile.light")}
-                  </button>
+                <div className="palette-grid">
+                  {PALETTES.map((p) => (
+                    <button
+                      key={p.id}
+                      className={`palette-btn ${theme === p.id ? "palette-active" : ""}`}
+                      onClick={() => setTheme(p.id)}
+                      title={t(p.label)}
+                    >
+                      <span className="palette-swatch">
+                        <span className="palette-dot" style={{ background: p.bg }} />
+                        <span className="palette-dot" style={{ background: p.accent }} />
+                      </span>
+                      <span className="palette-name">{t(p.label)}</span>
+                    </button>
+                  ))}
                 </div>
 
                 <div className="profile-menu-sep" />
