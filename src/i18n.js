@@ -210,6 +210,8 @@ const DICT = {
   "profile.restoreDone": { fr: "Sauvegarde restaurée ✓", en: "Backup restored ✓", es: "Copia restaurada ✓" },
   "profile.restoreError": { fr: "Échec de la restauration.", en: "Restore failed.", es: "Error al restaurar." },
   "profile.restoreInvalid": { fr: "Fichier de sauvegarde invalide.", en: "Invalid backup file.", es: "Archivo de copia no válido." },
+  "profile.restoreRunning": { fr: "Restauration en cours…", en: "Restoring…", es: "Restaurando…" },
+  "profile.restoreReopen": { fr: "Rouvre l'onglet concerné pour voir les changements.", en: "Reopen the relevant tab to see the changes.", es: "Reabre la pestaña correspondiente para ver los cambios." },
   "theme.dark": { fr: "Sombre", en: "Dark", es: "Oscuro" },
   "theme.orangeNuit": { fr: "Orange nuit", en: "Night orange", es: "Naranja noche" },
   "theme.ocean": { fr: "Océan", en: "Ocean", es: "Océano" },

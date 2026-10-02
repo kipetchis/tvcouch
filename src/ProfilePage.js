@@ -124,43 +124,49 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
 
   const handleBackup = async () => {
     setMenuOpen(false);
+    setBackupMsg(null);
     try {
-      await downloadBackup();
-      setBackupMsg(t("profile.backupDone"));
-    } catch {
-      setBackupMsg(t("profile.backupError"));
+      const c = await downloadBackup();
+      setBackupMsg(
+        `${t("profile.backupDone")} — 📺 ${c.shows} · 🎬 ${c.movies} · 📖 ${c.books} · 📗 ${c.volumes} · 🎮 ${c.games}`
+      );
+    } catch (err) {
+      setBackupMsg(`${t("profile.backupError")} ${(err && (err.message || err.code)) || ""}`.trim());
     }
-    setTimeout(() => setBackupMsg(null), 4000);
+    // Message persistant : on l'efface au prochain clic (pas de minuterie), pour
+    // qu'il reste lisible même après le petit « blur » du téléchargement.
   };
 
   const handleRestoreFile = async (e) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = ""; // permet de re-sélectionner le même fichier plus tard
     if (!file) return;
+    setBackupMsg(null);
 
     let backup;
     try {
       backup = JSON.parse(await file.text());
     } catch {
       setBackupMsg(t("profile.restoreInvalid"));
-      setTimeout(() => setBackupMsg(null), 4000);
       return;
     }
     if (!isValidBackup(backup)) {
       setBackupMsg(t("profile.restoreInvalid"));
-      setTimeout(() => setBackupMsg(null), 4000);
       return;
     }
     if (!window.confirm(t("profile.restoreConfirm"))) return;
 
+    setBackupMsg(t("profile.restoreRunning"));
     try {
-      await restoreBackup(backup);
-      setBackupMsg(t("profile.restoreDone"));
-      // Recharge l'app pour que toutes les pages reflètent les données restaurées.
-      setTimeout(() => { try { window.location.reload(); } catch {} }, 1200);
-    } catch {
-      setBackupMsg(t("profile.restoreError"));
-      setTimeout(() => setBackupMsg(null), 4000);
+      const c = await restoreBackup(backup);
+      // Pas de rechargement automatique (il pouvait rester bloqué sur certains
+      // environnements) : on confirme ce qui a été restauré et on invite à
+      // rouvrir l'onglet concerné.
+      setBackupMsg(
+        `${t("profile.restoreDone")} — 📺 ${c.shows} · 🎬 ${c.movies} · 📖 ${c.books} · 📗 ${c.volumes} · 🎮 ${c.games}. ${t("profile.restoreReopen")}`
+      );
+    } catch (err) {
+      setBackupMsg(`${t("profile.restoreError")} ${(err && (err.message || err.code)) || ""}`.trim());
     }
   };
 
@@ -589,7 +595,16 @@ export default function ProfilePage({ user, onImportShows, onImportMovies, onImp
       </div>
 
       {backupMsg && (
-        <p className="login-info" style={{ textAlign: "center", marginTop: 8 }}>{backupMsg}</p>
+        <p
+          onClick={() => setBackupMsg(null)}
+          style={{
+            textAlign: "center", marginTop: 8, padding: "10px 12px", borderRadius: 8,
+            background: "var(--panel)", border: "1px solid var(--accent)", color: "#fff",
+            fontSize: "0.85rem", cursor: "pointer",
+          }}
+        >
+          {backupMsg}
+        </p>
       )}
 
       <input
